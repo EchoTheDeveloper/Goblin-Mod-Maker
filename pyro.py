@@ -165,7 +165,7 @@ class CoreUI(object):
         self.markedLine = 0
         self.root = tkinter.Tk()
         self.root.withdraw()
-        self.root.iconbitmap("resources/unitymodmaker.ico")
+        self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.uiconfig()
         self.root.bind("<Key>", self.event_key)

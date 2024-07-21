@@ -19,7 +19,7 @@ def create_loading_screen(message="Please Wait..."):
     # Visuals
     root = Tk()
     root.title("Please Wait...")
-    root.iconbitmap("resources/unitymodmaker.ico")
+    root.iconbitmap("resources/isle-goblin-mod-maker.ico")
     root.configure(background="#00062A")
     # The text it shows it provided via the message parameter
     x = Label(root, text=message, font=("Arial", 20), background="#00062A", fg="#b4d9f9")
@@ -76,7 +76,8 @@ def new(settings):
                               "Name of Folder in Steam Files (If different from Game Name)",
                               "PolyTech (Poly Bridge Modding Framework)",
                               "Steam Directory"), _new_fallback, None, defaults={
-        "Game Name (Check Spelling and Punctuation)": "Poly Bridge 2",
+        "Game Name (Check Spelling and Punctuation)": "Isle Goblin",
+        "Name of Folder in Steam Files (If different from Game Name)": "Isle Goblin Playtest",
         "PolyTech (Poly Bridge Modding Framework)": "Auto",
         "Steam Directory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\"
     })
@@ -87,7 +88,7 @@ def _open_fallback(name):
     if not exists(os.getcwd() + "/projects/" + name.replace(" ", "")):
         return "Project Doesn't Exist"
     try:
-        mod = ModObject.load(os.getcwd() + "/projects/" + name.replace(" ", "") + "/" + name.replace(" ", "") + ".umm")
+        mod = ModObject.load(os.getcwd() + "/projects/" + name.replace(" ", "") + "/" + name.replace(" ", "") + ".igmm")
     except FileNotFoundError:
         return "Unity Mod Maker File Missing"
     global SETTINGS
@@ -119,7 +120,7 @@ def save(window, filename):
         # it already exists so we are good
         pass
     # calls the save method on the mod object now that we made sure all the correct folders existed
-    ModObject.save(window.mod, location=folder_path + "/" + filename + ".umm")
+    ModObject.save(window.mod, location=folder_path + "/" + filename + ".igmm")
 
 
 def _copy_fallback(window, name):

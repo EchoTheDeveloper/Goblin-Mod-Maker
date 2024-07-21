@@ -8,7 +8,7 @@ import os
 import subprocess
 from tkinter import *
 
-VERSION = "alpha 0.1.1"
+VERSION = "0.0.32"
 windows = []
 
 
@@ -21,7 +21,7 @@ class LimitedModObject:
 
 class ModObject(LimitedModObject):
 
-    def __init__(self, mod_name="mod", version="1.0.0", poly_tech=True, game="Poly Bridge 2", folder_name=None,
+    def __init__(self, mod_name="mod", version="0.0.01", poly_tech=True, game="Isle Goblin", folder_name="Isle Goblin Playtest",
                  steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
         self.index = 0
@@ -170,7 +170,7 @@ class ModObject(LimitedModObject):
         if changeSaved:
             self.saved = False
 
-        save(self, location=folder_path + "/" + name_no_space + "-auto.umm", overwrite_auto=False)
+        save(self, location=folder_path + "/" + name_no_space + "-auto.igmm", overwrite_auto=False)
 
     def set_mod_name(self, new_name):
         self.mod_name.code = new_name
@@ -254,7 +254,7 @@ def create_files(mod: ModObject, destroyonerror=None):
         os.mkdir(folder_path)
     except FileExistsError:
         pass
-    save(mod, location=folder_path + "/" + name_no_space + ".umm")
+    save(mod, location=folder_path + "/" + name_no_space + ".igmm")
     shutil.copyfile("resources/gitignoretemplate", folder_path + "/.gitignore")
     shutil.copyfile("resources/configmanagertemplate", folder_path + "/ConfigurationManagerAttributes.cs")
     with open(folder_path + "/" + name_no_space + ".cs", "w") as f:
@@ -297,7 +297,7 @@ def dotnet_build(path):
     return command.stdout.read()
 
 
-def save(mod_object, location="mod.umm", overwrite_auto=True):
+def save(mod_object, location="mod.igmm", overwrite_auto=True):
     mod_object.saved = True
     auto_path = location.split(".")
     if len(auto_path) == 1:
@@ -311,7 +311,7 @@ def save(mod_object, location="mod.umm", overwrite_auto=True):
     pickle.dump(mod_object, open(location, "wb"))
 
 
-def load(location="mod.umm", auto_option=True):
+def load(location="mod.igmm", auto_option=True):
     auto_path = location.split(".")
     if len(auto_path) == 1:
         auto_path += "-auto"
@@ -340,10 +340,10 @@ def copy(mod_object, name):
         os.mkdir(folder_path)
     except FileExistsError:
         return "That Project Already Exists"
-    save(mod_object, location=folder_path + "/" + name_no_space + ".umm")
-    mod2 = load(folder_path + "/" + name_no_space + ".umm")
+    save(mod_object, location=folder_path + "/" + name_no_space + ".igmm")
+    mod2 = load(folder_path + "/" + name_no_space + ".igmm")
     mod2.set_mod_name(name)
-    save(mod2, location=folder_path + "/" + name_no_space + ".umm")
+    save(mod2, location=folder_path + "/" + name_no_space + ".igmm")
 
 
 def verify_game(name, folder_name, steam_path, prompt):
