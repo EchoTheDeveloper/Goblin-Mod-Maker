@@ -356,7 +356,7 @@ class CoreUI(object):
         self.root.grid_rowconfigure(1, weight=0)
 
     def updatetitlebar(self):
-        self.root.title("Unity Mod Maker - " + self.filename)
+        self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - " + self.filename)
         #self.root.update()
 
     def destroy_window(self):
