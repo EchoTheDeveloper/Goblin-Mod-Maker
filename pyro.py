@@ -284,7 +284,7 @@ class CoreUI(object):
         self.uiopts = {"height": "1000",
                        "width": "1000",
                        "cursor": "xterm",
-                       "bg": "#00062A",
+                       "bg": "#0d1117",
                        "fg": "#FFAC00",
                        "insertbackground": "#FFD310",
                        "insertborderwidth": "1",
@@ -302,12 +302,12 @@ class CoreUI(object):
         self.text.configure(yscrollcommand=self.ysb.set)
         self.ysb.grid(row=0, column=2,sticky=(N,S), rowspan=2)
         self.ysb.configure(
-            activebackground="#FFD310",
+            activebackground="#0d1117",
             borderwidth="0",
-            background="#68606E",
+            background="#0d1117",
             highlightthickness="0",
             highlightcolor="#00062A",
-            highlightbackground="#00062A",
+            highlightbackground="#252c36",
             troughcolor="#20264A",
             relief="flat")
         '''self.cli = tkinter.Text(self.root, {"height": "1",
@@ -322,7 +322,7 @@ class CoreUI(object):
                                             "inactiveselectbackground": "#E0E0E0"
                                             })'''
         self.info = tkinter.Label(self.root, {"height": "1",
-                                            "bg": "#191F44",
+                                            "bg": "#0d1117",
                                             "fg": "#FFC014",
                                             "anchor": "w"
                                             })
