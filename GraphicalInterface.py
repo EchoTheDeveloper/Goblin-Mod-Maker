@@ -74,15 +74,15 @@ class InterfaceMenu:
         self.settings = self.find_settings()
         # Setting up the main window visuals
         self.root = Tk()
-        self.root.configure(background="#00062A")
+        self.root.configure(background="#0d1117")
         self.root.geometry("460x220")
         self.root.resizable(0, 0)
         self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - Main Menu")
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
         self.new_image = PhotoImage(file="resources/newbutton.png")
         self.open_image = PhotoImage(file="resources/openbutton.png")
-        self.new_button = Label(self.root, image=self.new_image, background="#00062A")
-        self.open_button = Label(self.root, image=self.open_image, background="#00062A")
+        self.new_button = Label(self.root, image=self.new_image, background="#0d1117")
+        self.open_button = Label(self.root, image=self.open_image, background="#0d1117")
         self.new_button.place(x=20, y=20)
         self.open_button.place(x=240, y=20)
         # The buttons are bound to the self.new function and self.load function because they are new and load buttons
@@ -90,10 +90,10 @@ class InterfaceMenu:
         self.open_button.bind("<Button-1>", self.load)
 
         def mouse_enter(e):
-            e.widget.config(fg="#8a7cf9")
+            e.widget.config(fg="#ffffff")
 
         def mouse_exit(e):
-            e.widget.config(fg="#4a3eab")
+            e.widget.config(fg="#ffffff")
 
         extra_buttons = []
 
@@ -108,7 +108,7 @@ class InterfaceMenu:
         extra_buttons.append(self.settings_button)
 
         for button in extra_buttons:
-            button.config(font=("Arial", 15), fg="#4a3eab", background="#00062A")
+            button.config(font=("Calibri", 15), fg="#ffffff", background="#0d1117")
             button.bind("<Enter>", mouse_enter)
             button.bind("<Leave>", mouse_exit)
 
@@ -142,7 +142,7 @@ class InterfaceMenu:
 
     def change_settings(self, e):
         ordered_settings = SETTINGS_TO_SHOW
-        create_prompt("Isle Goblin Mod Maker (Fork of Unity Mod Maker) Settings", ordered_settings, partial(self.save_settings, ordered_settings), None,
+        create_prompt("Isle Goblin Mod Maker Settings", ordered_settings, partial(self.save_settings, ordered_settings), None,
                       defaults=self.settings, width=500)
 
 
@@ -155,7 +155,7 @@ class InterfaceMenu:
 
     def open_dialog(self, e):
         messagebox.showwarning("Never Open Mods From Untrusted Sources", "Reminder: Never Open Mods From Untrusted Sources!!")
-        file = filedialog.askopenfile(filetypes=[("Unity Mod Maker Files", "*.igmm")])
+        file = filedialog.askopenfile(filetypes=[("Isle Goblin Mod Maker Files", "*.igmm")])
         if file is None: return
         name = file.name
         file.close()
