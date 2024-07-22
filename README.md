@@ -1,5 +1,5 @@
-This is a fork of HippoLippo's Unity Mod Maker that was designed for poly bridge 2.
-I am making this for the game Isle Goblin.
+# This is a fork of HippoLippo's Unity Mod Maker that was designed for poly bridge 2.
+I am making this for the game Isle Goblin. \
 There have been themeing changes aswell.
 
 # Isle Goblin Mod Maker
