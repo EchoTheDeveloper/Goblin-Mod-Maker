@@ -97,7 +97,7 @@ class InterfaceMenu:
 
         extra_buttons = []
 
-        self.open_external = Label(self.root, text="Open From .igmm File")
+        self.open_external = Label(self.root, text="Open From Isle Goblin Mod Maker (.igmm) File")
         self.open_external.place(x=20, y=150)
         self.open_external.bind("<Button-1>", self.open_dialog)
         extra_buttons.append(self.open_external)

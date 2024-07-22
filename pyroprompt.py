@@ -12,7 +12,7 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
     Frame(root, width=400 if width is None else width, background="#0d1117").pack()
     frame = Frame(root, width=400 if width is None else width, background="#0d1117")
     frame.pack(fill="x")
-    heading = Label(frame, text=title, font=("Arial", 18), background="#0d1117", fg="#ffffff")
+    heading = Label(frame, text=title, font=("Calibri", 18), background="#0d1117", fg="#ffffff")
     heading.pack(fill="x")
     if warning is None:
         error = Label(frame, background="#0d1117", fg="red")
