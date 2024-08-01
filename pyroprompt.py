@@ -31,8 +31,8 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
         Frame(frame, background="#0d1117").pack(pady=10)
     buttons = Frame(root, background="#0d1117")
     buttons.pack()
-    Button(buttons, text="Cancel", bg="#080a0d", fg ="#ffffff", command=partial(cancel, root, cancel_fallback)).grid(row=0, column=0, padx=10, pady=(10,10))
-    Button(buttons, text="Done", bg="#080a0d", fg="#ffffff", command=partial(done, root, fallback, answers, error)).grid(row=0, column=1, padx=10, pady=(10,10))
+    Button(buttons, text="Cancel", bg="#ffffff", fg ="#080a0d", command=partial(cancel, root, cancel_fallback)).grid(row=0, column=0, padx=10, pady=(10,10))
+    Button(buttons, text="Done", bg="#ffffff", fg="#080a0d", command=partial(done, root, fallback, answers, error)).grid(row=0, column=1, padx=10, pady=(10,10))
     return labels
 
 
