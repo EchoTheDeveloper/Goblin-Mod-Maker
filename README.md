@@ -1,12 +1,24 @@
-# This is a fork of HippoLippo's Unity Mod Maker that was designed for poly bridge 2.
-I am making this for the game Isle Goblin. \
-There have been themeing changes aswell.
-
 # Isle Goblin Mod Maker
-Note: This is the windows fork of the project, a Linux fork does not exist yet<br>
-<h1>Installation Instructions:</h1>
-<ul>
-    <li>Make sure Dotnet SDK is installed (Only tested on 5.0.400 but any version that works for modding should work)</li>
-    <li>The game you are modding must be installed and be a CSharp Unity Game - Though it is specifically designed for Isle Goblin</li>
-    <li>Run "Isle Goblin Mod Maker.exe" to use the tool (If this fails download the code and run main.py)</li>
-</ul>
+
+## Credits
+Credits to Watt Designs for making Isle Goblin (https://www.youtube.com/@WattDesigns https://discord.gg/TM8n7ENJPa https://www.patreon.com/WattDesigns)
+
+Credits to HippoLippo for making the original Unity Mod Maker (https://github.com/HippoLippo/Unity-Mod-Maker)
+
+Credits to SpiralDev for updating/working on the modding page of the wiki (@spirallikespc on Discord)
+
+## Licence
+
+Licence is the Apache 2.0 licence found in the licence file, or at https://www.apache.org/licenses/LICENSE-2.0
+
+## Install Instructions and Usage
+
+I would reccomend following the guide on the wiki: https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Using_Mods_Summary
+
+## Help
+
+If you need help just join the Isle Goblin Modding discord server and ask in any of the help channels! https://discord.gg/vKy7YHPMmx
+
+## Author
+
+This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper.
