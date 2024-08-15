@@ -13,7 +13,7 @@ Licence is the Apache 2.0 licence found in the licence file, or at https://www.a
 
 ## Install Instructions and Usage
 
-I would reccomend following the guide on the wiki: https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Using_Mods_Summary
+I would recommend following the guide on the wiki: https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Using_Mods_Summary
 
 ## Help
 
