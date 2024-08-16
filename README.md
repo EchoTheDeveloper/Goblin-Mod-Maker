@@ -22,7 +22,8 @@ If you need help just join the Isle Goblin Modding discord server and ask in any
 ## Author
 
 This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper.
-Devs:
+
+## Devs
 
   * EchoTheDeveloper
   * SpiralDev
