@@ -90,10 +90,10 @@ class InterfaceMenu:
         self.open_button.bind("<Button-1>", self.load)
 
         def mouse_enter(e):
-            e.widget.config(fg="#ffffff")
+            e.widget.config(fg="#5daf8d")
 
         def mouse_exit(e):
-            e.widget.config(fg="#ffffff")
+            e.widget.config(fg="#000000")
 
         extra_buttons = []
 
