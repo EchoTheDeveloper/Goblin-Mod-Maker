@@ -209,7 +209,7 @@ class ModObject(LimitedModObject):
             pass
         '''
         try:
-            shutil.move(path + "/bin/Debug/netstandard2.0/" + self.mod_name_no_space.get_text() + ".dll",
+            shutil.move(path + "/bin/Debug/netstandard2.1/" + self.mod_name_no_space.get_text() + ".dll",
                         os.path.join(self.steampath, self.folder_name, "BepInEx/plugins/" +
                                      self.mod_name_no_space.get_text() + ".dll"))
             shutil.copyfile(os.path.join(os.getcwd(), "resources/Default Libraries/ConfigurationManager.dll"),
@@ -225,7 +225,7 @@ class ModObject(LimitedModObject):
                 destroyonerror.destroy()
             root = Tk()
             root.title("Build Failed")
-            root.iconbitmap("resources/unitymodmaker.ico")
+            root.iconbitmap("resources/isle-goblin-mod-maker.ico")
             from tkinter import scrolledtext
             textbox = scrolledtext.ScrolledText(root)
             textbox.configure(bg="#191F44", fg="#FFC014", )

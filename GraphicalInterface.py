@@ -75,7 +75,7 @@ class InterfaceMenu:
         # Setting up the main window visuals
         self.root = Tk()
         self.root.configure(background="#0d1117")
-        self.root.geometry("470x200")
+        self.root.geometry("470x220")
         self.root.resizable(0, 0)
         self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - Main Menu")
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
@@ -101,6 +101,11 @@ class InterfaceMenu:
         self.open_external.place(x=20, y=150)
         self.open_external.bind("<Button-1>", self.open_dialog)
         extra_buttons.append(self.open_external)
+
+        self.settings_button = Label(self.root, text="Open IGMM Settings")
+        self.settings_button.place(x=20, y=180)
+        self.settings_button.bind("<Button-1>", self.change_settings)
+        extra_buttons.append(self.settings_button)
 
         for button in extra_buttons:
             button.config(font=("Calibri", 15), fg="#ffffff", background="#0d1117")
@@ -144,9 +149,6 @@ class InterfaceMenu:
     def _copy_fallback(self, mod, name):
         name = name[0]
         self.new_name = name
-        mod = copy(mod, name)
-        if mod is not None: return mod
-        return self.load_fallback([self.new_name])
 
     def open_dialog(self, e):
         messagebox.showwarning("Never Open Mods From Untrusted Sources", "Reminder: Never Open Mods From Untrusted Sources!!")
