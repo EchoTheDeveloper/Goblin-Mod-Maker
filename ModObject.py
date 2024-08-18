@@ -361,7 +361,7 @@ def verify_game(name, folder_name, steam_path, prompt):
     if not os.path.isdir(os.path.join(steam_path, folder_name, "BepInEx")):
         question = messagebox.askquestion("Install BepInEx",
                                           "BepInEx is not installed on this game, would you like to install it "
-                                          "automatically?",
+                                          "automatically? This will install bepinex version ",
                                           icon="info", parent=prompt)
         if question == "yes":
             shutil.copytree(os.path.join(os.getcwd(), "resources", "BepInEx"),
