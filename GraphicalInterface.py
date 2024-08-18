@@ -30,12 +30,12 @@ DEFAULT_SETTINGS = {
     "Default Game": "Isle Goblin",
     "Default Game Folder": "Isle Goblin Playtest",
     "Default Steam Directory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\",
-    "Show Line Numbers": "False"
+    "Show Line Numbers": "True"
 
 }
 
 SETTINGS_TO_SHOW = [
-    "Isle Goblin", "Default Game Folder", "Default Steam Directory"
+    "Default Game", "Default Game Folder", "Default Steam Directory"
 ]
 
 # These two functions are used to keep track of how many pyro windows are open becuase the main interface should open

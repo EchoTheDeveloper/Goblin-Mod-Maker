@@ -6,8 +6,9 @@ from functools import partial
 
 def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, warning=None, width=None):
     root = Tk()
-    root.configure(background="#0d1117")
+    root.configure(background="#ceb093")
     root.title(title)
+    root.resizable(0, 0)
     root.iconbitmap("resources/isle-goblin-mod-maker.ico")
     Frame(root, width=400 if width is None else width, background="#ceb093").pack()
     frame = Frame(root, width=400 if width is None else width, background="#ceb093")
