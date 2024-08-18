@@ -102,7 +102,7 @@ class InterfaceMenu:
         self.open_external.bind("<Button-1>", self.open_dialog)
         extra_buttons.append(self.open_external)
 
-        self.settings_button = Label(self.root, text="Mod Maker Settings")
+        self.settings_button = Label(self.root, text="Open IGMM Settings")
         self.settings_button.place(x=20, y=180)
         self.settings_button.bind("<Button-1>", self.change_settings)
         extra_buttons.append(self.settings_button)
