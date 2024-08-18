@@ -35,7 +35,7 @@ DEFAULT_SETTINGS = {
 }
 
 SETTINGS_TO_SHOW = [
-    "Default Game", "Default Game Folder", "Default Steam Directory"
+    "Default Game Folder", "Default Steam Directory", "Show Line Numbers"
 ]
 
 # These two functions are used to keep track of how many pyro windows are open becuase the main interface should open
