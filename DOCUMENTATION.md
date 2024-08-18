@@ -9,7 +9,7 @@
 
 Common Errors:
 
-### Netstandard error 
+### Netstandard error
 
 * If you get **an error** that has something to do with **netstandard** then go to your **Isle Goblin Mod Maker folder resources>csporjtemplate**
 * In this file **change the 3rd line** from `<TargetFramework>netstandard2.0</TargetFramework>` to `<TargetFramework>netstandard2.1</TargetFramework>`
