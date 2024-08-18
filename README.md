@@ -1,5 +1,12 @@
 # Isle Goblin Mod Maker
 
+DOCUMENTATION IS BEING MADE. IF YOU SEE THE DOCUMENTATION.MD FILE BE AWARE IT MIGHT NOT BE FULLY CORRECT
+
+## Devs
+
+  * EchoTheDeveloper
+  * SpiralDev
+
 ## Credits
 Credits to Watt Designs for making Isle Goblin (https://www.youtube.com/@WattDesigns https://discord.gg/TM8n7ENJPa https://www.patreon.com/WattDesigns)
 
@@ -22,8 +29,3 @@ If you need help just join the Isle Goblin Modding discord server and ask in any
 ## Author
 
 This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper.
-
-## Devs
-
-  * EchoTheDeveloper
-  * SpiralDev
