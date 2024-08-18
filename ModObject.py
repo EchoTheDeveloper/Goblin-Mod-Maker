@@ -21,7 +21,7 @@ class LimitedModObject:
 
 class ModObject(LimitedModObject):
 
-    def __init__(self, mod_name="mod", version="0.0.01", poly_tech=True, game="Isle Goblin", folder_name="Isle Goblin Playtest",
+    def __init__(self, mod_name="mod", version="0.0.1", poly_tech=True, game="Isle Goblin", folder_name="Isle Goblin Playtest",
                  steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
         self.index = 0
