@@ -20,9 +20,9 @@ def create_loading_screen(message="Please Wait..."):
     root = Tk()
     root.title("Please Wait...")
     root.iconbitmap("resources/isle-goblin-mod-maker.ico")
-    root.configure(background="#0d1117")
+    root.configure(background="#ceb093")
     # The text it shows it provided via the message parameter
-    x = Label(root, text=message, font=("Calibri", 20), background="#0d1117", fg="#ffffff")
+    x = Label(root, text=message, font=("Calibri", 20), background="#ceb093", fg="#000000")
     x.pack(padx=20, pady=20)
     # This isn't added to the pyro list of windows because it will be deleted before the next visual tick anyway
     # (Visuals freeze during these build methods) - This could be "fixed" by running the build method in a

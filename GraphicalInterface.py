@@ -74,15 +74,15 @@ class InterfaceMenu:
         self.settings = self.find_settings()
         # Setting up the main window visuals
         self.root = Tk()
-        self.root.configure(background="#0d1117")
+        self.root.configure(background="#ceb093")
         self.root.geometry("470x220")
         self.root.resizable(0, 0)
         self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - Main Menu")
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
         self.new_image = PhotoImage(file="resources/newbutton.png")
         self.open_image = PhotoImage(file="resources/openbutton.png")
-        self.new_button = Label(self.root, image=self.new_image, background="#0d1117")
-        self.open_button = Label(self.root, image=self.open_image, background="#0d1117")
+        self.new_button = Label(self.root, image=self.new_image, background="#ceb093")
+        self.open_button = Label(self.root, image=self.open_image, background="#ceb093")
         self.new_button.place(x=20, y=20)
         self.open_button.place(x=240, y=20)
         # The buttons are bound to the self.new function and self.load function because they are new and load buttons
@@ -108,7 +108,7 @@ class InterfaceMenu:
         extra_buttons.append(self.settings_button)
 
         for button in extra_buttons:
-            button.config(font=("Calibri", 15), fg="#ffffff", background="#0d1117")
+            button.config(font=("Calibri", 15), fg="#000000", background="#ceb093")
             button.bind("<Enter>", mouse_enter)
             button.bind("<Leave>", mouse_exit)
 
