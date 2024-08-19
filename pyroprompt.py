@@ -4,6 +4,8 @@ from tkinter import *
 from functools import partial
 
 
+from tkinter import messagebox
+
 def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, warning=None, width=None):
     root = Tk()
     root.configure(background="#ceb093")
@@ -20,8 +22,8 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
     else:
         error = Label(frame, text=warning, background="#ceb093", fg="red")
     error.pack()
-    answers = list()
-    labels = list()
+    answers = []
+    labels = []
     for question in enumerate(questions):
         labels.append(Label(frame, text=question[1], font=("Calibri", 12), background="#ceb093", fg="#000000"))
         labels[-1].pack(fill="x")
@@ -32,10 +34,37 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
         Frame(frame, background="#ceb093").pack(pady=10)
     buttons = Frame(root, background="#ceb093")
     buttons.pack()
-    Button(buttons, text="Cancel", bg="#ceb093", fg ="#000000", command=partial(cancel, root, cancel_fallback)).grid(row=0, column=0, padx=10, pady=(10,10))
-    Button(buttons, text="Done", bg="#ceb093", fg="#000000", command=partial(done, root, fallback, answers, error)).grid(row=0, column=1, padx=10, pady=(10,10))
+    Button(buttons, text="Cancel", bg="#ceb093", fg="#000000", command=partial(cancel, root, cancel_fallback)).grid(row=0, column=0, padx=10, pady=(10, 10))
+    Button(buttons, text="Done", bg="#ceb093", fg="#000000", command=partial(done, root, fallback, answers, error)).grid(row=0, column=1, padx=10, pady=(10, 10))
     return labels
 
+def create_int_prompt(title, question, fallback, cancel_fallback, default=None, warning=None, min_value=None, width=None):
+    root = Tk()
+    root.configure(background="#ceb093")
+    root.title(title)
+    root.resizable(0, 0)
+    root.iconbitmap("resources/isle-goblin-mod-maker.ico")
+    Frame(root, width=400 if width is None else width, background="#ceb093").pack()
+    frame = Frame(root, width=400 if width is None else width, background="#ceb093")
+    frame.pack(fill="x")
+    heading = Label(frame, text=title, font=("Calibri", 18), background="#ceb093", fg="#000000")
+    heading.pack(fill="x")
+    if warning is None:
+        error = Label(frame, background="#ceb093", fg="red")
+    else:
+        error = Label(frame, text=warning, background="#ceb093", fg="red")
+    error.pack()
+    label = Label(frame, text=question, font=("Calibri", 12), background="#ceb093", fg="#000000")
+    label.pack(fill="x")
+    answer = Entry(frame, background="#ceb093", fg="#000000", font=("Calibri", 12))
+    answer.pack(fill="x", padx=10)
+    if default is not None:
+        answer.insert(0, default)
+    Frame(frame, background="#ceb093").pack(pady=10)
+    buttons = Frame(root, background="#ceb093")
+    buttons.pack()
+    Button(buttons, text="Cancel", bg="#ceb093", fg="#000000", command=partial(cancel, root, cancel_fallback)).grid(row=0, column=0, padx=10, pady=(10, 10))
+    Button(buttons, text="Done", bg="#ceb093", fg="#000000", command=partial(done_int, root, fallback, answer, error, min_value)).grid(row=0, column=1, padx=10, pady=(10, 10))
 
 def cancel(root, fallback):
     root.destroy()
@@ -43,14 +72,30 @@ def cancel(root, fallback):
         return
     fallback(None)
 
-
 def done(root, fallback, answers, error):
-    x = None
-    if fallback is not None:
-        try:
-            x = fallback([i.get() for i in answers])
-        except TypeError:
-            x = fallback([i.get() for i in answers], root)
+    try:
+        x = fallback([i.get() for i in answers])
+    except TypeError:
+        x = fallback([i.get() for i in answers], root)
+    if x is not None:
+        error.configure(text=x)
+        root.focus()
+    else:
+        cancel(root, None)
+
+def done_int(root, fallback, answer, error, min_value):
+    try:
+        value = int(answer.get())
+        if min_value is not None and value < min_value:
+            error.configure(text=f"Value must be at least {min_value}.")
+            root.focus()
+            return
+    except ValueError:
+        error.configure(text="Please enter a valid integer.")
+        root.focus()
+        return
+
+    x = fallback(value)
     if x is not None:
         error.configure(text=x)
         root.focus()

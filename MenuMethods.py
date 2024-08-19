@@ -131,6 +131,18 @@ def _copy_fallback(window, name):
 def copy(window):
     create_prompt("Copy Mod", ("New Mod Name",), partial(_copy_fallback, window), None)
 
+def openSearch(window):
+    create_prompt("Search", ("Search For",), partial(searchFallback, window), None)
+
+def searchFallback(window, text):
+    window.search(regexp=text[0])
+
+def openGTL(window):
+    create_int_prompt("Go To Line", ("Enter Line Number"), partial(gTLFallback, window), None, min_value=1)
+
+def gTLFallback(window, num):
+    window.gotoline(line_number=num)
+
 
 def build_install(window):
     root, text = create_loading_screen()
@@ -189,8 +201,7 @@ def _harmony_patch_fallback(window, values):
 
 
 def create_harmony_patch(window):
-    create_prompt("Create Harmony Patch", ("Function Name", "Function's Class", "Parameters (separate by comma)",
-                                           "Prefix/Postfix", "Return Type", "Have Instance?"),
+    create_prompt("Create Harmony Patch", ("Function Name", "Function's Class", "Parameters (separate by comma)", "Prefix/Postfix", "Return Type", "Have Instance?"),
                   partial(_harmony_patch_fallback, window), None,
                   defaults={"Prefix/Postfix": "Prefix", "Return Type": "None", "Have Instance?": "False"})
 

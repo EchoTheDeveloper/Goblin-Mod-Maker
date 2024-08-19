@@ -84,8 +84,7 @@ from functools import partial
 try:
     # Python 3
     import tkinter
-    from tkinter import font, ttk, scrolledtext, _tkinter
-
+    from tkinter import font, ttk, scrolledtext, _tkinter, simpledialog
 except ImportError:
     # Python 2
     import Tkinter as tkinter
@@ -172,6 +171,7 @@ class CoreUI(object):
         self.root.bind('<Control-KeyPress-q>', self.close)
         self.root.bind('<Control-KeyPress-z>', self.undo)
         self.root.bind('<Control-KeyPress-y>', self.redo)
+        # self.root.bind('<Control-KeyPress-f>', MenuMethods.openSearch(self)) DOESNT WORK CURRENTLY
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
         self.text.bind('<Return>', self.autoindent)
@@ -188,6 +188,9 @@ class CoreUI(object):
         self.starting()
         global pyros
         pyros.append(self)
+        self.text.tag_configure("highlight", background="yellow")
+        self.search_done = False
+        self.search_regexp = None
 
     def undo(self, e=None):
         mod = ChangeManager.undo()
@@ -210,6 +213,11 @@ class CoreUI(object):
         self.editmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.createmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.buildmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.toolsmenu = tkinter.Menu(self.menubar, tearoff=False)
+
+        # -------------------Sub Menus------------------------
+        self.snippetsmenu = tkinter.Menu(self.menubar, tearoff=False)
+
 
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
@@ -217,27 +225,42 @@ class CoreUI(object):
         self.filemenu.add_command(label="Open", command=partial(MenuMethods.open, self.settings))
         self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filename))
         self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Undo", command=self.undo)
+        self.filemenu.add_command(label="Redo", command=self.redo)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Close", command=self.close)
+
+
 
         self.menubar.add_cascade(label="Edit", menu=self.editmenu)
 
         self.editmenu.add_command(label="Change Mod Name", command=partial(MenuMethods.change_mod_name, self))
-        self.editmenu.add_command(label="Change Mod Version",
-                                  command=partial(MenuMethods.change_mod_version, self))
+        self.editmenu.add_command(label="Change Mod Version",command=partial(MenuMethods.change_mod_version, self))
+
 
         self.menubar.add_cascade(label="Create", menu=self.createmenu)
 
-        self.createmenu.add_command(label="Create Harmony Patch",
-                                    command=partial(MenuMethods.create_harmony_patch, self))
-        self.createmenu.add_command(label="Create Config Item",
-                                    command=partial(MenuMethods.create_config_item, self))
-        self.createmenu.add_command(label="Create Keybind",
-                                    command=partial(MenuMethods.create_keybind, self))
+        self.createmenu.add_command(label="Create Harmony Patch", command=partial(MenuMethods.create_harmony_patch, self))
+        self.createmenu.add_command(label="Create Config Item", command=partial(MenuMethods.create_config_item, self))
+        self.createmenu.add_command(label="Create Keybind", command=partial(MenuMethods.create_keybind, self))
+
+
 
         self.menubar.add_cascade(label="Build", menu=self.buildmenu)
 
         self.buildmenu.add_command(label="Build and Install", command=partial(MenuMethods.build_install, self))
         self.buildmenu.add_command(label="Export C# File", command=partial(MenuMethods.export_cs, self), state="disabled")
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
+
+        self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
+
+        self.toolsmenu.add_command(label="Search", command=partial(MenuMethods.openSearch, self))
+        # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
+        self.toolsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
+        self.toolsmenu.add_cascade(label="Snippets", command=self.snippetsmenu)
+
+        self.menubar.add_command(label="Remove Highlights", command=self.remove_highlights)
 
         self.root.config(menu=self.menubar)
 
@@ -271,10 +294,6 @@ class CoreUI(object):
             self.text.mark_set("insert", "%d.%d" % (i + 1, j))
         # self.root.update()
         self.text.yview_moveto(self.scroll_data[0])
-
-
-
-
 
     def uiconfig(self):
         """
@@ -362,36 +381,89 @@ class CoreUI(object):
     def destroy_window(self):
         self.close()
 
-    def search(self, regexp, currentposition):
+#-------- Can't Get Searching to highlight all results --------#
+    
+    def search(self, regexp):
         """
-             this method implements the core functionality of the search feature
-             arguments: the search target as a regular expression and the position
-             from which to search.
+        This method searches and highlights all instances of the given regular expression.
+        Arguments: the search target as a regular expression.
         """
-        characters = tkinter.StringVar()
-        index_start = ""
-        index_end = ""
+        self.search_regexp = regexp
+        self.search_done = False
+        self.remove_highlights()  # Clear previous highlights
 
-        try:
-            index_start = self.text.search(
-                regexp,
-                currentposition + "+1c",
-                regexp=True,
-                count=characters)
+        def perform_search(start_pos):
+            """
+            Searches for matches starting from start_pos and highlights them.
+            """
+            if self.search_done:
+                return
+            # Get the end of the text widget
+            end_pos = self.text.index("end-1c")
 
-        except _tkinter.TclError:
-            index_start = "1.0"
+            # Perform the search
+            characters = tkinter.StringVar()
+            index_start = self.text.search(self.search_regexp, start_pos, regexp=True, count=characters)
 
-        if index_start == "":
-            index_start = self.text.index("insert")
+            if not index_start:
+                # No more matches found, finish search
+                if not self.search_done:
+                    self.search_done = True
+                    self.text.after(1000, self._check_highlights)  # Wait 500 ms before checking highlights
+                return
 
-        length = characters.get()
+            length = characters.get()
 
-        if length == "":
-            length = "0"
+            # Ensure length is valid
+            if int(length) <= 0:
+                # Increment start_pos to avoid infinite loop and retry the search
+                start_pos = f"{start_pos} + 1c"
+                self.text.after(1, lambda: perform_search(start_pos))
+                return
 
-        index_end = "{0}+{1}c".format(index_start, length)
-        return index_start, index_end
+            index_end = f"{index_start}+{length}c"
+
+            # Highlight the match
+            self.text.tag_add("highlight", index_start, index_end)
+
+            # Update start_pos to continue searching after the current match
+            start_pos = index_end
+
+            # # Ensure the search does not go beyond the end of the text widget
+            # if self.text.index(start_pos) >= end_pos:
+            #     # No more matches found within the bounds
+            #     if not self.search_done:
+            #         self.search_done = True
+            #     return
+            
+        
+            self.text.after(1000, self._check_highlights)  # Wait 500 ms before checking highlights
+            # Schedule the next search iteration
+            self.text.after(1, lambda: perform_search(start_pos))
+
+        perform_search("1.0")  # Start searching from the beginning
+
+    def _check_highlights(self):
+        """
+        Checks if there are any highlights and shows a prompt if so.
+        """
+        if self.text.tag_ranges("highlight") and not self.search_done:
+            self.search_done = True
+            self._show_prompt()
+
+    def remove_highlights(self):
+        if self.text.tag_ranges("highlight"):
+            self.text.tag_remove("highlight", "1.0", "end")
+
+    def _show_prompt(self):
+        """
+        Shows a prompt allowing the user to remove highlights.
+        """
+        response = messagebox.askyesno("Search Complete", "Search completed. Do you want to remove the highlights?")
+        if response:
+            # Remove the highlight tag
+            self.text.tag_remove("highlight", "1.0", "end")
+#-------- Can't Get Searching to highlight all results --------#
 
     def replace(self, regexp, subst, cp):
         """
@@ -405,16 +477,25 @@ class CoreUI(object):
 
         return index_start, index_end
 
-    def gotoline(self, linenumber):
+    def gotoline(self, line_number):
         """
-            this method implements the core functionality to locate a specific line of text by
-            line position
-            arguments: the target line number
+        Open a dialog to get the desired line number and navigate to it in the text widget.
         """
-        index_start = linenumber + ".0"
-        index_end = linenumber + ".end"
-        return index_start, index_end
-
+        
+        if line_number is not None:
+            # Calculate the index to jump to (line_number.0)
+            index = f"{line_number}.0"
+            
+            # Ensure the line number is within the bounds of the text content
+            max_line = int(self.text.index(tkinter.END).split('.')[0]) - 1
+            if line_number > max_line:
+                line_number = max_line
+                index = f"{line_number}.0"
+            
+            # Move the cursor to the specified line
+            self.text.mark_set("insert", index)
+            self.text.see(index)  # Scroll the line into view
+            self.text.focus()     # Ensure the text widget has focus
     def cmd(self, cmd, index_insert):
         """
             this method parses a line of text from the command line and invokes methods on the text
