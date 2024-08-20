@@ -62,6 +62,22 @@ def close(menu, end=True):
         pass
 
 
+def load_theme(filename):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+    return data
+
+theme_data = load_theme('resources/theme.json')
+
+InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
+InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
+InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu_newbuttonbackground", "")
+InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu_openbuttonbackground", "")
+InterfaceMenu_MouseEnter = theme_data.get("interfacemenu_mouseenter", "")
+InterfaceMenu_MouseExit = theme_data.get("interfacemenu_mouseexit", "")
+InterfaceMenu_ButtonConfigFG = theme_data.get("interfacemenu_buttonconfig_foreground", "")
+InterfaceMenu_ButtonConfigBG = theme_data.get("interfacemenu_buttonconfig_background", "")
+
 class InterfaceMenu:
 
     def __init__(self):
@@ -74,15 +90,15 @@ class InterfaceMenu:
         self.settings = self.find_settings()
         # Setting up the main window visuals
         self.root = Tk()
-        self.root.configure(background="#ceb093")
-        self.root.geometry("470x220")
+        self.root.configure(background=InterfaceMenu_Background)
+        self.root.geometry(InterfaceMenu_Geometry)
         self.root.resizable(0, 0)
         self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - Main Menu")
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
         self.new_image = PhotoImage(file="resources/newbutton.png")
         self.open_image = PhotoImage(file="resources/openbutton.png")
-        self.new_button = Label(self.root, image=self.new_image, background="#ceb093")
-        self.open_button = Label(self.root, image=self.open_image, background="#ceb093")
+        self.new_button = Label(self.root, image=self.new_image, background=InterfaceMenu_NewButtonBackground)
+        self.open_button = Label(self.root, image=self.open_image, background=InterfaceMenu_OpenButtonBackground)
         self.new_button.place(x=20, y=20)
         self.open_button.place(x=240, y=20)
         # The buttons are bound to the self.new function and self.load function because they are new and load buttons
@@ -90,10 +106,10 @@ class InterfaceMenu:
         self.open_button.bind("<Button-1>", self.load)
 
         def mouse_enter(e):
-            e.widget.config(fg="#5daf8d")
+            e.widget.config(fg=InterfaceMenu_MouseEnter)
 
         def mouse_exit(e):
-            e.widget.config(fg="#000000")
+            e.widget.config(fg=InterfaceMenu_MouseExit)
 
         extra_buttons = []
 
@@ -108,7 +124,7 @@ class InterfaceMenu:
         extra_buttons.append(self.settings_button)
 
         for button in extra_buttons:
-            button.config(font=("Calibri", 15), fg="#000000", background="#ceb093")
+            button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background="#ceb093")
             button.bind("<Enter>", mouse_enter)
             button.bind("<Leave>", mouse_exit)
 
