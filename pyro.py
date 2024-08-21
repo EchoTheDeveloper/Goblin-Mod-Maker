@@ -311,13 +311,22 @@ class CoreUI(object):
         if not current_word:
             return
 
-        # Filter autocomplete suggestions based on the current word
-        suggestions = [kw for kw in self.keywords if kw.startswith(current_word)]
+        suggestions = []
+
+        # Add snippets if any match the current word
+        if current_word in self.snippets:
+            snippet_preview = self.snippets[current_word]
+            suggestions.append(snippet_preview)
+
+        # Add keywords that start with the current word
+        keyword_suggestions = [kw for kw in self.keywords if kw.startswith(current_word)]
+        suggestions.extend([(kw) for kw in keyword_suggestions])
 
         if suggestions:
             self.autocomplete_window = Toplevel(self.root)
             self.autocomplete_window.wm_overrideredirect(True)
             self.autocomplete_window.lift()  # Ensure it stays on top
+            self.autocomplete_window.configure(background=PyroPrompt_Background)
             self.text.focus_set()  # Ensure it takes focus
 
             x, y, _, _ = self.text.bbox(INSERT)
@@ -326,7 +335,7 @@ class CoreUI(object):
 
             self.autocomplete_window.geometry(f"+{x}+{y}")
 
-            self.suggestion_listbox = Listbox(self.autocomplete_window, selectmode=SINGLE, height=min(len(suggestions), 6))
+            self.suggestion_listbox = Listbox(self.autocomplete_window, selectmode=SINGLE, height=min(len(suggestions), 6), foreground=PyroPrompt_Foreground, background=PyroPrompt_Background)
             self.suggestion_listbox.pack()
 
             for suggestion in suggestions:
@@ -346,13 +355,20 @@ class CoreUI(object):
         if not self.suggestion_listbox:
             return
 
-        selected_word = self.suggestion_listbox.get(ACTIVE)
+        selected_text = self.suggestion_listbox.get(ACTIVE)
         cursor_position = self.text.index(INSERT)
         line_text = self.text.get(f"{cursor_position} linestart", cursor_position)
         current_word = line_text.split()[-1] if line_text.split() else ""
 
         self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
-        self.text.insert(INSERT, selected_word)
+        if ':' in selected_text:
+            # Extract the original word part from the selected text
+            original_word = selected_text.split(':')[0]
+            if original_word in self.snippets:
+                self.text.insert(INSERT, self.snippets[original_word])
+        else:
+            # Insert the keyword directly
+            self.text.insert(INSERT, selected_text)
 
         self.hide_autocomplete()
 
@@ -362,7 +378,7 @@ class CoreUI(object):
         current_word = line_text.split()[-1] if line_text.split() else ""
 
         # Check if the current word matches a snippet trigger
-        if current_word in self.snippets:
+        if current_word in self.snippets and current_word not in self.keywords:
             self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
             self.text.insert(INSERT, self.snippets[current_word])
             return "break"  # Prevent default Tab behavior
