@@ -271,7 +271,7 @@ class CoreUI(object):
         self.menubar.add_cascade(label="Build", menu=self.buildmenu)
 
         self.buildmenu.add_command(label="Build and Install", command=partial(MenuMethods.build_install, self))
-        self.buildmenu.add_command(label="Export C# File", command=partial(MenuMethods.export_cs, self), state="disabled")
+        self.buildmenu.add_command(label="Export C# File", command=partial(MenuMethods.export_cs, self))
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
 
 

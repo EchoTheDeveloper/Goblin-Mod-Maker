@@ -10,6 +10,7 @@ from tkinter import *
 import ChangeManager
 from pygments.lexers.dotnet import CSharpLexer
 from CodeManager import *
+import builtins  
 
 SETTINGS = {}
 
@@ -157,7 +158,24 @@ def build_install(window):
 
 
 def export_cs(window):
-    return
+    root = create_loading_screen("Generating C# File...")[0]
+    name_no_space = window.mod.mod_name_no_space.get_text()
+    current_directory = os.getcwd()
+    folder_path = os.path.join(current_directory, "projects/" + name_no_space)
+    try:
+        os.mkdir(os.path.join(current_directory, "projects"))
+    except FileExistsError:
+        pass
+    try:
+        os.mkdir(folder_path)
+    except FileExistsError:
+        pass
+    with builtins.open(f"{folder_path}/{name_no_space}.cs", "w") as f:
+        code = "\n".join([s for s in window.mod.code.get_text().splitlines() if s])
+        f.write(code)
+    root.destroy()
+    messagebox.showinfo("Success", "File Created Successfully")
+    return root
 
 
 def export_dotnet(window, independent=True):

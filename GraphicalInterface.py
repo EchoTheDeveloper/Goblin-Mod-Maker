@@ -185,7 +185,7 @@ class InterfaceMenu:
     #     ordered_settings = SETTINGS_TO_SHOW
     #     create_prompt("Isle Goblin Mod Maker Settings", ordered_settings, partial(self.save_settings, ordered_settings), None,
     #                   defaults=self.settings, width=500)
-
+    
     def open_settings_window(self, event=None):
         title = "Isle Goblin Mod Maker Settings"
         settings_window = Toplevel(self.root)
