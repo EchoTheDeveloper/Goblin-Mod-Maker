@@ -248,6 +248,7 @@ class InterfaceMenu:
             global InterfaceMenu_Background, InterfaceMenu_Geometry, InterfaceMenu_NewButtonBackground, InterfaceMenu_OpenButtonBackground
             global InterfaceMenu_MouseEnter, InterfaceMenu_MouseExit, InterfaceMenu_ButtonConfigFG, InterfaceMenu_ButtonConfigBG
             global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
+            global NewButton, OpenButton
             
             InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
             InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
@@ -262,10 +263,16 @@ class InterfaceMenu:
             PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
             PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
 
+            NewButton = theme_data.get("newbutton", "")
+            OpenButton = theme_data.get("openbutton", "")
+
             # Update the UI elements with the new theme settings
             self.root.configure(background=InterfaceMenu_Background)
             self.new_button.config(background=InterfaceMenu_NewButtonBackground)
             self.open_button.config(background=InterfaceMenu_OpenButtonBackground)
+
+            self.new_button.config(image=NewButton)
+            self.open_button.config(image=OpenButton)
             
             for button in self.extra_buttons:
                 button.config(fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
