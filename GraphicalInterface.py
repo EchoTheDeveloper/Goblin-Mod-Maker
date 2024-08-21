@@ -271,8 +271,8 @@ class InterfaceMenu:
             self.new_button.config(background=InterfaceMenu_NewButtonBackground)
             self.open_button.config(background=InterfaceMenu_OpenButtonBackground)
 
-            self.new_button.config(image=NewButton)
-            self.open_button.config(image=OpenButton)
+            self.new_image.config(file=NewButton)
+            self.open_image.config(file=OpenButton)
             
             for button in self.extra_buttons:
                 button.config(fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
