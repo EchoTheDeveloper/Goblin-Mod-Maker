@@ -116,6 +116,18 @@ class InterfaceMenu:
         def mouse_exit(e):
             e.widget.config(fg=InterfaceMenu_MouseExit)
 
+        def new_button_hover_enter(e):
+            self.new_button.config(borderwidth=10, highlightbackground=InterfaceMenu_MouseEnter)
+
+        def new_button_hover_exit(e):
+            self.new_button.config(borderwidth=0, highlightbackground=InterfaceMenu_NewButtonBackground)
+
+        def open_button_hover_enter(e):
+            self.open_button.config(borderwidth=10, highlightbackground=InterfaceMenu_MouseEnter)
+
+        def open_button_hover_exit(e):
+            self.open_button.config(borderwidth=0,highlightbackground=InterfaceMenu_OpenButtonBackground)
+
         self.extra_buttons = []
 
         self.open_external = Label(self.root, text="Open From Isle Goblin Mod Maker (.igmm) File")
@@ -132,6 +144,11 @@ class InterfaceMenu:
             button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
             button.bind("<Enter>", mouse_enter)
             button.bind("<Leave>", mouse_exit)
+
+        self.new_button.bind("<Enter>", new_button_hover_enter)
+        self.new_button.bind("<Leave>", new_button_hover_exit)
+        self.open_button.bind("<Enter>", open_button_hover_enter)
+        self.open_button.bind("<Leave>", open_button_hover_exit)
 
         # Instead of doing root.mainloop we do pyro.add_window to avoid thread conflicts, pyro deals with calling
         # root.update() on  everything in the pyro window list, there is also no need to remove closed windows from this
