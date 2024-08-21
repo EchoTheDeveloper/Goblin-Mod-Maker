@@ -1,0 +1,14 @@
+{
+  "interfacemenu_background": "#1c1c1c",
+  "interfaceMenu_geometry": "470x220",
+  "interfacemenu_newbuttonbackground": "#1c1c1c",
+  "interfacemenu_openbuttonbackground": "#1c1c1c",
+  "interfacemenu_mouseenter": "#2f4f4f",
+  "interfacemenu_mouseexit": "#d3d3d3",
+  "interfacemenu_buttonconfig_foreground": "#d3d3d3",
+  "interfacemenu_buttonconfig_background": "#1c1c1c",
+
+  "pyroprompt_background": "#1c1c1c",
+  "pyroprompt_foreground": "#d3d3d3",
+  "pyroprompt_warningtextcolor": "#ff6347"
+}

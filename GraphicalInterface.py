@@ -312,6 +312,9 @@ class InterfaceMenu:
     def new_fallback(self, data, window):
         # first item in the list is the name of the mod
         name = data[0]
+
+        if not name or name.strip() == "":
+            return "Mod name cannot be empty or null"
         # check if there is a directory that corresponds to a mod with this name
         # (spaces aren't included in the file names)
         if exists(os.getcwd() + "/projects/" + name.replace(" ", "")):
