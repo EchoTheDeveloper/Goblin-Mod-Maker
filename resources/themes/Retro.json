@@ -13,5 +13,5 @@
 
   "pyroprompt_background": "#00062A",
   "pyroprompt_foreground": "#b4d9f9",
-  "pyroprompt_warningtextcolor": "#red"
+  "pyroprompt_warningtextcolor": "red"
 }
