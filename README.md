@@ -20,7 +20,7 @@ Licence is the Apache 2.0 licence found in the licence file, or at [Apache v2 li
 
 ## Install Instructions and Usage
 
-I would recommend following the guide on the wiki: [Isle Goblin wiki, modding page. Using Mod Summar](https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Using_Mods_Summaryy)
+I would recommend following the guide on the wiki: [Isle Goblin wiki, modding page. Using Mod Summar](https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Using_Mods_Summary)
 
 ## Help
 
@@ -28,4 +28,4 @@ If you need help just join the Isle Goblin Modding discord server and ask in any
 
 ## Author
 
-This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper.
+This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper and Spiral.

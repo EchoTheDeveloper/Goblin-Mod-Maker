@@ -101,7 +101,7 @@ class InterfaceMenu:
         self.root.configure(background=InterfaceMenu_Background)
         self.root.geometry(InterfaceMenu_Geometry)
         self.root.resizable(0, 0)
-        self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - Main Menu")
+        self.root.title("Isle Goblin Mod Maker - Main Menu")
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
         self.new_image = PhotoImage(file=NewButton)
         self.open_image = PhotoImage(file=OpenButton)
