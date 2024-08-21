@@ -10,15 +10,35 @@ def load_theme(filename):
         data = json.load(file)
     return data
 
-theme_data = load_theme('resources/theme.json')
+def load_settings():
+    with open("settings.json", 'r') as file:
+        data = json.load(file)
+    return data
 
-PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
-PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
-PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+def apply_theme(root):
+    global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
+    settings = load_settings()
+    theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
+    PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
+    PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
+    PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+    
+    # Apply the theme to the root window and widgets
+    root.configure(background=PyroPrompt_Background)
+    for widget in root.winfo_children():
+        apply_theme_to_widget(widget)
+
+def apply_theme_to_widget(widget):
+    widget.configure(bg=PyroPrompt_Background, fg=PyroPrompt_Foreground)
+    if isinstance(widget, Frame):
+        for child in widget.winfo_children():
+            apply_theme_to_widget(child)
+    elif isinstance(widget, Label) or isinstance(widget, Entry):
+        widget.configure(background=PyroPrompt_Background, foreground=PyroPrompt_Foreground)
 
 def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, warning=None, width=None):
     root = Tk()
-    root.configure(background=PyroPrompt_Background)
+    apply_theme(root)  # Apply the theme before creating the prompt
     root.title(title)
     root.resizable(0, 0)
     root.iconbitmap("resources/isle-goblin-mod-maker.ico")
@@ -50,12 +70,12 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
 
 def create_int_prompt(title, question, fallback, cancel_fallback, default=None, warning=None, min_value=None, width=None):
     root = Tk()
-    root.configure(background=PyroPrompt_Background)
+    apply_theme(root)  # Apply the theme before creating the prompt
     root.title(title)
     root.resizable(0, 0)
     root.iconbitmap("resources/isle-goblin-mod-maker.ico")
     Frame(root, width=400 if width is None else width, background=PyroPrompt_Background).pack()
-    frame = Frame(root, width=400 if width is None else width, background="PyroPrompt_Background")
+    frame = Frame(root, width=400 if width is None else width, background=PyroPrompt_Background)
     frame.pack(fill="x")
     heading = Label(frame, text=title, font=("Calibri", 18), background=PyroPrompt_Background, fg=PyroPrompt_Foreground)
     heading.pack(fill="x")
@@ -92,6 +112,7 @@ def done(root, fallback, answers, error):
         root.focus()
     else:
         cancel(root, None)
+    apply_theme(root)  # Reload the theme after prompt completion
 
 def done_int(root, fallback, answer, error, min_value):
     try:
@@ -111,7 +132,7 @@ def done_int(root, fallback, answer, error, min_value):
         root.focus()
     else:
         cancel(root, None)
-
+    apply_theme(root)  # Reload the theme after prompt completion
 
 if __name__ == "__main__":
     def x(x):

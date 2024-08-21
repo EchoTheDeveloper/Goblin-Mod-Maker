@@ -34,10 +34,6 @@ DEFAULT_SETTINGS = {
 
 }
 
-SETTINGS_TO_SHOW = [
-    "Default Game Folder", "Default Steam Directory", ("Show Line Numbers", True)
-]
-
 # These two functions are used to keep track of how many pyro windows are open becuase the main interface should open
 # when the last window is closed but not when just any window is closed
 
@@ -67,7 +63,12 @@ def load_theme(filename):
         data = json.load(file)
     return data
 
-theme_data = load_theme('resources/theme.json')
+def load_settings():
+    with open("settings.json", 'r') as file:
+        data = json.load(file)
+    return data
+settings = load_settings()
+theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
 
 InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
 InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
@@ -115,20 +116,20 @@ class InterfaceMenu:
         def mouse_exit(e):
             e.widget.config(fg=InterfaceMenu_MouseExit)
 
-        extra_buttons = []
+        self.extra_buttons = []
 
         self.open_external = Label(self.root, text="Open From Isle Goblin Mod Maker (.igmm) File")
         self.open_external.place(x=20, y=150)
         self.open_external.bind("<Button-1>", self.open_dialog)
-        extra_buttons.append(self.open_external)
+        self.extra_buttons.append(self.open_external)
 
         self.settings_button = Label(self.root, text="Open IGMM Settings")
         self.settings_button.place(x=20, y=180)
         self.settings_button.bind("<Button-1>", self.open_settings_window)
-        extra_buttons.append(self.settings_button)
+        self.extra_buttons.append(self.settings_button)
 
-        for button in extra_buttons:
-            button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background="#ceb093")
+        for button in self.extra_buttons:
+            button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
             button.bind("<Enter>", mouse_enter)
             button.bind("<Leave>", mouse_exit)
 
@@ -189,6 +190,19 @@ class InterfaceMenu:
         steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", ""))
         steam_dir_entry.pack(fill="x", padx=10, pady=10)
 
+        theme_folder = "resources/themes"
+        themes = [os.path.splitext(file)[0] for file in os.listdir(theme_folder) if file.endswith(".json")]
+
+        # Default selection for the dropdown
+        clicked = StringVar()
+        clicked.set(self.settings.get("Selected Theme", "Default"))  # Set the last selected theme or to Default
+
+        Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Select Theme").pack(fill="x", padx=10)
+        themeDrop = OptionMenu(settings_window, clicked, *themes)
+        themeDrop.config(bg=PyroPrompt_Background, fg=PyroPrompt_Foreground)
+        themeDrop["menu"].config(bg=PyroPrompt_Background, fg=PyroPrompt_Foreground)
+        themeDrop.pack(fill="x", padx=10, pady=10)
+
         show_line_numbers_var = BooleanVar()
         show_line_numbers_var.set(self.settings.get("Show Line Numbers", True))  # Default to True if not found
         show_line_numbers_check = Checkbutton(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), 
@@ -201,10 +215,40 @@ class InterfaceMenu:
             self.settings["Default Game Folder"] = game_folder_entry.get()
             self.settings["Default Steam Directory"] = steam_dir_entry.get()
             self.settings["Show Line Numbers"] = show_line_numbers_var.get()
-
+            self.settings["Selected Theme"] = clicked.get()
+            
             # Save the settings to the JSON file
             with open('settings.json', 'w') as json_file:
                 json.dump(self.settings, json_file, indent=4)
+            
+            # Reload the theme
+            theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Default") + ".json")
+            
+            # Update the theme settings
+            global InterfaceMenu_Background, InterfaceMenu_Geometry, InterfaceMenu_NewButtonBackground, InterfaceMenu_OpenButtonBackground
+            global InterfaceMenu_MouseEnter, InterfaceMenu_MouseExit, InterfaceMenu_ButtonConfigFG, InterfaceMenu_ButtonConfigBG
+            global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
+            
+            InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
+            InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
+            InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu_newbuttonbackground", "")
+            InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu_openbuttonbackground", "")
+            InterfaceMenu_MouseEnter = theme_data.get("interfacemenu_mouseenter", "")
+            InterfaceMenu_MouseExit = theme_data.get("interfacemenu_mouseexit", "")
+            InterfaceMenu_ButtonConfigFG = theme_data.get("interfacemenu_buttonconfig_foreground", "")
+            InterfaceMenu_ButtonConfigBG = theme_data.get("interfacemenu_buttonconfig_background", "")
+            
+            PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
+            PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
+            PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+
+            # Update the UI elements with the new theme settings
+            self.root.configure(background=InterfaceMenu_Background)
+            self.new_button.config(background=InterfaceMenu_NewButtonBackground)
+            self.open_button.config(background=InterfaceMenu_OpenButtonBackground)
+            
+            for button in self.extra_buttons:
+                button.config(fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
 
             # Close the settings window
             settings_window.destroy()
