@@ -1,6 +1,6 @@
 {
-  "newbutton": "resources/themes/assets/ocean/ocean_newbutton.png",
-  "openbutton": "resources/themes/assets/ocean/ocean_openbutton.png",
+  "newbutton": "resources/themes/assets/ocean/newbutton.png",
+  "openbutton": "resources/themes/assets/ocean/openbutton.png",
 
   "interfacemenu_background": "#004080",
   "interfaceMenu_geometry": "470x220",

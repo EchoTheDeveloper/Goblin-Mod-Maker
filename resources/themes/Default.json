@@ -1,6 +1,6 @@
 {
-  "newbutton": "resources/newbutton.png",
-  "openbutton": "resources/openbutton.png",
+  "newbutton": "resources/themes/assets/default/newbutton.png",
+  "openbutton": "resources/themes/assets/default/openbutton.png",
 
   "interfacemenu_background": "#ceb093",
   "interfaceMenu_geometry": "470x220",

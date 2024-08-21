@@ -1,6 +1,6 @@
 {
-  "newbutton": "resources/themes/assets/midnight/midnight_newbutton.png",
-  "openbutton": "resources/themes/assets/midnight/midnight_openbutton.png",
+  "newbutton": "resources/themes/assets/midnight/newbutton.png",
+  "openbutton": "resources/themes/assets/midnight/openbutton.png",
 
   "interfacemenu_background": "#1c1c1c",
   "interfaceMenu_geometry": "470x220",
