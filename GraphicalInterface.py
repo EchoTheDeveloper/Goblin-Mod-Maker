@@ -78,6 +78,10 @@ InterfaceMenu_MouseExit = theme_data.get("interfacemenu_mouseexit", "")
 InterfaceMenu_ButtonConfigFG = theme_data.get("interfacemenu_buttonconfig_foreground", "")
 InterfaceMenu_ButtonConfigBG = theme_data.get("interfacemenu_buttonconfig_background", "")
 
+PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
+PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
+PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+
 class InterfaceMenu:
 
     def __init__(self):
@@ -165,29 +169,29 @@ class InterfaceMenu:
         title = "Isle Goblin Mod Maker Settings"
         settings_window = Toplevel(self.root)
         settings_window.title(title)
-        Frame(settings_window, width=500, background="#ceb093").pack()
-        frame = Frame(settings_window, width=500, background="#ceb093")
+        Frame(settings_window, width=500, background=PyroPrompt_Background).pack()
+        frame = Frame(settings_window, width=500, background=PyroPrompt_Background)
         frame.pack(fill="x")
-        heading = Label(frame, text=title, font=("Calibri", 18), background="#ceb093", fg="#000000")
+        heading = Label(frame, text=title, font=("Calibri", 18), background=PyroPrompt_Background, fg=PyroPrompt_Foreground)
         heading.pack(fill="x", pady=10)
-        settings_window.configure(background="#ceb093")
+        settings_window.configure(background=PyroPrompt_Background)
         settings_window.resizable(0, 0)
         settings_window.iconbitmap("resources/isle-goblin-mod-maker.ico")
 
         # Create and pack widgets with default values loaded from settings
-        Label(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12), text="Default Game Folder").pack(fill="x", padx=10)
-        game_folder_entry = Entry(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12))
+        Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Game Folder").pack(fill="x", padx=10)
+        game_folder_entry = Entry(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
         game_folder_entry.insert(0, self.settings.get("Default Game Folder", ""))
         game_folder_entry.pack(fill="x", padx=10, pady=10)
 
-        Label(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12), text="Default Steam Directory").pack(fill="x", padx=10)
-        steam_dir_entry = Entry(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12))
+        Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Steam Directory").pack(fill="x", padx=10)
+        steam_dir_entry = Entry(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
         steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", ""))
         steam_dir_entry.pack(fill="x", padx=10, pady=10)
 
         show_line_numbers_var = BooleanVar()
         show_line_numbers_var.set(self.settings.get("Show Line Numbers", True))  # Default to True if not found
-        show_line_numbers_check = Checkbutton(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12), 
+        show_line_numbers_check = Checkbutton(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), 
                                             text="Show Line Numbers", variable=show_line_numbers_var)
         show_line_numbers_check.pack(padx=10, pady=10)
 
@@ -206,9 +210,9 @@ class InterfaceMenu:
             settings_window.destroy()
 
         # Done button to save changes and close the window
-        buttons = Frame(settings_window, background="#ceb093")
+        buttons = Frame(settings_window, background=PyroPrompt_Background)
         buttons.pack()
-        Button(buttons, text="Done", bg="#ceb093", fg="#000000", command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
+        Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
 
 
 
