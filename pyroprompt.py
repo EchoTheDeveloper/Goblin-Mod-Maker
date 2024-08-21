@@ -86,7 +86,7 @@ def create_int_prompt(title, question, fallback, cancel_fallback, default=None, 
     error.pack()
     label = Label(frame, text=question, font=("Calibri", 12), background=PyroPrompt_Background, fg=PyroPrompt_Foreground)
     label.pack(fill="x")
-    answer = Entry(frame, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
+    answer = Spinbox(frame, background=PyroPrompt_Background, from_=1, to=99999, increment=1, fg=PyroPrompt_Foreground, font=("Calibri", 12))
     answer.pack(fill="x", padx=10)
     if default is not None:
         answer.insert(0, default)

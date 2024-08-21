@@ -1,0 +1,7 @@
+{
+    "for": "for (int i = 0; i < ; i++)\n{\n\t\n}",
+    "if": "if ()\n{\n\t\n}",
+    "while": "while ()\n{\n\t\n}",
+    "switch": "switch ()\n{\n\tcase :\n\t\tbreak;\n\tdefault:\n\t\tbreak;\n}",
+    "trycatch": "try\n{\n\t\n}\ncatch (Exception ex)\n{\n\t\n}"
+}

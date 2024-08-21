@@ -113,18 +113,18 @@ pyros = []
 windows = []
 
 class LineNumbers(Text): #scrolledtext.ScrolledText
-    def __init__(self, master, text_widget, **kwargs):
+    def __init__(self, master, text, **kwargs):
         super().__init__(master, **kwargs)
-        self.text_widget = text_widget
-        self.text_widget.bind('<KeyRelease>', self.match_up)
+        self.text = text
+        self.text.bind('<KeyRelease>', self.match_up)
         self.num_of_lines = -1
         self.insert(1.0, '1')
         self.configure(state='disabled')
 
     def match_up(self, e=None):
-        p, q = self.text_widget.index("@0,0").split('.')
+        p, q = self.text.index("@0,0").split('.')
         p = int(p)
-        final_index = str(self.text_widget.index(tkinter.END))
+        final_index = str(self.text.index(tkinter.END))
         temp = self.num_of_lines
         self.num_of_lines = final_index.split('.')[0]
         line_numbers_string = "\n".join(str(1 + no) for no in range(int(self.num_of_lines)))
@@ -135,7 +135,7 @@ class LineNumbers(Text): #scrolledtext.ScrolledText
             self.delete(1.0, tkinter.END)
             self.insert(1.0, line_numbers_string)
         self.configure(state='disabled')
-        self.scroll_data = self.text_widget.yview()
+        self.scroll_data = self.text.yview()
         self.yview_moveto(self.scroll_data[0])
 
 
@@ -192,6 +192,23 @@ class CoreUI(object):
         self.search_done = False
         self.search_regexp = None
 
+        def load_file(filename):
+            with open(filename, 'r') as file:
+                data = json.load(file)
+            return data
+
+        self.keywords = load_file("resources/keywords.json")
+
+        # Define snippets
+        self.snippets = load_file("resources/snippets.json")
+
+        self.text.bind("<KeyRelease>", self.on_key_release)
+        self.text.bind("<Button-1>", self.hide_autocomplete)
+        self.text.bind("<Tab>", self.accept_autocomplete_or_snippet)
+        self.text.bind("<space>", self.on_space_press)
+
+        self.autocomplete_window = None
+
     def undo(self, e=None):
         mod = ChangeManager.undo()
         if mod is not None:
@@ -226,9 +243,6 @@ class CoreUI(object):
         self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filename))
         self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="Undo", command=self.undo)
-        self.filemenu.add_command(label="Redo", command=self.redo)
-        self.filemenu.add_separator()
         self.filemenu.add_command(label="Close", command=self.close)
 
 
@@ -237,6 +251,13 @@ class CoreUI(object):
 
         self.editmenu.add_command(label="Change Mod Name", command=partial(MenuMethods.change_mod_name, self))
         self.editmenu.add_command(label="Change Mod Version",command=partial(MenuMethods.change_mod_version, self))
+        self.editmenu.add_separator()
+        self.editmenu.add_command(label="Undo", command=self.undo)
+        self.editmenu.add_command(label="Redo", command=self.redo)
+        self.editmenu.add_separator()
+        self.editmenu.add_command(label="Cut", command=self.cut)
+        self.editmenu.add_command(label="Copy", command=self.copy)
+        self.editmenu.add_command(label="Paste", command=self.paste)
 
 
         self.menubar.add_cascade(label="Create", menu=self.createmenu)
@@ -270,6 +291,96 @@ class CoreUI(object):
         # self.menubar.add_command(label="Remove Highlights", command=self.remove_highlights)
 
         self.root.config(menu=self.menubar)
+
+    def on_key_release(self, event):
+        if event.keysym in ["Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "Tab"]:
+            return  # Ignore modifier keys and Tab
+
+        if event.keysym == "space":
+            return  # Ignore space key to prevent triggering autocomplete again
+
+        self.show_autocomplete()
+    
+    def show_autocomplete(self):
+        self.hide_autocomplete()  # Hide previous autocomplete if it exists
+
+        cursor_position = self.text.index(INSERT)
+        line_text = self.text.get(f"{cursor_position} linestart", cursor_position)
+        current_word = line_text.split()[-1] if line_text.split() else ""
+
+        if not current_word:
+            return
+
+        # Filter autocomplete suggestions based on the current word
+        suggestions = [kw for kw in self.keywords if kw.startswith(current_word)]
+
+        if suggestions:
+            self.autocomplete_window = Toplevel(self.root)
+            self.autocomplete_window.wm_overrideredirect(True)
+            self.autocomplete_window.lift()  # Ensure it stays on top
+            self.text.focus_set()  # Ensure it takes focus
+
+            x, y, _, _ = self.text.bbox(INSERT)
+            x += self.text.winfo_rootx()
+            y += self.text.winfo_rooty() + 25
+
+            self.autocomplete_window.geometry(f"+{x}+{y}")
+
+            self.suggestion_listbox = Listbox(self.autocomplete_window, selectmode=SINGLE, height=min(len(suggestions), 6))
+            self.suggestion_listbox.pack()
+
+            for suggestion in suggestions:
+                self.suggestion_listbox.insert(END, suggestion)
+
+            self.suggestion_listbox.bind("<Double-1>", lambda e: self.insert_autocomplete())
+            self.suggestion_listbox.bind("<Return>", lambda e: self.insert_autocomplete())
+
+            # Bind click outside the autocomplete window to hide it
+            self.root.bind("<Button-1>", self.on_click_outside)
+
+    def on_click_outside(self, event):
+        if self.autocomplete_window and not self.autocomplete_window.winfo_containing(event.x_root, event.y_root):
+            self.hide_autocomplete()
+
+    def insert_autocomplete(self):
+        if not self.suggestion_listbox:
+            return
+
+        selected_word = self.suggestion_listbox.get(ACTIVE)
+        cursor_position = self.text.index(INSERT)
+        line_text = self.text.get(f"{cursor_position} linestart", cursor_position)
+        current_word = line_text.split()[-1] if line_text.split() else ""
+
+        self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
+        self.text.insert(INSERT, selected_word)
+
+        self.hide_autocomplete()
+
+    def accept_autocomplete_or_snippet(self, event):
+        cursor_position = self.text.index(INSERT)
+        line_text = self.text.get(f"{cursor_position} linestart", cursor_position)
+        current_word = line_text.split()[-1] if line_text.split() else ""
+
+        # Check if the current word matches a snippet trigger
+        if current_word in self.snippets:
+            self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
+            self.text.insert(INSERT, self.snippets[current_word])
+            return "break"  # Prevent default Tab behavior
+
+        if self.autocomplete_window and self.suggestion_listbox:
+            self.insert_autocomplete()
+            return "break"  # Prevent default Tab behavior
+
+    def on_space_press(self, event):
+        if self.autocomplete_window:
+            self.hide_autocomplete()
+
+    def hide_autocomplete(self, event=None):
+        if self.autocomplete_window:
+            self.autocomplete_window.destroy()
+            self.autocomplete_window = None
+            self.root.unbind("<Button-1>")  # Unbind click outside event
+
 
     def refresh(self, updateMod=True):
         if updateMod:
@@ -388,7 +499,15 @@ class CoreUI(object):
     def destroy_window(self):
         self.close()
 
-    
+    def cut(self):
+        self.text.event_generate("<<Cut>>")
+
+    def copy(self):
+        self.text.event_generate("<<Copy>>")
+
+    def paste(self):
+        self.text.event_generate("<<Paste>>")
+
     def search(self, regexp):
         """
         This method searches and highlights all instances of the given regular expression.
