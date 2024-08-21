@@ -83,6 +83,9 @@ PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
 PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
 PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
 
+NewButton = theme_data.get("newbutton", "")
+OpenButton = theme_data.get("openbutton", "")
+
 class InterfaceMenu:
 
     def __init__(self):
@@ -100,8 +103,8 @@ class InterfaceMenu:
         self.root.resizable(0, 0)
         self.root.title("Isle Goblin Mod Maker (Fork of Unity Mod Maker) - Main Menu")
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
-        self.new_image = PhotoImage(file="resources/newbutton.png")
-        self.open_image = PhotoImage(file="resources/openbutton.png")
+        self.new_image = PhotoImage(file=NewButton)
+        self.open_image = PhotoImage(file=OpenButton)
         self.new_button = Label(self.root, image=self.new_image, background=InterfaceMenu_NewButtonBackground)
         self.open_button = Label(self.root, image=self.open_image, background=InterfaceMenu_OpenButtonBackground)
         self.new_button.place(x=20, y=20)
@@ -312,6 +315,9 @@ class InterfaceMenu:
     def new_fallback(self, data, window):
         # first item in the list is the name of the mod
         name = data[0]
+
+        if not name or name.strip() == "":
+            return "Mod name cannot be empty or null"
         # check if there is a directory that corresponds to a mod with this name
         # (spaces aren't included in the file names)
         if exists(os.getcwd() + "/projects/" + name.replace(" ", "")):

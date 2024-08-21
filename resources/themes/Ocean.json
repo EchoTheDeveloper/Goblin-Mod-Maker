@@ -1,0 +1,17 @@
+{
+  "newbutton": "resources/newbutton.png",
+  "openbutton": "resources/openbutton.png",
+
+  "interfacemenu_background": "#004080",
+  "interfaceMenu_geometry": "470x220",
+  "interfacemenu_newbuttonbackground": "#004080",
+  "interfacemenu_openbuttonbackground": "#004080",
+  "interfacemenu_mouseenter": "#0073e6",
+  "interfacemenu_mouseexit": "#ffffff",
+  "interfacemenu_buttonconfig_foreground": "#ffffff",
+  "interfacemenu_buttonconfig_background": "#004080",
+
+  "pyroprompt_background": "#004080",
+  "pyroprompt_foreground": "#ffffff",
+  "pyroprompt_warningtextcolor": "#ff4c4c"
+}

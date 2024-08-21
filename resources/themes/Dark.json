@@ -1,4 +1,7 @@
 {
+  "newbutton": "resources/newbutton.png",
+  "openbutton": "resources/openbutton.png",
+
   "interfacemenu_background": "#353738",
   "interfaceMenu_geometry": "470x220",
   "interfacemenu_newbuttonbackground": "#353738",

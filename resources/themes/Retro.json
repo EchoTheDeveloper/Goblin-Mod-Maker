@@ -1,0 +1,17 @@
+{
+  "newbutton": "resources/themes/assets/retro_newbutton.png",
+  "openbutton": "resources/themes/assets/retro_openbutton.png",
+
+  "interfacemenu_background": "#00062A",
+  "interfaceMenu_geometry": "470x220",
+  "interfacemenu_newbuttonbackground": "#00062A",
+  "interfacemenu_openbuttonbackground": "#00062A",
+  "interfacemenu_mouseenter": "#8a7cf9",
+  "interfacemenu_mouseexit": "#4a3eab",
+  "interfacemenu_buttonconfig_foreground": "#4a3eab",
+  "interfacemenu_buttonconfig_background": "#00062A",
+
+  "pyroprompt_background": "#00062A",
+  "pyroprompt_foreground": "#b4d9f9",
+  "pyroprompt_warningtextcolor": "#red"
+}
