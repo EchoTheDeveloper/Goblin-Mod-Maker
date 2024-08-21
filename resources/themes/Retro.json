@@ -1,6 +1,6 @@
 {
   "newbutton": "resources/themes/assets/retro/newbutton.png",
-  "openbutton": "resources/themes/assets/retro/penbutton.png",
+  "openbutton": "resources/themes/assets/retro/openbutton.png",
 
   "interfacemenu_background": "#00062A",
   "interfaceMenu_geometry": "470x220",
