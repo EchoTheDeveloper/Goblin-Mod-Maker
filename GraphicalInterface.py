@@ -30,12 +30,12 @@ DEFAULT_SETTINGS = {
     "Default Game": "Isle Goblin",
     "Default Game Folder": "Isle Goblin Playtest",
     "Default Steam Directory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\",
-    "Show Line Numbers": "True"
+    "Show Line Numbers": True
 
 }
 
 SETTINGS_TO_SHOW = [
-    "Default Game Folder", "Default Steam Directory", "Show Line Numbers"
+    "Default Game Folder", "Default Steam Directory", ("Show Line Numbers", True)
 ]
 
 # These two functions are used to keep track of how many pyro windows are open becuase the main interface should open
@@ -104,7 +104,7 @@ class InterfaceMenu:
 
         self.settings_button = Label(self.root, text="Open IGMM Settings")
         self.settings_button.place(x=20, y=180)
-        self.settings_button.bind("<Button-1>", self.change_settings)
+        self.settings_button.bind("<Button-1>", self.open_settings_window)
         extra_buttons.append(self.settings_button)
 
         for button in extra_buttons:
@@ -133,17 +133,68 @@ class InterfaceMenu:
         return settings
 
 
-    def save_settings(self, settings, values):
-        for i in range(len(settings)):
-            self.settings[settings[i]] = values[i]
-        with open('settings.json', 'w') as json_file:
-            json.dump(self.settings, json_file)
+    # def save_settings(self, settings, values, e):
+    #     for i in range(len(settings)):
+    #         self.settings[settings[i]] = values[i]
+    #     with open('settings.json', 'w') as json_file:
+    #         json.dump(self.settings, json_file, indent=4)
 
 
-    def change_settings(self, e):
-        ordered_settings = SETTINGS_TO_SHOW
-        create_prompt("Isle Goblin Mod Maker Settings", ordered_settings, partial(self.save_settings, ordered_settings), None,
-                      defaults=self.settings, width=500)
+    # def change_settings(self, e):
+    #     ordered_settings = SETTINGS_TO_SHOW
+    #     create_prompt("Isle Goblin Mod Maker Settings", ordered_settings, partial(self.save_settings, ordered_settings), None,
+    #                   defaults=self.settings, width=500)
+
+    def open_settings_window(self, event=None):
+        title = "Isle Goblin Mod Maker Settings"
+        settings_window = Toplevel(self.root)
+        settings_window.title(title)
+        Frame(settings_window, width=500, background="#ceb093").pack()
+        frame = Frame(settings_window, width=500, background="#ceb093")
+        frame.pack(fill="x")
+        heading = Label(frame, text=title, font=("Calibri", 18), background="#ceb093", fg="#000000")
+        heading.pack(fill="x", pady=10)
+        settings_window.configure(background="#ceb093")
+        settings_window.resizable(0, 0)
+        settings_window.iconbitmap("resources/isle-goblin-mod-maker.ico")
+
+        # Create and pack widgets with default values loaded from settings
+        Label(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12), text="Default Game Folder").pack(fill="x", padx=10)
+        game_folder_entry = Entry(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12))
+        game_folder_entry.insert(0, self.settings.get("Default Game Folder", ""))
+        game_folder_entry.pack(fill="x", padx=10, pady=10)
+
+        Label(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12), text="Default Steam Directory").pack(fill="x", padx=10)
+        steam_dir_entry = Entry(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12))
+        steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", ""))
+        steam_dir_entry.pack(fill="x", padx=10, pady=10)
+
+        show_line_numbers_var = BooleanVar()
+        show_line_numbers_var.set(self.settings.get("Show Line Numbers", True))  # Default to True if not found
+        show_line_numbers_check = Checkbutton(settings_window, background="#ceb093", fg="#000000", font=("Calibri", 12), 
+                                            text="Show Line Numbers", variable=show_line_numbers_var)
+        show_line_numbers_check.pack(padx=10, pady=10)
+
+        # Save the updated settings when the "Done" button is clicked
+        def save_settings():
+            # Update the settings dictionary with the new values
+            self.settings["Default Game Folder"] = game_folder_entry.get()
+            self.settings["Default Steam Directory"] = steam_dir_entry.get()
+            self.settings["Show Line Numbers"] = show_line_numbers_var.get()
+
+            # Save the settings to the JSON file
+            with open('settings.json', 'w') as json_file:
+                json.dump(self.settings, json_file, indent=4)
+
+            # Close the settings window
+            settings_window.destroy()
+
+        # Done button to save changes and close the window
+        buttons = Frame(settings_window, background="#ceb093")
+        buttons.pack()
+        Button(buttons, text="Done", bg="#ceb093", fg="#000000", command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
+
+
 
 
     def _copy_fallback(self, mod, name):

@@ -253,14 +253,21 @@ class CoreUI(object):
         self.buildmenu.add_command(label="Export C# File", command=partial(MenuMethods.export_cs, self), state="disabled")
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
 
+
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 
         self.toolsmenu.add_command(label="Search", command=partial(MenuMethods.openSearch, self))
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
         self.toolsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
-        self.toolsmenu.add_cascade(label="Snippets", command=self.snippetsmenu)
 
-        self.menubar.add_command(label="Remove Highlights", command=self.remove_highlights)
+
+        self.menubar.add_cascade(label="Snippets", command=self.snippetsmenu)
+
+        # self.toolsmenu.add_command(label="Public Void", command=inject_line(self, codeToInject="private"))
+        self.snippetsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
+
+
+        # self.menubar.add_command(label="Remove Highlights", command=self.remove_highlights)
 
         self.root.config(menu=self.menubar)
 
@@ -358,7 +365,7 @@ class CoreUI(object):
                        "selectbackground": "#E0000E",
                        "inactiveselectbackground": "#E0E0E0"
                        }
-        if self.settings["Show Line Numbers"].lower() == "true":
+        if self.settings["Show Line Numbers"] == True:
             self.lineNums = LineNumbers(self.root, self.text, **lineNums_uiopts)
             self.lineNums.grid(column=0,row=0,sticky=('nsew'))
         self.text.grid(column=1, row=0, sticky=('nsew'))
@@ -381,7 +388,6 @@ class CoreUI(object):
     def destroy_window(self):
         self.close()
 
-#-------- Can't Get Searching to highlight all results --------#
     
     def search(self, regexp):
         """
@@ -463,7 +469,7 @@ class CoreUI(object):
         if response:
             # Remove the highlight tag
             self.text.tag_remove("highlight", "1.0", "end")
-#-------- Can't Get Searching to highlight all results --------#
+
 
     def replace(self, regexp, subst, cp):
         """
@@ -496,6 +502,7 @@ class CoreUI(object):
             self.text.mark_set("insert", index)
             self.text.see(index)  # Scroll the line into view
             self.text.focus()     # Ensure the text widget has focus
+
     def cmd(self, cmd, index_insert):
         """
             this method parses a line of text from the command line and invokes methods on the text
@@ -740,6 +747,14 @@ class CoreUI(object):
 def add_window(window):
     global windows
     windows.append(window)
+
+#------------- SNIPPETS -------------#
+
+# def inject_line(self, codeToInject):
+#     output = CodeBlock(code_lines=[codeToInject])
+#     self.text.insert(tkinter.INSERT, str(output))
+#     # return output
+
 
 
 def mainloop():
