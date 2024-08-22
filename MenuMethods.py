@@ -169,8 +169,9 @@ def build_install(window):
         root.destroy()
         messagebox.showinfo("Success", "Mod Successfully Installed")
         
+        mod_folder_name = f"{window.mod.mod_name.get_text()}_{window.mod.version.get_text()}"
         install_path = os.path.join(window.mod.steampath, window.mod.folder_name, "BepInEx/plugins")
-        mod_install_path = os.path.join(install_path + "/" + window.mod.mod_folder_name)
+        mod_install_path = os.path.join(install_path + "/" + mod_folder_name)
         
         os.startfile(mod_install_path)
 
