@@ -343,17 +343,12 @@ class InterfaceMenu:
     # This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
     # calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
     def new(self, e):
-        create_prompt("New Mod", ("Mod Name",
-                                  "Desciption",
-                                  "Game Name (Check Spelling and Punctuation)",
-                                  "Name of Folder in Steam Files (If different from Game Name)",
-                                  "PolyTech (Poly Bridge Modding Framework)",
-                                  "Steam Directory"), self.new_fallback, None, defaults={
-            "Game Name (Check Spelling and Punctuation)": self.settings["Default Game"],
-            "Name of Folder in Steam Files (If different from Game Name)": self.settings["Default Game Folder"],
-            "PolyTech (Poly Bridge Modding Framework)": "Auto",
-            "Steam Directory": self.settings["Default Steam Directory"]
-        })
+        create_prompt("New Mod", 
+                       ("Mod Name",
+                        "Desciption"), 
+                        self.new_fallback, None, 
+                        defaults=None
+                     )
         try:
             mixer.music.load(Click)
             mixer.music.play(loops=0)
@@ -374,23 +369,18 @@ class InterfaceMenu:
             # When the fallback to a prompt returns something, the prompt will show that as an error message and
             # keep itself open effectively asking them again
             return "Project Already Exists"
-        # Decide whether the mod should use polytech
-        poly_tech = data[4]
-        if poly_tech.lower() == "true":
-            poly_tech = True
-        elif poly_tech.lower() == "false":
-            poly_tech = False
-        else:
-            poly_tech = data[1] == "Poly Bridge 2"
         # make sure the game is set up in a way to support modding
-        support = verify_game(data[2], data[2] if data[3] == "" else data[3], data[5], window)
+        gameName = self.settings.get("Default Game", "")
+        folderName = self.settings.get("Default Game Folder", "")
+        steamPath = self.settings.get("Default Steam Directory", "")
+        support = verify_game(gameName, gameName if folderName == "" else folderName, steamPath, window)
         if type(support) is str:
             return support
         if not support:
             return ""
         # creates a new mod with this name and information from the prompt
-        mod = ModObject(name, description=data[1], poly_tech=poly_tech, game=data[2], folder_name=None if data[3] == "" else data[3],
-                        steampath=data[5])
+        mod = ModObject(mod_name=name, description=data[1], game=gameName, folder_name=folderName,
+                        steampath=steamPath)
         # close the menu window because we don't need it anymore
         close(self, False)
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object

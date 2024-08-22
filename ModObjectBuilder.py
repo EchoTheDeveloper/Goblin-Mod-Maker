@@ -5,7 +5,7 @@ def end_block():
     return CodeLine("}")
 
 
-def create_headers(poly_tech=True):
+def create_headers():
     code = [
         CodeLine("using System;"),
         CodeLine("using System.Collections;"),
@@ -16,8 +16,6 @@ def create_headers(poly_tech=True):
         CodeLine("using UnityEngine;"),
         CodeLine("using System.Reflection;")
     ]
-    if poly_tech:
-        code.append(CodeLine("using PolyTechFramework;"))
     return CodeBlock(code_lines=code)
 
 
@@ -36,27 +34,22 @@ def create_namespace(mod_name, mod_name_no_space):
     return namespace
 
 
-def create_namespace_contents(game, poly_tech=True):
+def create_namespace_contents(game):
     namespace_contents = LargeCodeBlockWrapper()
     bix_dependencies = CodeBlock()
     bix_dependencies.add_line(code_line=CodeLine("[BepInPlugin(pluginGuid, pluginName, pluginVersion)]"))
-    if poly_tech:
-        bix_dependencies.add_line(code_line=CodeLine(
-            "[BepInDependency(PolyTechMain.PluginGuid, BepInDependency.DependencyFlags.HardDependency)]"
-        ))
-    else:
-        bix_dependencies.add_line(code_line=CodeLine(
-            "[BepInProcess(\"" + game + "\")]"
-        ))
-        bix_dependencies.add_line(code_line=CodeLine(
-            "[BepInDependency(ConfigurationManager.ConfigurationManager.GUID, BepInDependency.DependencyFlags.HardDependency)]"
-        ))
+    bix_dependencies.add_line(code_line=CodeLine(
+        "[BepInProcess(\"" + game + "\")]"
+    ))
+    bix_dependencies.add_line(code_line=CodeLine(
+        "[BepInDependency(ConfigurationManager.ConfigurationManager.GUID, BepInDependency.DependencyFlags.HardDependency)]"
+    ))
     namespace_contents.insert_block_before(bix_dependencies)
     namespace_contents.insert_block_after(LargeCodeBlockWrapper())
     return namespace_contents
 
 
-def create_class(mod_name, mod_name_no_space, poly_tech=True):
+def create_class(mod_name, mod_name_no_space):
     output = CodeBlockWrapper(
         prefix=CodeBlock(code_lines=[
             CodeLine("public class"),
@@ -66,22 +59,15 @@ def create_class(mod_name, mod_name_no_space, poly_tech=True):
         contents=LargeCodeBlockWrapper(),
         postfix=end_block()
     )
-    if poly_tech:
-        output.prefix.add_line(CodeLine(": PolyTechMod"), location=2)
-    else:
-        output.prefix.add_line(CodeLine(": BaseUnityPlugin"), location=2)
+    output.prefix.add_line(CodeLine(": BaseUnityPlugin"), location=2)
     return output
 
 
-def create_constants(mod_name, mod_name_no_space, version, poly_tech=True):
+def create_constants(mod_name, mod_name_no_space, version):
     output = LargeCodeBlockWrapper()
     plugin_guid = LargeCodeBlockWrapper([CodeLine("public const string pluginGuid =")], delimiter=" ")
     output.insert_block_after(plugin_guid)
-    if not poly_tech:
-        plugin_guid.insert_block_after(CodeBlock([CodeLine("\"org.bepinex.plugins."),
-                                                  mod_name_no_space, CodeLine("\";")], delimiter=""))
-    else:
-        plugin_guid.insert_block_after(CodeBlock([CodeLine("\"polytech."),
+    plugin_guid.insert_block_after(CodeBlock([CodeLine("\"org.bepinex.plugins."),
                                                   mod_name_no_space, CodeLine("\";")], delimiter=""))
     plugin_name = LargeCodeBlockWrapper([CodeLine("public const string pluginName =")], delimiter=" ")
     output.insert_block_after(plugin_name)
@@ -106,42 +92,16 @@ def create_function(head, contents=None):
     return function
 
 
-def create_poly_tech_functions(poly_tech=True):
-    if not poly_tech:
-        return CodeBlock()
-    output = LargeCodeBlockWrapper()
-    enable_code = CodeBlock([CodeLine("mEnabled.Value = true;"), CodeLine("this.isEnabled = true;")])
-    output.insert_block_after(create_function("public override void enableMod()", contents=enable_code))
-    disable_code = CodeBlock([CodeLine("mEnabled.Value = false;"), CodeLine("this.isEnabled = false;")])
-    output.insert_block_after(create_function("public override void disableMod()", contents=disable_code))
-    output.insert_block_after(create_function("public override string getSettings()",
-                                              contents=CodeLine("return \"\";")))
-    output.insert_block_after(create_function("public override void setSettings(string settings)"))
-    return output
 
-
-def create_awake(mod_name, mod_name_no_space, poly_tech=True):
+def create_awake(mod_name, mod_name_no_space):
     output = LargeCodeBlockWrapper()
-    if poly_tech:
-        output.insert_block_after(CodeLine("this.repositoryUrl = null;"))
-        output.insert_block_after(CodeLine("this.isCheat = true;"))
-        output.insert_block_after(CodeLine("PolyTechMain.registerMod(this);"))
-        output.insert_block_after(CodeBlock([CodeLine("Logger.LogInfo(\""), mod_name,
-                                             CodeLine(" Registered\");")],
-                                            delimiter=""))
     output.insert_block_after(CodeBlock([CodeLine("Harmony.CreateAndPatchAll(typeof("), mod_name_no_space,
                                          CodeLine("));")], delimiter=""))
-    if poly_tech:
-        output.insert_block_after(CodeBlock([CodeLine("Logger.LogInfo(\""), mod_name,
-                                             CodeLine(" Methods Patched\");")],
-                                            delimiter=""))
     output = create_function("void Awake()", contents=output)
     return output
 
 
-def create_update(mod_name, mod_name_no_space, poly_tech=True):
+def create_update(mod_name, mod_name_no_space):
     output = LargeCodeBlockWrapper()
-    if poly_tech:
-        pass
     output = create_function("void Update()", contents=output)
     return output

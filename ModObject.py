@@ -23,7 +23,7 @@ class LimitedModObject:
 
 class ModObject(LimitedModObject):
 
-    def __init__(self, mod_name="mod", version="0.0.1", description="", poly_tech=True, game="Isle Goblin", folder_name="Isle Goblin Playtest",
+    def __init__(self, mod_name="mod", version="0.0.1", description="", game="Isle Goblin", folder_name="Isle Goblin Playtest",
                  steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
         self.index = 0
@@ -33,21 +33,19 @@ class ModObject(LimitedModObject):
         self.steampath = steampath
         self.config_number = 0
         self.version = CodeLine(version, locked=True)
-        self.poly_tech = poly_tech
         self.description = description
         self.mod_name = CodeLine(mod_name, locked=True)
         self.mod_name_no_space = CodeLine(mod_name.replace(" ", ""), locked=True)
         self.code = LargeCodeBlockWrapper()
-        self.header = create_headers(poly_tech=self.poly_tech)
+        self.header = create_headers()
         self.code.insert_block_before(self.header)
         self.namespace = create_namespace(self.mod_name, self.mod_name_no_space)
         self.code.insert_block_after(self.namespace)
-        self.in_namespace = create_namespace_contents(self.game, poly_tech=self.poly_tech)
+        self.in_namespace = create_namespace_contents(self.game)
         self.namespace.contents = self.in_namespace
-        self.class_wrap = create_class(self.mod_name, self.mod_name_no_space, poly_tech=self.poly_tech)
+        self.class_wrap = create_class(self.mod_name, self.mod_name_no_space)
         self.namespace.contents.insert_block_after(self.class_wrap)
-        self.constants = create_constants(self.mod_name, self.mod_name_no_space, self.version,
-                                          poly_tech=self.poly_tech)
+        self.constants = create_constants(self.mod_name, self.mod_name_no_space, self.version)
         self.class_wrap.contents.insert_block_after(self.constants)
         self.config_entry_declarations = LargeCodeBlockWrapper()
         self.class_wrap.contents.insert_block_after(self.config_entry_declarations)
@@ -58,16 +56,14 @@ class ModObject(LimitedModObject):
         self.class_wrap.contents.insert_block_after(self.reflections_declarations)
         self.general_declarations = LargeCodeBlockWrapper()
         self.class_wrap.contents.insert_block_after(self.general_declarations)
-        self.poly_tech_functions = create_poly_tech_functions(self.poly_tech)
-        self.class_wrap.contents.insert_block_after(self.poly_tech_functions)
         self.class_constructor = CodeBlockWrapper(
             prefix=CodeBlock([CodeLine("public "), self.mod_name_no_space, CodeLine("(){")], delimiter=""),
             contents=LargeCodeBlockWrapper(),
             postfix=end_block()
         )
         self.class_wrap.contents.insert_block_after(self.class_constructor)
-        self.awake = create_awake(self.mod_name, self.mod_name_no_space, poly_tech=self.poly_tech)
-        self.update = create_update(self.mod_name, self.mod_name_no_space, poly_tech=self.poly_tech)
+        self.awake = create_awake(self.mod_name, self.mod_name_no_space)
+        self.update = create_update(self.mod_name, self.mod_name_no_space)
         self.class_wrap.contents.insert_block_after(self.awake)
         self.class_wrap.contents.insert_block_after(self.update)
         self.add_config("mEnabled", "bool", "false", "Enable/Disable Mod",
@@ -120,7 +116,6 @@ class ModObject(LimitedModObject):
             ], delimiter=" ").indent().indent())
 
     def create_harmony_patch(self, in_class, method, prefix=True, parameters=list(), have_instance=True, result=None):
-        poly_tech = self.poly_tech
         parameters = [i for i in parameters if i != '']
         if result is not None:
             parameters.insert(0, "ref " + result + " __result")
@@ -277,11 +272,7 @@ def create_files(mod: ModObject, destroyonerror=None):
         code = "\n".join([s for s in mod.code.get_text().splitlines() if s])
         f.write(code)
     with open(folder_path + "/" + name_no_space + ".csproj", "w") as f:
-        code = open("resources/csprojtemplate", "r").read().replace("{{mod_name}}", name_no_space).replace("{{ptf}}",
-                                                                                                 """
-    <Reference Include="PolyTechFramework">
-        <HintPath>Libraries/PolyTechFramework.dll</HintPath>
-    </Reference>""" if mod.poly_tech else "")
+        code = open("resources/csprojtemplate", "r").read().replace("{{mod_name}}", name_no_space).replace("{{ptf}}", "")
         f.write(code)
 
     manifest = {
@@ -302,18 +293,13 @@ def create_files(mod: ModObject, destroyonerror=None):
                         folder_path + "\\Libraries", dirs_exist_ok=True)
         shutil.copytree(os.path.join(os.getcwd(), "resources/Default Libraries"),
                         folder_path + "\\Libraries", dirs_exist_ok=True)
-        if mod.poly_tech:
-            shutil.copytree(os.path.join(mod.steampath, mod.folder_name, "BepInEx/plugins"),
-                            folder_path + "\\Libraries", dirs_exist_ok=True)
     except FileNotFoundError as e:
         print(e)
-        print("ERROR: Could not create mod files, make sure " + mod.game + " is installed with BepInEx" +
-              " and Polytech" if mod.poly_tech else "")
+        print("ERROR: Could not create mod files, make sure " + mod.game + " is installed with BepInEx")
         if destroyonerror is not None:
             destroyonerror.destroy()
         messagebox.showerror("Could Not Create Mod Files",
-                             "Couldn't Create Mod File, Make sure " + mod.game + " is installed with BepInEx" +
-                             " and Polytech" if mod.poly_tech else "")
+                             "Couldn't Create Mod File, Make sure " + mod.game + " is installed with BepInEx")
         return None
     return folder_path
 
@@ -411,10 +397,4 @@ def verify_game(name, folder_name, steam_path, prompt):
 
 
 if __name__ == "__main__":
-    x = ModObject(poly_tech=True, mod_name="Chicken Car")
-    x.create_harmony_patch("CompactCar", "CompactCarGravity")
-    save(x)
-    y = load()
-    text = "\n".join([s for s in y.code.get_text().splitlines() if s])
-    path = create_files(x)
-    dotnet_build(path)
+    print("hi")
