@@ -351,7 +351,8 @@ class InterfaceMenu:
         create_prompt("New Mod", 
                        ("Mod Name",
                         "Desciption"), 
-                        self.new_fallback, None, 
+                        self.new_fallback, 
+                        None, 
                         defaults=None
                      )
         try:

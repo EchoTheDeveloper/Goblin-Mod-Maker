@@ -240,7 +240,7 @@ class CoreUI(object):
 
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
-        self.filemenu.add_command(label="New", command=partial(MenuMethods.new,self.settings))
+        self.filemenu.add_command(label="New", command=partial(MenuMethods.new, self))
         self.filemenu.add_command(label="Open", command=partial(MenuMethods.open, self.settings))
         self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filename))
         self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))

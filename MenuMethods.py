@@ -47,54 +47,50 @@ def create_loading_screen(message="Please Wait..."):
     return root, x
 
 
+# This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
+# calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
+def new(self):
+    create_prompt("New Mod", 
+                   ("Mod Name",
+                    "Desciption"), 
+                    partial(new_fallback, self), 
+                    None, 
+                    defaults=None
+                 )
+    try:
+        mixer.music.load(Click)
+        mixer.music.play(loops=0)
+    except:
+        pass
+
 # See the new function, this is the function that gets called when the prompt from the new function has "done"
 # clicked
-def _new_fallback(data, window):
+def new_fallback(self, data, window):
     # first item in the list is the name of the mod
     name = data[0]
+    if not name or name.strip() == "":
+        return "Mod name cannot be empty or null"
     # check if there is a directory that corresponds to a mod with this name
     # (spaces aren't included in the file names)
     if exists(os.getcwd() + "/projects/" + name.replace(" ", "")):
         # When the fallback to a prompt returns something, the prompt will show that as an error message and
         # keep itself open effectively asking them again
         return "Project Already Exists"
-    # Decide whether the mod should use polytech
-    poly_tech = data[3]
-    if poly_tech.lower() == "true":
-        poly_tech = True
-    elif poly_tech.lower() == "false":
-        poly_tech = False
-    else:
-        poly_tech = data[1] == "Poly Bridge 2"
     # make sure the game is set up in a way to support modding
-    support = ModObject.verify_game(data[1], data[1] if data[2] == "" else data[2], data[4], window)
+    gameName = self.settings.get("Default Game", "")
+    folderName = self.settings.get("Default Game Folder", "")
+    steamPath = self.settings.get("Default Steam Directory", "")
+    support = ModObject.verify_game(gameName, gameName if folderName == "" else folderName, steamPath, window)
     if type(support) is str:
         return support
     if not support:
         return ""
     # creates a new mod with this name and information from the prompt
-    mod = ModObject.ModObject(name, poly_tech=poly_tech, game=data[1], folder_name=None if data[2] == "" else data[2],
-                              steampath=data[4])
+    mod = ModObject.ModObject(mod_name=name, description=data[1], game=gameName, folder_name=folderName,
+                    steampath=steamPath)
+    # close the menu window because we don't need it anymore
     # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
-    global SETTINGS
-    pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=SETTINGS)
-
-
-# This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
-# calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
-def new(settings):
-    global SETTINGS
-    SETTINGS = settings
-    create_prompt("New Mod", ("Mod Name",
-                              "Game Name (Check Spelling and Punctuation)",
-                              "Name of Folder in Steam Files (If different from Game Name)",
-                              "PolyTech (Poly Bridge Modding Framework)",
-                              "Steam Directory"), _new_fallback, None, defaults={
-        "Game Name (Check Spelling and Punctuation)": "Isle Goblin",
-        "Name of Folder in Steam Files (If different from Game Name)": "Isle Goblin Playtest",
-        "PolyTech (Poly Bridge Modding Framework)": "Auto",
-        "Steam Directory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\"
-    })
+    pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
 
 
 def _open_fallback(name):
