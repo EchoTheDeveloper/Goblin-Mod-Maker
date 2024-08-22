@@ -9,7 +9,6 @@ from tkinter import *
 from tkinter import ttk
 from PIL import ImageTk, Image
 from functools import partial
-from winsound import *
 from pygame import mixer
 import json
 
