@@ -9,6 +9,8 @@ from tkinter import *
 from tkinter import ttk
 from PIL import ImageTk, Image
 from functools import partial
+from winsound import *
+from pygame import mixer
 import json
 
 from pygments.lexers.dotnet import CSharpLexer
@@ -86,6 +88,9 @@ PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
 NewButton = theme_data.get("newbutton", "")
 OpenButton = theme_data.get("openbutton", "")
 
+Click = theme_data.get("click", "")
+Hover = theme_data.get("hover", "")
+
 class InterfaceMenu:
 
     def __init__(self):
@@ -98,6 +103,7 @@ class InterfaceMenu:
         self.settings = self.find_settings()
         # Setting up the main window visuals
         self.root = Tk()
+        mixer.init()
         self.root.configure(background=InterfaceMenu_Background)
         self.root.geometry(InterfaceMenu_Geometry)
         self.root.resizable(0, 0)
@@ -114,19 +120,36 @@ class InterfaceMenu:
         self.open_button.bind("<Button-1>", self.load)
 
         def mouse_enter(e):
-            e.widget.config(fg=InterfaceMenu_MouseEnter)
+            e.widget.config(borderwidth=5, fg=InterfaceMenu_MouseEnter)
+            try:
+                mixer.music.load(Hover)
+                mixer.music.play(loops=0)
+            except:
+                pass
 
         def mouse_exit(e):
-            e.widget.config(fg=InterfaceMenu_MouseExit)
+            e.widget.config(borderwidth=0, fg=InterfaceMenu_MouseExit)
 
         def new_button_hover_enter(e):
             self.new_button.config(borderwidth=10, highlightbackground=InterfaceMenu_MouseEnter)
+            try:
+                mixer.music.load(Hover)
+                mixer.music.play(loops=0)
+            except:
+                pass
 
         def new_button_hover_exit(e):
             self.new_button.config(borderwidth=0, highlightbackground=InterfaceMenu_NewButtonBackground)
 
         def open_button_hover_enter(e):
             self.open_button.config(borderwidth=10, highlightbackground=InterfaceMenu_MouseEnter)
+            # PlaySound(Hover, SND_FILENAME)
+            try:
+                mixer.music.load(Hover)
+                mixer.music.play(loops=0)
+            except:
+                pass
+
 
         def open_button_hover_exit(e):
             self.open_button.config(borderwidth=0,highlightbackground=InterfaceMenu_OpenButtonBackground)
@@ -172,21 +195,13 @@ class InterfaceMenu:
                 json.dump(DEFAULT_SETTINGS, json_file)
                 settings = DEFAULT_SETTINGS
         return settings
-
-
-    # def save_settings(self, settings, values, e):
-    #     for i in range(len(settings)):
-    #         self.settings[settings[i]] = values[i]
-    #     with open('settings.json', 'w') as json_file:
-    #         json.dump(self.settings, json_file, indent=4)
-
-
-    # def change_settings(self, e):
-    #     ordered_settings = SETTINGS_TO_SHOW
-    #     create_prompt("Isle Goblin Mod Maker Settings", ordered_settings, partial(self.save_settings, ordered_settings), None,
-    #                   defaults=self.settings, width=500)
     
     def open_settings_window(self, event=None):
+        try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+        except:
+            pass
         title = "Isle Goblin Mod Maker Settings"
         settings_window = Toplevel(self.root)
         settings_window.title(title)
@@ -249,6 +264,7 @@ class InterfaceMenu:
             global InterfaceMenu_MouseEnter, InterfaceMenu_MouseExit, InterfaceMenu_ButtonConfigFG, InterfaceMenu_ButtonConfigBG
             global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
             global NewButton, OpenButton
+            global Click, Hover
             
             InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
             InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
@@ -265,6 +281,9 @@ class InterfaceMenu:
 
             NewButton = theme_data.get("newbutton", "")
             OpenButton = theme_data.get("openbutton", "")
+
+            Click = theme_data.get("click", "")
+            Hover = theme_data.get("hover", "")
 
             # Update the UI elements with the new theme settings
             self.root.configure(background=InterfaceMenu_Background)
@@ -286,13 +305,16 @@ class InterfaceMenu:
         Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
 
 
-
-
     def _copy_fallback(self, mod, name):
         name = name[0]
         self.new_name = name
 
     def open_dialog(self, e):
+        try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+        except:
+            pass
         messagebox.showwarning("Never Open Mods From Untrusted Sources", "Reminder: Never Open Mods From Untrusted Sources!!")
         file = filedialog.askopenfile(filetypes=[("Isle Goblin Mod Maker Files", "*.igmm")])
         if file is None: return
@@ -316,6 +338,26 @@ class InterfaceMenu:
         close(self, False)
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
         pyro.CoreUI(lexer=CSharpLexer(), filename=no_space, mod=mod, settings=self.settings)
+
+
+    # This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
+    # calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
+    def new(self, e):
+        create_prompt("New Mod", ("Mod Name",
+                                  "Game Name (Check Spelling and Punctuation)",
+                                  "Name of Folder in Steam Files (If different from Game Name)",
+                                  "PolyTech (Poly Bridge Modding Framework)",
+                                  "Steam Directory"), self.new_fallback, None, defaults={
+            "Game Name (Check Spelling and Punctuation)": self.settings["Default Game"],
+            "Name of Folder in Steam Files (If different from Game Name)": self.settings["Default Game Folder"],
+            "PolyTech (Poly Bridge Modding Framework)": "Auto",
+            "Steam Directory": self.settings["Default Steam Directory"]
+        })
+        try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+        except:
+            pass
 
     # See the new function, this is the function that gets called when the prompt from the new function has "done"
     # clicked
@@ -353,19 +395,19 @@ class InterfaceMenu:
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
         pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
 
-    # This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
-    # calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
-    def new(self, e):
-        create_prompt("New Mod", ("Mod Name",
-                                  "Game Name (Check Spelling and Punctuation)",
-                                  "Name of Folder in Steam Files (If different from Game Name)",
-                                  "PolyTech (Poly Bridge Modding Framework)",
-                                  "Steam Directory"), self.new_fallback, None, defaults={
-            "Game Name (Check Spelling and Punctuation)": self.settings["Default Game"],
-            "Name of Folder in Steam Files (If different from Game Name)": self.settings["Default Game Folder"],
-            "PolyTech (Poly Bridge Modding Framework)": "Auto",
-            "Steam Directory": self.settings["Default Steam Directory"]
-        })
+
+    # This gets called when the "open" button is pressed so it creates a prompt asking for the name of the mod and
+    # calls self.load_fallback when they press "done", None means that if they press "cancel" nothing specific is done
+    # there is also a warning that will show up in red telling them not to open mods from untrusted sources this is
+    # due to the fact that a malicious .igmm file could allow for arbitrary code execution
+    def load(self, e):
+        create_prompt("Load Mod", ("Mod Name",), self.load_fallback, None,
+                      warning="Never Open Mods From Untrusted Sources")
+        try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+        except:
+            pass
 
     # See the load function, this is the function that gets called when the prompt from the load function has "done"
     # clicked
@@ -390,15 +432,6 @@ class InterfaceMenu:
         close(self, False)
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
         pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
-
-    # This gets called when the "open" button is pressed so it creates a prompt asking for the name of the mod and
-    # calls self.load_fallback when they press "done", None means that if they press "cancel" nothing specific is done
-    # there is also a warning that will show up in red telling them not to open mods from untrusted sources this is
-    # due to the fact that a malicious .igmm file could allow for arbitrary code execution
-    def load(self, e):
-        create_prompt("Load Mod", ("Mod Name",), self.load_fallback, None,
-                      warning="Never Open Mods From Untrusted Sources")
-
 
 if __name__ == "__main__":
     # Creates the main menu and then calls the pyro mainloop

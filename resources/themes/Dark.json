@@ -2,6 +2,9 @@
   "newbutton": "resources/themes/assets/midnight/newbutton.png",
   "openbutton": "resources/themes/assets/midnight/openbutton.png",
 
+  "click": "resources/themes/assets/midnight/click.wav",
+  "hover": "resources/themes/assets/midnight/hover.wav",
+
   "interfacemenu_background": "#353738",
   "interfaceMenu_geometry": "470x220",
   "interfacemenu_newbuttonbackground": "#353738",

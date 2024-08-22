@@ -2,6 +2,9 @@
   "newbutton": "resources/themes/assets/retro/newbutton.png",
   "openbutton": "resources/themes/assets/retro/openbutton.png",
 
+  "click": "resources/themes/assets/retro/click.wav",
+  "hover": "resources/themes/assets/retro/hover.wav",
+
   "interfacemenu_background": "#00062A",
   "interfaceMenu_geometry": "470x220",
   "interfacemenu_newbuttonbackground": "#00062A",

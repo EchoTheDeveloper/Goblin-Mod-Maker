@@ -2,6 +2,9 @@
   "newbutton": "resources/themes/assets/ocean/newbutton.png",
   "openbutton": "resources/themes/assets/ocean/openbutton.png",
 
+  "click": "resources/themes/assets/ocean/click.wav",
+  "hover": "resources/themes/assets/ocean/hover.wav",
+
   "interfacemenu_background": "#004080",
   "interfaceMenu_geometry": "470x220",
   "interfacemenu_newbuttonbackground": "#004080",

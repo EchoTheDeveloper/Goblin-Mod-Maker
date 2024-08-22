@@ -2,6 +2,9 @@
   "newbutton": "resources/themes/assets/forest/newbutton.png",
   "openbutton": "resources/themes/assets/forest/openbutton.png",
 
+  "click": "resources/themes/assets/forest/click.wav",
+  "hover": "resources/themes/assets/forest/hover.wav",
+
   "interfacemenu_background": "#2e8b57",
   "interfaceMenu_geometry": "470x220",
   "interfacemenu_newbuttonbackground": "#2e8b57",

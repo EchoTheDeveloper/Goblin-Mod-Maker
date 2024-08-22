@@ -2,6 +2,9 @@
   "newbutton": "resources/themes/assets/light/newbutton.png",
   "openbutton": "resources/themes/assets/light/openbutton.png",
 
+  "click": "resources/themes/assets/light/click.wav",
+  "hover": "resources/themes/assets/light/hover.wav",
+
   "interfacemenu_background": "#d9d7d7",
   "interfaceMenu_geometry": "470x220",
   "interfacemenu_newbuttonbackground": "#d9d7d7",

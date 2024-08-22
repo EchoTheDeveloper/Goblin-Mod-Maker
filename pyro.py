@@ -206,6 +206,8 @@ class CoreUI(object):
         self.text.bind("<Button-1>", self.hide_autocomplete)
         self.text.bind("<Tab>", self.accept_autocomplete_or_snippet)
         self.text.bind("<space>", self.on_space_press)
+        self.text.bind("<Up>", self.on_arrow_key)
+        self.text.bind("<Down>", self.on_arrow_key)
 
         self.autocomplete_window = None
 
@@ -292,6 +294,7 @@ class CoreUI(object):
 
         self.root.config(menu=self.menubar)
 
+    #-------------------- Autocomplete and Snippets --------------------#
     def on_key_release(self, event):
         if event.keysym in ["Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "Tab"]:
             return  # Ignore modifier keys and Tab
@@ -300,7 +303,7 @@ class CoreUI(object):
             return  # Ignore space key to prevent triggering autocomplete again
 
         self.show_autocomplete()
-    
+
     def show_autocomplete(self):
         self.hide_autocomplete()  # Hide previous autocomplete if it exists
 
@@ -315,12 +318,12 @@ class CoreUI(object):
 
         # Add snippets if any match the current word
         if current_word in self.snippets:
-            snippet_preview = self.snippets[current_word]
-            suggestions.append(snippet_preview)
+            snippet_preview = self.snippets[current_word][:8] + "..."
+            suggestions.append((current_word, f"{current_word}: ({snippet_preview})"))
 
         # Add keywords that start with the current word
         keyword_suggestions = [kw for kw in self.keywords if kw.startswith(current_word)]
-        suggestions.extend([(kw) for kw in keyword_suggestions])
+        suggestions.extend([(kw, kw) for kw in keyword_suggestions])
 
         if suggestions:
             self.autocomplete_window = Toplevel(self.root)
@@ -335,21 +338,29 @@ class CoreUI(object):
 
             self.autocomplete_window.geometry(f"+{x}+{y}")
 
-            self.suggestion_listbox = Listbox(self.autocomplete_window, selectmode=SINGLE, height=min(len(suggestions), 6), foreground=PyroPrompt_Foreground, background=PyroPrompt_Background)
+            self.suggestion_listbox = Listbox(
+                self.autocomplete_window,
+                selectmode=SINGLE,
+                height=min(len(suggestions), 6),
+                foreground=PyroPrompt_Foreground,
+                background=PyroPrompt_Background
+            )
             self.suggestion_listbox.pack()
 
-            for suggestion in suggestions:
-                self.suggestion_listbox.insert(END, suggestion)
+            for _, display_text in suggestions:
+                self.suggestion_listbox.insert(END, display_text)
 
+            # Bind Listbox events
             self.suggestion_listbox.bind("<Double-1>", lambda e: self.insert_autocomplete())
             self.suggestion_listbox.bind("<Return>", lambda e: self.insert_autocomplete())
+            self.suggestion_listbox.bind("<Up>", self.on_arrow_key_in_listbox)
+            self.suggestion_listbox.bind("<Down>", self.on_arrow_key_in_listbox)
+
+            # Ensure Listbox receives focus
+            # self.suggestion_listbox.focus_set()
 
             # Bind click outside the autocomplete window to hide it
             self.root.bind("<Button-1>", self.on_click_outside)
-
-    def on_click_outside(self, event):
-        if self.autocomplete_window and not self.autocomplete_window.winfo_containing(event.x_root, event.y_root):
-            self.hide_autocomplete()
 
     def insert_autocomplete(self):
         if not self.suggestion_listbox:
@@ -361,6 +372,8 @@ class CoreUI(object):
         current_word = line_text.split()[-1] if line_text.split() else ""
 
         self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
+
+        # Determine if the selected item is a snippet or a keyword
         if ':' in selected_text:
             # Extract the original word part from the selected text
             original_word = selected_text.split(':')[0]
@@ -379,13 +392,48 @@ class CoreUI(object):
 
         # Check if the current word matches a snippet trigger
         if current_word in self.snippets and current_word not in self.keywords:
-            self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
             self.text.insert(INSERT, self.snippets[current_word])
-            return "break"  # Prevent default Tab behavior
+            return "break"  # Prevent default behavior
 
-        if self.autocomplete_window and self.suggestion_listbox:
-            self.insert_autocomplete()
-            return "break"  # Prevent default Tab behavior
+    def on_arrow_key(self, event):
+        if self.autocomplete_window:
+            if event.keysym in ("Up", "Down"):
+                # Prevent default behavior of moving cursor in the text widget
+                return "break"
+
+    def on_arrow_key_in_listbox(self, event):
+        if not self.suggestion_listbox:
+            return
+
+        if event.keysym not in ("Up", "Down"):
+            return
+
+        current_selection = self.suggestion_listbox.curselection()
+        if event.keysym == "Up":
+            if current_selection:
+                index = current_selection[0] - 1
+            else:
+                index = self.suggestion_listbox.size() - 1
+        elif event.keysym == "Down":
+            if current_selection:
+                index = current_selection[0] + 1
+            else:
+                index = 0
+
+        index = max(0, min(self.suggestion_listbox.size() - 1, index))
+        self.suggestion_listbox.selection_clear(0, END)
+        self.suggestion_listbox.selection_set(index)
+        self.suggestion_listbox.activate(index)
+        self.suggestion_listbox.see(index)
+
+        # Ensure Listbox retains focus
+        self.suggestion_listbox.focus_set()
+        return "break"  # Prevent further propagation of the event
+
+    def on_click_outside(self, event):
+        if self.autocomplete_window and not self.autocomplete_window.winfo_containing(event.x_root, event.y_root):
+            self.hide_autocomplete()
+
 
     def on_space_press(self, event):
         if self.autocomplete_window:
@@ -395,8 +443,8 @@ class CoreUI(object):
         if self.autocomplete_window:
             self.autocomplete_window.destroy()
             self.autocomplete_window = None
-            self.root.unbind("<Button-1>")  # Unbind click outside event
-
+            self.root.unbind("<Button-1>")   # Unbind click outside event
+    #-------------------- Autocomplete and Snippets --------------------#
 
     def refresh(self, updateMod=True):
         if updateMod:
@@ -524,6 +572,7 @@ class CoreUI(object):
     def paste(self):
         self.text.event_generate("<<Paste>>")
 
+    #-------------------- Searching --------------------#
     def search(self, regexp):
         """
         This method searches and highlights all instances of the given regular expression.
@@ -604,7 +653,7 @@ class CoreUI(object):
         if response:
             # Remove the highlight tag
             self.text.tag_remove("highlight", "1.0", "end")
-
+    #-------------------- Searching --------------------#
 
     def replace(self, regexp, subst, cp):
         """
@@ -883,12 +932,6 @@ def add_window(window):
     global windows
     windows.append(window)
 
-#------------- SNIPPETS -------------#
-
-# def inject_line(self, codeToInject):
-#     output = CodeBlock(code_lines=[codeToInject])
-#     self.text.insert(tkinter.INSERT, str(output))
-#     # return output
 
 
 
