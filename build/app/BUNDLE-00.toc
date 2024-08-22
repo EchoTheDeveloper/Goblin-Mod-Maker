@@ -1,3 +1,0 @@
-([('app',
-   '/Users/echo/PycharmProjects/Isle-Goblin-Mod-Maker/dist/app',
-   'EXECUTABLE')],)
