@@ -14,6 +14,19 @@ import builtins
 
 SETTINGS = {}
 
+def load_theme(filename):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+    return data
+
+def load_settings():
+    with open("settings.json", 'r') as file:
+        data = json.load(file)
+    return data
+settings = load_settings()
+theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
+InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
+InterfaceMenu_Foreground = theme_data.get("interfacemenu_buttonconfig_foreground", "")
 
 # This function is used to make the loading screens for Building the mod and for generating the Dotnet files
 def create_loading_screen(message="Please Wait..."):
@@ -21,9 +34,9 @@ def create_loading_screen(message="Please Wait..."):
     root = Tk()
     root.title("Please Wait...")
     root.iconbitmap("resources/isle-goblin-mod-maker.ico")
-    root.configure(background="#ceb093")
+    root.configure(background=InterfaceMenu_Background)
     # The text it shows it provided via the message parameter
-    x = Label(root, text=message, font=("Calibri", 20), background="#ceb093", fg="#000000")
+    x = Label(root, text=message, font=("Calibri", 20), background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
     x.pack(padx=20, pady=20)
     # This isn't added to the pyro list of windows because it will be deleted before the next visual tick anyway
     # (Visuals freeze during these build methods) - This could be "fixed" by running the build method in a
