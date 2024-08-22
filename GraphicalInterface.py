@@ -344,6 +344,7 @@ class InterfaceMenu:
     # calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
     def new(self, e):
         create_prompt("New Mod", ("Mod Name",
+                                  "Desciption",
                                   "Game Name (Check Spelling and Punctuation)",
                                   "Name of Folder in Steam Files (If different from Game Name)",
                                   "PolyTech (Poly Bridge Modding Framework)",
@@ -374,7 +375,7 @@ class InterfaceMenu:
             # keep itself open effectively asking them again
             return "Project Already Exists"
         # Decide whether the mod should use polytech
-        poly_tech = data[3]
+        poly_tech = data[4]
         if poly_tech.lower() == "true":
             poly_tech = True
         elif poly_tech.lower() == "false":
@@ -382,14 +383,14 @@ class InterfaceMenu:
         else:
             poly_tech = data[1] == "Poly Bridge 2"
         # make sure the game is set up in a way to support modding
-        support = verify_game(data[1], data[1] if data[2] == "" else data[2], data[4], window)
+        support = verify_game(data[2], data[2] if data[3] == "" else data[3], data[5], window)
         if type(support) is str:
             return support
         if not support:
             return ""
         # creates a new mod with this name and information from the prompt
-        mod = ModObject(name, poly_tech=poly_tech, game=data[1], folder_name=None if data[2] == "" else data[2],
-                        steampath=data[4])
+        mod = ModObject(name, description=data[1], poly_tech=poly_tech, game=data[2], folder_name=None if data[3] == "" else data[3],
+                        steampath=data[5])
         # close the menu window because we don't need it anymore
         close(self, False)
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object

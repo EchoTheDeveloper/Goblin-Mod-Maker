@@ -7,13 +7,15 @@ import pickle
 import os
 import subprocess
 from tkinter import *
+import json
 
-VERSION = "0.0.32"
+VERSION = "1.2.0"
 windows = []
 
 
 def get_windows(): return windows
-
+import pyroprompt
+create_prompt = pyroprompt.create_prompt
 
 class LimitedModObject:
     def __init__(self):
@@ -21,7 +23,7 @@ class LimitedModObject:
 
 class ModObject(LimitedModObject):
 
-    def __init__(self, mod_name="mod", version="0.0.1", poly_tech=True, game="Isle Goblin", folder_name="Isle Goblin Playtest",
+    def __init__(self, mod_name="mod", version="0.0.1", description="", poly_tech=True, game="Isle Goblin", folder_name="Isle Goblin Playtest",
                  steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
         self.index = 0
@@ -32,6 +34,7 @@ class ModObject(LimitedModObject):
         self.config_number = 0
         self.version = CodeLine(version, locked=True)
         self.poly_tech = poly_tech
+        self.description = description
         self.mod_name = CodeLine(mod_name, locked=True)
         self.mod_name_no_space = CodeLine(mod_name.replace(" ", ""), locked=True)
         self.code = LargeCodeBlockWrapper()
@@ -199,27 +202,41 @@ class ModObject(LimitedModObject):
         path = create_files(self, destroyonerror=destroyonerror)
         if path is None:
             return None
+        
         progress_updater("Running Dotnet Build...")
         build_result = dotnet_build(path)
-        '''# I don't remember why I wrote this so I'm just commenting it out for now
+        
+        # Mod folder path with the mod name followed by the version
+        mod_folder_name = f"{self.mod_name.get_text()}_{self.version.get_text()}"
+        install_path = os.path.join(self.steampath, self.folder_name, "BepInEx/plugins")
+        mod_install_path = os.path.join(install_path + "/" + mod_folder_name)
+        
         try:
-            os.path.join(self.steampath, self.game, "BepInEx/plugins/" +
-                         self.mod_name_no_space.get_text() + ".dll")
-        except FileNotFoundError:
-            pass
-        '''
-        try:
-            shutil.move(path + "/bin/Debug/netstandard2.1/" + self.mod_name_no_space.get_text() + ".dll",
-                        os.path.join(self.steampath, self.folder_name, "BepInEx/plugins/" +
-                                     self.mod_name_no_space.get_text() + ".dll"))
-            shutil.copyfile(os.path.join(os.getcwd(), "resources/Default Libraries/ConfigurationManager.dll"),
-                            os.path.join(self.steampath, self.folder_name, "BepInEx/plugins/ConfigurationManager.dll"))
-            shutil.copyfile(os.path.join(os.getcwd(), "resources/Default Libraries/netstandard.dll"),
-                            os.path.join(self.steampath, self.folder_name, "BepInEx/plugins/netstandard.dll"))
+            # Create the folder if it doesn't exist
+            os.makedirs(mod_install_path, exist_ok=True)
+            
+            # Move the compiled .dll file into the new mod folder
+            shutil.move(
+                os.path.join(path, "bin/Debug/netstandard2.1", self.mod_name_no_space.get_text() + ".dll"),
+                os.path.join(mod_install_path, self.mod_name_no_space.get_text() + ".dll")
+            )
+            
+            # Copy additional required libraries into the mod folder
+            shutil.copyfile(
+                os.path.join(os.getcwd(), "resources/Default Libraries/ConfigurationManager.dll"),
+                os.path.join(install_path, "ConfigurationManager.dll")
+            )
+            shutil.copyfile(
+                os.path.join(os.getcwd(), "resources/Default Libraries/netstandard.dll"),
+                os.path.join(install_path, "netstandard.dll")
+            )
+            
+            # Copy the manifest.json file to the mod folder
+            shutil.copyfile(
+                os.path.join(path, "manifest.json"),
+                os.path.join(mod_install_path, "manifest.json")
+            )
 
-            '''shutil.move(os.path.join(os.getcwd(), "resources/Default Libraries/ConfigurationManager.dll"),
-                        os.path.join(self.steampath, self.folder_name, "BepInEx/plugins/" +
-                                     self.mod_name_no_space.get_text() + ".dll"))'''
         except FileNotFoundError:
             if destroyonerror is not None:
                 destroyonerror.destroy()
@@ -228,18 +245,17 @@ class ModObject(LimitedModObject):
             root.iconbitmap("resources/isle-goblin-mod-maker.ico")
             from tkinter import scrolledtext
             textbox = scrolledtext.ScrolledText(root)
-            textbox.configure(bg="#191F44", fg="#FFC014", )
+            textbox.configure(bg="#191F44", fg="#FFC014")
             textbox.insert(1.0, build_result)
             textbox.pack(fill="both")
             root.update()
             global windows
             windows.append(root)
             root.focus()
-            '''messagebox.showerror("Build of mod failed",
-                                 "The mod failed to build, either there was an error in the code or dotnet is not prope"
-                                 "rly installed. See Command Prompt for Details.")'''
             return None
+
         return True
+
 
 
 def create_files(mod: ModObject, destroyonerror=None):
@@ -267,6 +283,16 @@ def create_files(mod: ModObject, destroyonerror=None):
         <HintPath>Libraries/PolyTechFramework.dll</HintPath>
     </Reference>""" if mod.poly_tech else "")
         f.write(code)
+
+    manifest = {
+        "mod_name": mod.mod_name.get_text(),
+        "version": mod.version.get_text(),
+        "description": mod.description,
+        "mod_maker_version": mod.mod_maker_version,
+    }
+
+    with open(folder_path + "/manifest.json", "w") as json_file:
+        json.dump(manifest, json_file, indent=4)
 
     try:
 
