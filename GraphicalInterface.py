@@ -264,6 +264,11 @@ class InterfaceMenu:
             global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
             global NewButton, OpenButton
             global Click, Hover
+            try:
+                mixer.music.load(Click)
+                mixer.music.play(loops=0)
+            except:
+                pass
             
             InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
             InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
@@ -302,6 +307,7 @@ class InterfaceMenu:
         buttons = Frame(settings_window, background=PyroPrompt_Background)
         buttons.pack()
         Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
+        
 
 
     def _copy_fallback(self, mod, name):

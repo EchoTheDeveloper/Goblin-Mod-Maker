@@ -2,8 +2,11 @@
 import threading
 from tkinter import *
 from functools import partial
+from pygame import mixer
 from tkinter import messagebox
 import json
+
+mixer.init()
 
 def load_theme(filename):
     with open(filename, 'r') as file:
@@ -17,11 +20,15 @@ def load_settings():
 
 def apply_theme(root):
     global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
+    global Click, Hover
     settings = load_settings()
     theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
     PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
     PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
     PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+
+    Click = theme_data.get("click", "")
+    Hover = theme_data.get("hover", "")
     
     # Apply the theme to the root window and widgets
     root.configure(background=PyroPrompt_Background)
@@ -97,12 +104,22 @@ def create_int_prompt(title, question, fallback, cancel_fallback, default=None, 
     Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=partial(done_int, root, fallback, answer, error, min_value)).grid(row=0, column=1, padx=10, pady=(10, 10))
 
 def cancel(root, fallback):
+    try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+    except:
+        pass
     root.destroy()
     if fallback is None:
         return
     fallback(None)
 
 def done(root, fallback, answers, error):
+    try:
+        mixer.music.load(Click)
+        mixer.music.play(loops=0)
+    except:
+        pass
     try:
         x = fallback([i.get() for i in answers])
     except TypeError:
@@ -115,6 +132,11 @@ def done(root, fallback, answers, error):
     apply_theme(root)  # Reload the theme after prompt completion
 
 def done_int(root, fallback, answer, error, min_value):
+    try:
+        mixer.music.load(Click)
+        mixer.music.play(loops=0)
+    except:
+        pass
     try:
         value = int(answer.get())
         if min_value is not None and value < min_value:
