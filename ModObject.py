@@ -8,6 +8,9 @@ import os
 import subprocess
 from tkinter import *
 import json
+import requests
+import zipfile
+import platform
 
 VERSION = "1.2.0"
 windows = []
@@ -357,8 +360,46 @@ def copy(mod_object, name):
     mod2.set_mod_name(name)
     save(mod2, location=folder_path + "/" + name_no_space + ".igmm")
 
+def get_system_architecture():
+    architecture = platform.architecture()[0]
+    if '64' in architecture:
+        return 'x64'
+    return 'x86'
+
+
+def get_bepinex_download_url(architecture):
+    base_url = "https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.2/BepInEx"
+    os_system = platform.system()
+    bepinex_url = ""
+    if os_system == "Windows":
+        bepinex_url = f"{base_url}_win_{architecture}_5.4.23.2.zip"  
+    elif os_system == "Linux":
+        bepinex_url = f"{base_url}_linux_{architecture}_5.4.23.2.zip"
+    elif os_system == "Darwin":  # macOS
+        bepinex_url = f"{base_url}_macos_x64_5.4.23.2.zip"
+    else:
+        messagebox.showerror("Error", "Unsupported operating system detected.")
+        return False
+    return bepinex_url
+
+def download_file(url, dest_path):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+    with open(dest_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=8192):
+            file.write(chunk)
+
+def extract_zip(file_path, extract_to):
+    with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_to)
+
 
 def verify_game(name, folder_name, steam_path, prompt):
+    architecture = get_system_architecture()
+    download_url = get_bepinex_download_url(architecture)
+    dest = os.path.join(os.getcwd(), "resources/BepInEx.zip")
+    # zip_path = os.path.join(os.getcwd(), f"BepInEx_{version}_{architecture}.zip")
+    
     if not os.path.isdir(os.path.join(steam_path, folder_name)):
         messagebox.showerror("Game Not Found",
                              "Game Not Found. There is no directory \"" + os.path.join(steam_path, folder_name) + "\"",
@@ -373,11 +414,14 @@ def verify_game(name, folder_name, steam_path, prompt):
     if not os.path.isdir(os.path.join(steam_path, folder_name, "BepInEx")):
         question = messagebox.askquestion("Install BepInEx",
                                           "BepInEx is not installed on this game, would you like to install it "
-                                          "automatically? This will install bepinex version ",
+                                          "automatically?",
                                           icon="info", parent=prompt)
         if question == "yes":
-            shutil.copytree(os.path.join(os.getcwd(), "resources", "BepInEx"),
-                            os.path.join(steam_path, folder_name), dirs_exist_ok=True)
+            # shutil.copytree(os.path.join(os.getcwd(), "resources", "BepInEx"),
+            #                 os.path.join(steam_path, folder_name), dirs_exist_ok=True)
+            # download_bepinex(bepinex_url, os.path.join(steam_path, folder_name))
+            download_file(download_url, dest)
+            extract_zip(dest, os.path.join(steam_path, folder_name))
             messagebox.showinfo("BepInEx Installed", "BepInEx has been installed, please run the game once and then "
                                                      "exit in order to generate the proper files, then click \"OK\"",
                                 parent=prompt)
