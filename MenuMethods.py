@@ -207,7 +207,6 @@ def _change_name_fallback(window, name):
     window.mod.set_mod_name(name[0])
     window.refresh(False)
 
-
 def change_mod_name(window):
     create_prompt("Rename Mod", ("New Name",), partial(_change_name_fallback, window), None)
 
@@ -217,9 +216,16 @@ def _change_version_fallback(window, name):
     window.mod.set_version(name[0])
     window.refresh(False)
 
-
 def change_mod_version(window):
     create_prompt("Change Mod Version", ("New Version",), partial(_change_version_fallback, window), None)
+    
+    
+def _change_authors_fallback(window, name):
+    ChangeManager.log_action(window.mod, True)
+    window.mod.set_authors(name[0])
+    
+def change_mod_authors(window):
+    create_prompt("Change Developers", ("Developer Names (Seperate Names by comma)",), partial(_change_authors_fallback, window), None, {"Developer Names (Seperate Names by comma)": window.mod.authors})
 
 
 def _harmony_patch_fallback(window, values):

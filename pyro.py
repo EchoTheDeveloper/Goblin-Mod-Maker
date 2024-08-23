@@ -253,6 +253,7 @@ class CoreUI(object):
 
         self.editmenu.add_command(label="Change Mod Name", command=partial(MenuMethods.change_mod_name, self))
         self.editmenu.add_command(label="Change Mod Version",command=partial(MenuMethods.change_mod_version, self))
+        self.editmenu.add_command(label="Change Mod Developers",command=partial(MenuMethods.change_mod_authors, self))
         self.editmenu.add_separator()
         self.editmenu.add_command(label="Undo", command=self.undo)
         self.editmenu.add_command(label="Redo", command=self.redo)

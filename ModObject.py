@@ -26,7 +26,7 @@ class LimitedModObject:
 
 class ModObject(LimitedModObject):
 
-    def __init__(self, mod_name="mod", version="0.0.1", description="", game="Isle Goblin", folder_name="Isle Goblin Playtest",
+    def __init__(self, mod_name="mod", version="0.0.1", description="", authors="", game="Isle Goblin", folder_name="Isle Goblin Playtest",
                  steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
         self.index = 0
@@ -37,6 +37,7 @@ class ModObject(LimitedModObject):
         self.config_number = 0
         self.version = CodeLine(version, locked=True)
         self.description = description
+        self.authors = authors
         self.mod_name = CodeLine(mod_name, locked=True)
         self.mod_name_no_space = CodeLine(mod_name.replace(" ", ""), locked=True)
         self.code = LargeCodeBlockWrapper()
@@ -180,6 +181,9 @@ class ModObject(LimitedModObject):
     def set_version(self, new_version):
         self.version.code = new_version
 
+    def set_authors(self, new_authors):
+        self.authors = new_authors
+
     def get_text(self):
         return self.code.get_text()
 
@@ -255,7 +259,6 @@ class ModObject(LimitedModObject):
         return True
 
 
-
 def create_files(mod: ModObject, destroyonerror=None):
     name_no_space = mod.mod_name_no_space.get_text()
     current_directory = os.getcwd()
@@ -277,12 +280,16 @@ def create_files(mod: ModObject, destroyonerror=None):
     with open(folder_path + "/" + name_no_space + ".csproj", "w") as f:
         code = open("resources/csprojtemplate", "r").read().replace("{{mod_name}}", name_no_space).replace("{{ptf}}", "")
         f.write(code)
+        
+    authors_list = mod.authors  # Get the comma-separated developers' names
+    authors = [name.strip() for name in authors_list.split(",")] 
 
     manifest = {
         "mod_name": mod.mod_name.get_text(),
         "version": mod.version.get_text(),
         "description": mod.description,
         "mod_maker_version": mod.mod_maker_version,
+        "authors": authors
     }
 
     with open(folder_path + "/manifest.json", "w") as json_file:

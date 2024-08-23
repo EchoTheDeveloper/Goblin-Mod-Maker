@@ -353,7 +353,8 @@ class InterfaceMenu:
     def new(self, e):
         create_prompt("New Mod", 
                        ("Mod Name",
-                        "Desciption"), 
+                        "Desciption",
+                        "Developers (Seperate names by commas)"), 
                         self.new_fallback, 
                         None, 
                         defaults=None
@@ -388,7 +389,7 @@ class InterfaceMenu:
         if not support:
             return ""
         # creates a new mod with this name and information from the prompt
-        mod = ModObject(mod_name=name, description=data[1], game=gameName, folder_name=folderName,
+        mod = ModObject(mod_name=name, description=data[1], authors=data[2],  game=gameName, folder_name=folderName,
                         steampath=steamPath)
         # close the menu window because we don't need it anymore
         close(self, False)
