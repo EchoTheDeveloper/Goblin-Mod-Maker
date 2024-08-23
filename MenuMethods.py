@@ -208,7 +208,7 @@ def _change_name_fallback(window, name):
     window.refresh(False)
 
 def change_mod_name(window):
-    create_prompt("Rename Mod", ("New Name",), partial(_change_name_fallback, window), None)
+    create_prompt("Rename Mod", ("New Name",), partial(_change_name_fallback, window), None, {"New Name": window.mod.mod_name.get_text()})
 
 
 def _change_version_fallback(window, name):
@@ -217,7 +217,7 @@ def _change_version_fallback(window, name):
     window.refresh(False)
 
 def change_mod_version(window):
-    create_prompt("Change Mod Version", ("New Version",), partial(_change_version_fallback, window), None)
+    create_prompt("Change Mod Version", ("New Version",), partial(_change_version_fallback, window), None, {"New Version": window.mod.version.get_text()})
     
     
 def _change_authors_fallback(window, name):

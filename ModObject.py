@@ -11,6 +11,7 @@ import json
 import requests
 import zipfile
 import platform
+from datetime import datetime
 
 VERSION = "1.2.0"
 windows = []
@@ -238,6 +239,17 @@ class ModObject(LimitedModObject):
                 os.path.join(path, "manifest.json"),
                 os.path.join(mod_install_path, "manifest.json")
             )
+            
+            # Copy the manifest.json file to the mod folder
+            shutil.copyfile(
+                os.path.join(path, "README.md"),
+                os.path.join(mod_install_path, "README.md")
+            )
+            
+            shutil.copyfile(
+                os.path.join(path, "CHANGELOG.md"),
+                os.path.join(mod_install_path, "CHANGELOG.md")
+            )
 
         except FileNotFoundError:
             if destroyonerror is not None:
@@ -294,7 +306,28 @@ def create_files(mod: ModObject, destroyonerror=None):
 
     with open(folder_path + "/manifest.json", "w") as json_file:
         json.dump(manifest, json_file, indent=4)
+        
+    readme_content = f"# {mod.mod_name.get_text()}\n\n" \
+                     f"## Description\n{mod.description}\n\n" \
+                     f"## Version\n{mod.version.get_text()}\n\n" \
+                     f"## Developers\n{', '.join(authors)}\n\n" \
+                     f"## Requirements\nThis mod requires BepInEx installed.\n\n" \
+                     f"## Installation\n1. Launch the game.\n2. Enable the mod and play!"
 
+    with open(folder_path + "/README.md", "w") as readme_file:
+        readme_file.write(readme_content)
+        
+    changelog_path = folder_path + "/CHANGELOG.md"
+    changelog_entry = f"## v{mod.version.get_text()} - {datetime.now().strftime('%Y-%m-%d')}\n" \
+                      f"- [ADD CHANGES].\n"
+
+    if os.path.exists(changelog_path):
+        with open(changelog_path, "a") as changelog_file:  # Use 'a' to append
+            changelog_file.write("\n" + changelog_entry)
+    else:
+        with open(changelog_path, "w") as changelog_file:
+            changelog_file.write("# Changelog\n\n" + changelog_entry)
+        
     try:
 
         shutil.copytree(os.path.join(mod.steampath, mod.folder_name, mod.game + "_Data", "Managed"),
