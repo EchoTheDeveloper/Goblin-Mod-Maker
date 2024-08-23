@@ -148,6 +148,9 @@ class InterfaceMenu:
                 mixer.music.play(loops=0)
             except:
                 pass
+            
+        with open('settings.json', 'w') as json_file:
+                json.dump(self.settings, json_file, indent=4)
 
 
         def open_button_hover_exit(e):
