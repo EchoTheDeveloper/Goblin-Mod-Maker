@@ -408,10 +408,35 @@ class InterfaceMenu:
             # Close the settings window
             settings_window.destroy()
 
+
+        def install_bepinex():
+            architecture = get_system_architecture()
+            download_url = get_bepinex_download_url(architecture)
+            dest = os.path.join(os.getcwd(), "resources/BepInEx.zip")
+            if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx")):
+                download_file(download_url, dest)
+                extract_zip(dest, os.path.join(steam_path, foldername))
+                messagebox.showinfo("BepInEx Installed", "BepInEx has been installed, please run the game once and then "
+                                                        "exit in order to generate the proper files, then click \"OK\"",
+                                    parent=settings_window)
+                if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx", "Plugins")):
+                    return "BepInEx not fully installed"
+            else:
+                messagebox.showinfo("BepInEx Already Installed", f"BepInEx has already been insatlled to {os.path.join(steam_path, foldername)}")
+            if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx", "Plugins")):
+                messagebox.showinfo("BepInEx Partially Installed",
+                                    "BepInEx is installed with files missing, please run the game once and then "
+                                    "exit in order to generate the proper files, then click \"OK\"",
+                                    parent=settings_window)
+                if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx", "Plugins")):
+                    return "BepInEx not fully installed"
+            settings_window.focus()
         # Done button to save changes and close the window
         buttons = Frame(settings_window, background=PyroPrompt_Background)
         buttons.pack()
-        Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
+        Button(buttons, text="Install BepInEX", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=install_bepinex).grid(row=0, column=1, padx=10, pady=(10, 10))
+        
+        Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=1, column=1, padx=10, pady=(10, 10))
         
     def prompt_for_custom_steam_directory():
         root = Tk()
