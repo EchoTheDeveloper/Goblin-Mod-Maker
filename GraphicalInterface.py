@@ -360,7 +360,7 @@ class InterfaceMenu:
                 json.dump(self.settings, json_file, indent=4)
             
             # Reload the theme
-            theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Default") + ".json")
+            theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Isle Goblin") + ".json")
             
             # Update the theme settings
             global InterfaceMenu_Background, InterfaceMenu_Geometry, InterfaceMenu_NewButtonBackground, InterfaceMenu_OpenButtonBackground

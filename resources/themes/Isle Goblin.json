@@ -1,9 +1,9 @@
 {
-  "newbutton": "resources/themes/assets/default/newbutton.png",
-  "openbutton": "resources/themes/assets/default/openbutton.png",
+  "newbutton": "resources/themes/assets/isle-goblin/newbutton.png",
+  "openbutton": "resources/themes/assets/isle-goblin/openbutton.png",
 
-  "click": "resources/themes/assets/default/click.wav",
-  "hover": "resources/themes/assets/default/hover.wav",
+  "click": "resources/themes/assets/isle-goblin/click.wav",
+  "hover": "resources/themes/assets/isle-goblin/hover.wav",
 
   "interfacemenu": {
     "background": "#ceb093",
