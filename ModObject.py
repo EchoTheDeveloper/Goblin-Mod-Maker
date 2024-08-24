@@ -25,6 +25,12 @@ create_prompt = pyroprompt.create_prompt
 class LimitedModObject:
     def __init__(self):
         pass
+    
+def load_settings():
+    with open("settings.json", 'r') as file:
+        data = json.load(file)
+    return data
+settings = load_settings()
 
 class ModObject(LimitedModObject):
 
@@ -434,10 +440,10 @@ def extract_zip(file_path, extract_to):
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(extract_to)
 
-def prompt_for_custom_steam_directory():
+def prompt_for_custom_steam_directory(cursteampath):
     root = Tk()
     root.withdraw()  # Hide the root window
-    steam_path = filedialog.askdirectory(title="Select Steam Library Directory")
+    steam_path = filedialog.askdirectory(initialdir=settings.get("Default Steam Directory", cursteampath), title="Select Steam Library Directory")
     if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common")):
         return steam_path
     return None
@@ -535,4 +541,4 @@ def verify_game(name, folder_name, steam_path, prompt):
 
 
 if __name__ == "__main__":
-    print("hi")
+    print("WRONG SCRIPT")

@@ -226,8 +226,6 @@ class InterfaceMenu:
         title = "Isle Goblin Mod Maker Settings"
         settings_window = Toplevel(self.root)
         settings_window.title(title)
-        global settings 
-        settings = self.find_settings() #reload the settings
         Frame(settings_window, width=500, background=PyroPrompt_Background).pack()
         frame = Frame(settings_window, width=500, background=PyroPrompt_Background)
         frame.pack(fill="x")
@@ -236,18 +234,61 @@ class InterfaceMenu:
         settings_window.configure(background=PyroPrompt_Background)
         settings_window.resizable(0, 0)
         settings_window.iconbitmap("resources/isle-goblin-mod-maker.ico")
+        
 
         # Create and pack widgets with default values loaded from settings
+        
+        global settings 
+        settings = self.find_settings() #reload the settings
+        
+        foldername = self.settings.get("Default Game Folder", "")
+        steampath = self.settings.get("Default Steam Directory", "")            
+        
         Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Game Folder").pack(fill="x", padx=10)
         game_folder_entry = Entry(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
         game_folder_entry.insert(0, self.settings.get("Default Game Folder", ""))
         game_folder_entry.pack(fill="x", padx=10, pady=10)
 
-        steam_path = find_steam_directory(self.settings.get("Default Steam Directory", ""))
-        Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Steam Directory").pack(fill="x", padx=10)
+        steam_path = find_steam_directory(self.settings.get("Default Game Folder", ""))
+        
+        steamdir = Frame(settings_window, background=PyroPrompt_Background)
+        steamdir.pack()
+        Label(steamdir, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Steam Directory").grid(row=0, column=1, padx=10, pady=(10, 10))
+        
         steam_dir_entry = Entry(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
         steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", steam_path))
         steam_dir_entry.pack(fill="x", padx=10, pady=10)
+        
+        def auto_find_steam_directory():
+            foldername = self.settings.get("Default Game Folder", "")
+            steampath = self.settings.get("Default Steam Directory", "")
+            if not os.path.isdir(os.path.join(steampath, foldername)):
+                # Try to find the correct Steam directory
+                steam_path = find_steam_directory(foldername)
+                if not steam_path:
+                    messagebox.showerror("Game Not Found",
+                                        f"Game Not Found. There is no directory \"{os.path.join(steam_path, foldername)}\"",
+                                        parent=self)
+                    return False
+                with open("settings.json", 'r') as file:
+                    settings = json.load(file)
+                
+                settings["Default Steam Directory"] = steam_path
+                
+                with open("settings.json", 'w') as file:
+                    json.dump(settings, file, indent=4)
+                steam_dir_entry.delete(0, "end")
+                steam_dir_entry.insert(0, steam_path)
+            elif steampath==find_steam_directory(foldername):
+                messagebox.showinfo("Steam Directory Already Set", "The correct Steam directory has already been set.")
+            else:
+                messagebox.showwarning("Something went wrong :(", f"Directory {os.path.join(steampath, foldername)} does not exist.")
+            settings_window.focus()
+
+        if not os.path.isdir(os.path.join(steampath, foldername)):
+            auto_find_steam_directory()
+
+        Button(steamdir, text="Auto Find Steam Directory", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=auto_find_steam_directory).grid(row=0, column=2, padx=10, pady=(10, 10))
 
         theme_folder = "resources/themes"
         themes = [os.path.splitext(file)[0] for file in os.listdir(theme_folder) if file.endswith(".json")]
@@ -337,13 +378,13 @@ class InterfaceMenu:
     def prompt_for_custom_steam_directory():
         root = Tk()
         root.withdraw()  # Hide the root window
-        steam_path = filedialog.askdirectory(title="Select Steam Library Directory")
+        steam_path = filedialog.askdirectory(initialdir=settings.get("Default Steam Directory", steam_path),title="Select Steam Library Directory")
         if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common")):
             return steam_path
         return None
 
-
-    def find_steam_directory(folder_name):
+        
+    def find_steam_directory(self, folder_name):
         # First, attempt to get the Steam directory from the registry
         steam_path = get_steam_directory()
         if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
