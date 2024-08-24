@@ -175,13 +175,11 @@ class InterfaceMenu:
             except:
                 pass
             
-        with open('settings.json', 'w') as json_file:
-                json.dump(self.settings, json_file, indent=4)
-
-
         def open_button_hover_exit(e):
             self.open_button.config(borderwidth=0,highlightbackground=InterfaceMenu_OpenButtonBackground)
-
+        
+        with open('settings.json', 'w') as json_file:
+            json.dump(self.settings, json_file, indent=4)
         self.extra_buttons = []
 
         self.open_external = Label(self.root, text="Open From Isle Goblin Mod Maker (.igmm) File")
@@ -248,10 +246,10 @@ class InterfaceMenu:
                     if item not in settings:
                         settings[item] = DEFAULT_SETTINGS[item]
             with open('settings.json', 'w') as json_file:
-                json.dump(settings, json_file)
+                json.dump(settings, json_file, indent=4)
         except Exception:
             with open('settings.json', 'w') as json_file:
-                json.dump(DEFAULT_SETTINGS, json_file)
+                json.dump(DEFAULT_SETTINGS, json_file, indent=4)
                 settings = DEFAULT_SETTINGS
         return settings
     
