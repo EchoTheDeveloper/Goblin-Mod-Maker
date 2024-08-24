@@ -25,8 +25,8 @@ def load_settings():
     return data
 settings = load_settings()
 theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
-InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
-InterfaceMenu_Foreground = theme_data.get("interfacemenu_buttonconfig_foreground", "")
+InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+InterfaceMenu_Foreground = theme_data.get("buttonconfig", {}).get("foreground", "")
 
 # This function is used to make the loading screens for Building the mod and for generating the Dotnet files
 def create_loading_screen(message="Please Wait..."):
