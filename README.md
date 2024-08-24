@@ -68,8 +68,16 @@ This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDe
 
 ## Change Mod Version
 ![Change Mod Version Image](github/imgs/readme/changeversion.png)
-* New Version: The version of your mod that it will be renamed to.
+* Enter the new version of your mod (use semantic versioning -> major.minor.patch) for example isle goblin is on major 1, minor 3 and patch 0 at the time if writing this.
 
 ## Change Developers
 ![Change Developers Image](github/imgs/readme/changedevs.png)
 * Developer Names: Enter the name of the developer(s) that are working on the mod. Seperate names with a comma.
+
+## Go To Line
+![Go To Line Image](github/imgs/readme/linenumber.png)
+* Enter a line number and it will take you to that line in code. To view line numbers make sure it is turned on in the settings.
+
+## Search
+![Search Image](github/imgs/readme/search.png)
+* Allows you to search for things in code.
