@@ -29,3 +29,9 @@ If you need help just join the Isle Goblin Modding discord server and ask in any
 ## Author
 
 This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper and Spiral.
+
+## Themes
+
+There are multiple different themes!
+Default:
+![Default Theme Img](github/imgs/themes/default.png)
