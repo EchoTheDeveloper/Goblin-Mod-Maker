@@ -15,24 +15,48 @@ import builtins
 SETTINGS = {}
 
 def load_theme(filename):
-    with open(filename, 'r') as file:
+    with builtins.open(filename, 'r') as file:
         data = json.load(file)
     return data
 
 def load_settings():
-    with open("settings.json", 'r') as file:
+    with builtins.open("settings.json", 'r') as file:
         data = json.load(file)
     return data
-settings = load_settings()
-theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
-InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
-InterfaceMenu_Foreground = theme_data.get("buttonconfig", {}).get("foreground", "")
+# settings = load_settings()
+# theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
+# InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+# InterfaceMenu_Foreground = theme_data.get("buttonconfig", {}).get("foreground", "")
+# PyroPrompt_LinkText = theme_data.get("pyroprompt", {}).get("linktextcolor", "")
+
+def refresh_theme():
+    global theme_data, InterfaceMenu_Background, InterfaceMenu_Foreground, PyroPrompt_LinkText
+
+    # Reload the theme data
+    settings = load_settings()
+    theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
+    
+    # Update global theme variables
+    InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+    InterfaceMenu_Foreground = theme_data.get("buttonconfig", {}).get("foreground", "")
+    PyroPrompt_LinkText = theme_data.get("pyroprompt", {}).get("linktextcolor", "")
+
+    # Update the UI elements that rely on these variables
+    # Example: Updating the background and foreground colors
+    for window in pyro.get_windows():  # Assuming pyro has a method to get active windows
+        window.configure(background=InterfaceMenu_Background)
+        for widget in window.winfo_children():
+            if isinstance(widget, Label):
+                widget.configure(background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
+
+    print("Theme updated successfully!")
 
 # This function is used to make the loading screens for Building the mod and for generating the Dotnet files
 def create_loading_screen(message="Please Wait..."):
     # Visuals
     root = Tk()
     root.title("Please Wait...")
+    refresh_theme()
     root.iconbitmap("resources/isle-goblin-mod-maker.ico")
     root.configure(background=InterfaceMenu_Background)
     # The text it shows it provided via the message parameter
@@ -301,4 +325,5 @@ def create_keybind(window):
                            partial(_keybind_fallback, window), None,
                            defaults={"Default Keycode (Click For List)": "None"})
     labels[1].bind("<Button-1>", keycode_link)
-    labels[1].config(fg="#347deb")
+    refresh_theme()
+    labels[1].config(fg=PyroPrompt_LinkText)

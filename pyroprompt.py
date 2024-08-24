@@ -22,7 +22,7 @@ def apply_theme(root):
     global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
     global Click, Hover
     settings = load_settings()
-    theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
+    theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
     PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
     PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
     PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")

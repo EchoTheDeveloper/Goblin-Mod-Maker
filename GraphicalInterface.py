@@ -69,7 +69,7 @@ def load_settings():
         data = json.load(file)
     return data
 settings = load_settings()
-theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
+theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
 
 InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
 InterfaceMenu_Geometry = theme_data.get("interfacemenu", {}).get("geometry", "")
@@ -103,7 +103,7 @@ class InterfaceMenu:
         self.settings = self.find_settings()
         # Setting up the main window visuals
         #STUFF
-        theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Default") + ".json") 
+        theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Isle Goblin") + ".json") 
         # Update the theme settings
         global InterfaceMenu_Background, InterfaceMenu_Geometry, InterfaceMenu_NewButtonBackground, InterfaceMenu_OpenButtonBackground
         global InterfaceMenu_MouseEnter, InterfaceMenu_MouseExit, InterfaceMenu_ButtonConfigFG, InterfaceMenu_ButtonConfigBG
@@ -222,7 +222,7 @@ class InterfaceMenu:
             with open("settings.json", 'w') as file:
                 json.dump(settings, file, indent=4)
                 
-        # theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Default") + ".json")
+        # theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Isle Goblin") + ".json")
             
         # Update the theme settings
         
@@ -333,7 +333,7 @@ class InterfaceMenu:
 
         # Default selection for the dropdown
         clicked = StringVar()
-        clicked.set(self.settings.get("Selected Theme", "Default"))  # Set the last selected theme or to Default
+        clicked.set(self.settings.get("Selected Theme", "Isle Goblin"))  # Set the last selected theme or to Default
 
         Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Select Theme").pack(fill="x", padx=10)
         themeDrop = OptionMenu(settings_window, clicked, *themes)

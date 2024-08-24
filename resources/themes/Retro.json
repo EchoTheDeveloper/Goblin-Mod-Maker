@@ -20,6 +20,7 @@
   "pyroprompt": {
     "background": "#00062A",
     "foreground": "#b4d9f9",
-    "warningtextcolor": "red"
+    "warningtextcolor": "red",
+    "linktextcolor": "#7fffd4"
   }
 }
