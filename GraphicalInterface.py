@@ -102,6 +102,31 @@ class InterfaceMenu:
         can_make_menu = False
         self.settings = self.find_settings()
         # Setting up the main window visuals
+        #STUFF
+        theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Default") + ".json") 
+        # Update the theme settings
+        global InterfaceMenu_Background, InterfaceMenu_Geometry, InterfaceMenu_NewButtonBackground, InterfaceMenu_OpenButtonBackground
+        global InterfaceMenu_MouseEnter, InterfaceMenu_MouseExit, InterfaceMenu_ButtonConfigFG, InterfaceMenu_ButtonConfigBG
+        global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor
+        global NewButton, OpenButton
+        global Click, Hover
+        
+        InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+        InterfaceMenu_Geometry = theme_data.get("interfacemenu", {}).get("geometry", "")
+        InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu", {}).get("newbuttonbackground", "")
+        InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu", {}).get("openbuttonbackground", "")
+        InterfaceMenu_MouseEnter = theme_data.get("interfacemenu", {}).get("mouseenter", "")
+        InterfaceMenu_MouseExit = theme_data.get("interfacemenu", {}).get("mouseexit", "")
+        InterfaceMenu_ButtonConfigFG = theme_data.get("buttonconfig", {}).get("foreground", "")
+        InterfaceMenu_ButtonConfigBG = theme_data.get("buttonconfig", {}).get("background", "")
+        PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
+        PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
+        PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")
+        NewButton = theme_data.get("newbutton", "")
+        OpenButton = theme_data.get("openbutton", "")
+        Click = theme_data.get("click", "")
+        Hover = theme_data.get("hover", "")
+        #STUFF
         self.root = Tk()
         mixer.init()
         self.root.configure(background=InterfaceMenu_Background)
@@ -196,6 +221,19 @@ class InterfaceMenu:
             
             with open("settings.json", 'w') as file:
                 json.dump(settings, file, indent=4)
+                
+        # theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Default") + ".json")
+            
+        # Update the theme settings
+        
+        self.root.configure(background=InterfaceMenu_Background)
+        self.new_button.config(background=InterfaceMenu_NewButtonBackground)
+        self.open_button.config(background=InterfaceMenu_OpenButtonBackground)
+        self.new_image.config(file=NewButton)
+        self.open_image.config(file=OpenButton)
+        
+        for button in self.extra_buttons:
+            button.config(fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
 
         # Instead of doing root.mainloop we do pyro.add_window to avoid thread conflicts, pyro deals with calling
         # root.update() on  everything in the pyro window list, there is also no need to remove closed windows from this
