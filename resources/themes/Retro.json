@@ -5,16 +5,21 @@
   "click": "resources/themes/assets/retro/click.wav",
   "hover": "resources/themes/assets/retro/hover.wav",
 
-  "interfacemenu_background": "#00062A",
-  "interfaceMenu_geometry": "470x220",
-  "interfacemenu_newbuttonbackground": "#00062A",
-  "interfacemenu_openbuttonbackground": "#00062A",
-  "interfacemenu_mouseenter": "#8a7cf9",
-  "interfacemenu_mouseexit": "#4a3eab",
-  "interfacemenu_buttonconfig_foreground": "#4a3eab",
-  "interfacemenu_buttonconfig_background": "#00062A",
-
-  "pyroprompt_background": "#00062A",
-  "pyroprompt_foreground": "#b4d9f9",
-  "pyroprompt_warningtextcolor": "red"
+  "interfacemenu": {
+    "background": "#00062A",
+    "geometry": "470x220",
+    "newbuttonbackground": "#00062A",
+    "openbuttonbackground": "#00062A",
+    "mouseenter": "#8a7cf9",
+    "mouseexit": "#4a3eab"
+  },
+  "buttonconfig": {
+    "foreground": "#4a3eab",
+    "background": "#00062A"
+  },
+  "pyroprompt": {
+    "background": "#00062A",
+    "foreground": "#b4d9f9",
+    "warningtextcolor": "red"
+  }
 }

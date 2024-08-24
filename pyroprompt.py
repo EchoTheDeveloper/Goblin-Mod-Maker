@@ -23,9 +23,9 @@ def apply_theme(root):
     global Click, Hover
     settings = load_settings()
     theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
-    PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
-    PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
-    PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+    PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
+    PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
+    PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")
 
     Click = theme_data.get("click", "")
     Hover = theme_data.get("hover", "")

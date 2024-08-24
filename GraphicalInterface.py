@@ -11,6 +11,7 @@ from PIL import ImageTk, Image
 from functools import partial
 from pygame import mixer
 import json
+import winreg
 
 from pygments.lexers.dotnet import CSharpLexer
 import pyroprompt
@@ -58,7 +59,6 @@ def close(menu, end=True):
     except TclError:
         pass
 
-
 def load_theme(filename):
     with open(filename, 'r') as file:
         data = json.load(file)
@@ -71,18 +71,19 @@ def load_settings():
 settings = load_settings()
 theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Default") + ".json")
 
-InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
-InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
-InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu_newbuttonbackground", "")
-InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu_openbuttonbackground", "")
-InterfaceMenu_MouseEnter = theme_data.get("interfacemenu_mouseenter", "")
-InterfaceMenu_MouseExit = theme_data.get("interfacemenu_mouseexit", "")
-InterfaceMenu_ButtonConfigFG = theme_data.get("interfacemenu_buttonconfig_foreground", "")
-InterfaceMenu_ButtonConfigBG = theme_data.get("interfacemenu_buttonconfig_background", "")
+InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+InterfaceMenu_Geometry = theme_data.get("interfacemenu", {}).get("geometry", "")
+InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu", {}).get("newbuttonbackground", "")
+InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu", {}).get("openbuttonbackground", "")
+InterfaceMenu_MouseEnter = theme_data.get("interfacemenu", {}).get("mouseenter", "")
+InterfaceMenu_MouseExit = theme_data.get("interfacemenu", {}).get("mouseexit", "")
 
-PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
-PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
-PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+InterfaceMenu_ButtonConfigFG = theme_data.get("buttonconfig", {}).get("foreground", "")
+InterfaceMenu_ButtonConfigBG = theme_data.get("buttonconfig", {}).get("background", "")
+
+PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
+PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
+PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")
 
 NewButton = theme_data.get("newbutton", "")
 OpenButton = theme_data.get("openbutton", "")
@@ -177,6 +178,24 @@ class InterfaceMenu:
         self.new_button.bind("<Leave>", new_button_hover_exit)
         self.open_button.bind("<Enter>", open_button_hover_enter)
         self.open_button.bind("<Leave>", open_button_hover_exit)
+        
+        foldername = self.settings.get("Default Game Folder", "")
+        steampath = self.settings.get("Default Steam Directory", "")
+        if not os.path.isdir(os.path.join(steampath, foldername)):
+            # Try to find the correct Steam directory
+            steam_path = find_steam_directory(foldername)
+            if not steam_path:
+                messagebox.showerror("Game Not Found",
+                                    f"Game Not Found. There is no directory \"{os.path.join(steam_path, foldername)}\"",
+                                    parent=self)
+                return False
+            with open("settings.json", 'r') as file:
+                settings = json.load(file)
+            
+            settings["Default Steam Directory"] = steam_path
+            
+            with open("settings.json", 'w') as file:
+                json.dump(settings, file, indent=4)
 
         # Instead of doing root.mainloop we do pyro.add_window to avoid thread conflicts, pyro deals with calling
         # root.update() on  everything in the pyro window list, there is also no need to remove closed windows from this
@@ -207,6 +226,8 @@ class InterfaceMenu:
         title = "Isle Goblin Mod Maker Settings"
         settings_window = Toplevel(self.root)
         settings_window.title(title)
+        global settings 
+        settings = self.find_settings() #reload the settings
         Frame(settings_window, width=500, background=PyroPrompt_Background).pack()
         frame = Frame(settings_window, width=500, background=PyroPrompt_Background)
         frame.pack(fill="x")
@@ -222,9 +243,10 @@ class InterfaceMenu:
         game_folder_entry.insert(0, self.settings.get("Default Game Folder", ""))
         game_folder_entry.pack(fill="x", padx=10, pady=10)
 
+        steam_path = find_steam_directory(self.settings.get("Default Steam Directory", ""))
         Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Steam Directory").pack(fill="x", padx=10)
         steam_dir_entry = Entry(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
-        steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", ""))
+        steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", steam_path))
         steam_dir_entry.pack(fill="x", padx=10, pady=10)
 
         theme_folder = "resources/themes"
@@ -253,7 +275,7 @@ class InterfaceMenu:
             self.settings["Default Steam Directory"] = steam_dir_entry.get()
             self.settings["Show Line Numbers"] = show_line_numbers_var.get()
             self.settings["Selected Theme"] = clicked.get()
-            
+                        
             # Save the settings to the JSON file
             with open('settings.json', 'w') as json_file:
                 json.dump(self.settings, json_file, indent=4)
@@ -273,18 +295,19 @@ class InterfaceMenu:
             except:
                 pass
             
-            InterfaceMenu_Background = theme_data.get("interfacemenu_background", "")
-            InterfaceMenu_Geometry = theme_data.get("interfaceMenu_geometry", "")
-            InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu_newbuttonbackground", "")
-            InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu_openbuttonbackground", "")
-            InterfaceMenu_MouseEnter = theme_data.get("interfacemenu_mouseenter", "")
-            InterfaceMenu_MouseExit = theme_data.get("interfacemenu_mouseexit", "")
-            InterfaceMenu_ButtonConfigFG = theme_data.get("interfacemenu_buttonconfig_foreground", "")
-            InterfaceMenu_ButtonConfigBG = theme_data.get("interfacemenu_buttonconfig_background", "")
-            
-            PyroPrompt_Background = theme_data.get("pyroprompt_background", "")
-            PyroPrompt_Foreground = theme_data.get("pyroprompt_foreground", "")
-            PyroPrompt_WarningTextColor = theme_data.get("pyroprompt_warningtextcolor", "")
+            InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+            InterfaceMenu_Geometry = theme_data.get("interfacemenu", {}).get("geometry", "")
+            InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu", {}).get("newbuttonbackground", "")
+            InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu", {}).get("openbuttonbackground", "")
+            InterfaceMenu_MouseEnter = theme_data.get("interfacemenu", {}).get("mouseenter", "")
+            InterfaceMenu_MouseExit = theme_data.get("interfacemenu", {}).get("mouseexit", "")
+
+            InterfaceMenu_ButtonConfigFG = theme_data.get("buttonconfig", {}).get("foreground", "")
+            InterfaceMenu_ButtonConfigBG = theme_data.get("buttonconfig", {}).get("background", "")
+
+            PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
+            PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
+            PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")
 
             NewButton = theme_data.get("newbutton", "")
             OpenButton = theme_data.get("openbutton", "")
@@ -311,6 +334,48 @@ class InterfaceMenu:
         buttons.pack()
         Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=0, column=1, padx=10, pady=(10, 10))
         
+    def prompt_for_custom_steam_directory():
+        root = Tk()
+        root.withdraw()  # Hide the root window
+        steam_path = filedialog.askdirectory(title="Select Steam Library Directory")
+        if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common")):
+            return steam_path
+        return None
+
+
+    def find_steam_directory(folder_name):
+        # First, attempt to get the Steam directory from the registry
+        steam_path = get_steam_directory()
+        if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
+            return steam_path
+
+        # Check common custom drive locations
+        common_drives = ["C:", "D:", "E:", "F:", "Z:"]
+        for drive in common_drives:
+            possible_path = os.path.join(drive, "SteamLibrary", "steamapps", "common")
+            if os.path.exists(os.path.join(possible_path, folder_name)):
+                return possible_path
+            
+        # If registry lookup fails, prompt user to select Steam library directory
+        steam_path = prompt_for_custom_steam_directory()
+        if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
+            return steam_path
+
+
+        # If still not found, return None
+        return None
+
+    def get_steam_directory():
+            try:
+                # Open the Steam registry key
+                reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Valve\Steam")
+                # Query the value of the "InstallPath" entry
+                steam_path = winreg.QueryValueEx(reg_key, "InstallPath")[0]
+                winreg.CloseKey(reg_key)
+                return steam_path
+            except FileNotFoundError:
+                # If registry lookup fails, return None
+                return None
 
 
     def _copy_fallback(self, mod, name):
@@ -351,6 +416,11 @@ class InterfaceMenu:
     # This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
     # calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
     def new(self, e):
+        try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+        except:
+            pass
         create_prompt("New Mod", 
                        ("Mod Name",
                         "Desciption",
@@ -359,11 +429,6 @@ class InterfaceMenu:
                         None, 
                         defaults=None
                      )
-        try:
-            mixer.music.load(Click)
-            mixer.music.play(loops=0)
-        except:
-            pass
 
     # See the new function, this is the function that gets called when the prompt from the new function has "done"
     # clicked

@@ -5,16 +5,21 @@
   "click": "resources/themes/assets/midnight/click.wav",
   "hover": "resources/themes/assets/midnight/hover.wav",
 
-  "interfacemenu_background": "#353738",
-  "interfaceMenu_geometry": "470x220",
-  "interfacemenu_newbuttonbackground": "#353738",
-  "interfacemenu_openbuttonbackground": "#353738",
-  "interfacemenu_mouseenter": "#7a7c7d",
-  "interfacemenu_mouseexit": "#edf2f4",
-  "interfacemenu_buttonconfig_foreground": "#edf2f4",
-  "interfacemenu_buttonconfig_background": "#353738",
-
-  "pyroprompt_background": "#353738",
-  "pyroprompt_foreground": "#edf2f4",
-  "pyroprompt_warningtextcolor": "#ef233c"
+  "interfacemenu": {
+    "background": "#353738",
+    "geometry": "470x220",
+    "newbuttonbackground": "#353738",
+    "openbuttonbackground": "#353738",
+    "mouseenter": "#7a7c7d",
+    "mouseexit": "#edf2f4"
+  },
+  "buttonconfig": {
+    "foreground": "#edf2f4",
+    "background": "#353738"
+  },
+  "pyroprompt": {
+    "background": "#353738",
+    "foreground": "#edf2f4",
+    "warningtextcolor": "#ef233c"
+  }
 }

@@ -5,16 +5,21 @@
   "click": "resources/themes/assets/ocean/click.wav",
   "hover": "resources/themes/assets/ocean/hover.wav",
 
-  "interfacemenu_background": "#004080",
-  "interfaceMenu_geometry": "470x220",
-  "interfacemenu_newbuttonbackground": "#004080",
-  "interfacemenu_openbuttonbackground": "#004080",
-  "interfacemenu_mouseenter": "#0073e6",
-  "interfacemenu_mouseexit": "#ffffff",
-  "interfacemenu_buttonconfig_foreground": "#ffffff",
-  "interfacemenu_buttonconfig_background": "#004080",
-
-  "pyroprompt_background": "#004080",
-  "pyroprompt_foreground": "#ffffff",
-  "pyroprompt_warningtextcolor": "#ff4c4c"
+  "interfacemenu": {
+    "background": "#004080",
+    "geometry": "470x220",
+    "newbuttonbackground": "#004080",
+    "openbuttonbackground": "#004080",
+    "mouseenter": "#0073e6",
+    "mouseexit": "#ffffff"
+  },
+  "buttonconfig": {
+    "foreground": "#ffffff",
+    "background": "#004080"
+  },
+  "pyroprompt": {
+    "background": "#004080",
+    "foreground": "#ffffff",
+    "warningtextcolor": "#ff4c4c"
+  }
 }

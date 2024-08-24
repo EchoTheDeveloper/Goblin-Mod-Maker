@@ -1,5 +1,5 @@
 import shutil
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
 from ModObjectBuilder import *
 from CodeManager import *
@@ -12,8 +12,9 @@ import requests
 import zipfile
 import platform
 from datetime import datetime
+import winreg
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 windows = []
 
 
@@ -433,6 +434,48 @@ def extract_zip(file_path, extract_to):
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(extract_to)
 
+def prompt_for_custom_steam_directory():
+    root = Tk()
+    root.withdraw()  # Hide the root window
+    steam_path = filedialog.askdirectory(title="Select Steam Library Directory")
+    if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common")):
+        return steam_path
+    return None
+
+
+def find_steam_directory(folder_name):
+    # First, attempt to get the Steam directory from the registry
+    steam_path = get_steam_directory()
+    if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
+        return steam_path
+
+    # Check common custom drive locations
+    common_drives = ["C:", "D:", "E:", "F:", "Z:"]
+    for drive in common_drives:
+        possible_path = os.path.join(drive, "SteamLibrary", "steamapps", "common")
+        if os.path.exists(os.path.join(possible_path, folder_name)):
+            return possible_path
+        
+    # If registry lookup fails, prompt user to select Steam library directory
+    steam_path = prompt_for_custom_steam_directory()
+    if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
+        return steam_path
+
+
+    # If still not found, return None
+    return None
+
+def get_steam_directory():
+        try:
+            # Open the Steam registry key
+            reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Valve\Steam")
+            # Query the value of the "InstallPath" entry
+            steam_path = winreg.QueryValueEx(reg_key, "InstallPath")[0]
+            winreg.CloseKey(reg_key)
+            return steam_path
+        except FileNotFoundError:
+            # If registry lookup fails, return None
+            return None
 
 def verify_game(name, folder_name, steam_path, prompt):
     architecture = get_system_architecture()
@@ -441,10 +484,21 @@ def verify_game(name, folder_name, steam_path, prompt):
     # zip_path = os.path.join(os.getcwd(), f"BepInEx_{version}_{architecture}.zip")
     
     if not os.path.isdir(os.path.join(steam_path, folder_name)):
-        messagebox.showerror("Game Not Found",
-                             "Game Not Found. There is no directory \"" + os.path.join(steam_path, folder_name) + "\"",
-                             parent=prompt)
-        return False
+        # Try to find the correct Steam directory
+        steam_path = find_steam_directory(folder_name)
+        if not steam_path:
+            messagebox.showerror("Game Not Found",
+                                 f"Game Not Found. There is no directory \"{os.path.join(steam_path, folder_name)}\"",
+                                 parent=prompt)
+            return False
+        with open("settings.json", 'r') as file:
+            settings = json.load(file)
+        
+        settings["Default Steam Directory"] = steam_path
+        
+        with open("settings.json", 'w') as file:
+            json.dump(settings, file, indent=4)
+        return True
     if not os.path.isdir(os.path.join(steam_path, folder_name, name + "_Data")):
         messagebox.showerror("Game Not Valid",
                              "The directory \"" + os.path.join(steam_path, folder_name, name + "_Data") +
