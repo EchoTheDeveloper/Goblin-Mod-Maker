@@ -34,7 +34,15 @@ This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDe
 
 ## Default:
 ![Default Theme Img](github/imgs/themes/default.png)
-## Dark:
-![Dark Theme Img](github/imgs/themes/dark.png)
 ## Light:
 ![Light Theme Img](github/imgs/themes/light.png)
+## Dark:
+![Dark Theme Img](github/imgs/themes/dark.png)
+## Midnight:
+![Midnight Theme Img](github/imgs/themes/midnight.png)
+## Forest:
+![Midnight Theme Img](github/imgs/themes/forest.png)
+## Ocean:
+![Midnight Theme Img](github/imgs/themes/ocean.png)
+## Retro:
+![Midnight Theme Img](github/imgs/themes/retro.png)
