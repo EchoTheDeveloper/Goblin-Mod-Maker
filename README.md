@@ -48,7 +48,7 @@ This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDe
 ![Midnight Theme Img](github/imgs/themes/retro.png)
 
 # Feature Overview:
-## For the sake of this turial, everything will be done using the dark theme and all screenshots are provided from the source code of version v1.3.0 by developer SpiralDev
+## For the sake of this tutorial, everything will be done using the dark theme and all screenshots are provided from the source code of version v1.3.0 by developer SpiralDev
 ## New Mod:
 ![New Mod Image](github/imgs/readme/newmod.png)
 * Mod Name: This is where you enter the name of your mod. Can be changed later.
