@@ -51,16 +51,16 @@ This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDe
 ## For the sake of this tutorial, everything will be done using the dark theme and all screenshots are provided from the source code of version v1.3.0 by developer SpiralDev
 ## New Mod:
 ![New Mod Image](github/imgs/readme/newmod.png)
-* **Mod Name**: This is where you enter the name of your mod. Can be changed later.
-* **Description**: This is a description of your mod for the manifest.json file. Can be changed in manifest.json after building.
-* **Developers**: If entering multiple, seperate with a comma. Can be changed later.
+* **Mod Name:** This is where you enter the name of your mod. Can be changed later.
+* **Description:** This is a description of your mod for the manifest.json file. Can be changed in manifest.json after building.
+* **Developers:** If entering multiple, seperate with a comma. Can be changed later.
 
 ## Mod Maker Settings:
 ![Mod Maker Settings Image](github/imgs/readme/igmm_settings.png)
-* **Default Game** Folder: Set to Isle Goblin Playtest because of the current beta version of the game.
-* **Default Steam Directory**: Can be found automatically (RECOMMENDED), the common folder where steam games are held.
-* **Select Themes**: A dropdown box to select themes. automatically scans themes. See the Making Your Own theme section below. Will reapply theme on startup
-* **Show Line Numbers**: If checked line numbers will be shown in the text editor.
+* **Default Game Folder:** Set to Isle Goblin Playtest because of the current beta version of the game.
+* **Default Steam Directory:** Can be found automatically (RECOMMENDED), the common folder where steam games are held.
+* **Select Themes:** A dropdown box to select themes. automatically scans themes. See the Making Your Own theme section below. Will reapply theme on startup
+* **Show Line Numbers:** If checked line numbers will be shown in the text editor.
 
 ## Rename Mod
 ![Rename Mod Image](github/imgs/readme/rename.png)
@@ -72,7 +72,7 @@ This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDe
 
 ## Change Developers
 ![Change Developers Image](github/imgs/readme/changedevs.png)
-* **Developer Names**: Enter the name of the developer(s) that are working on the mod. Seperate names with a comma.
+* **Developer Names:** Enter the name of the developer(s) that are working on the mod. Seperate names with a comma.
 
 ## Go To Line
 ![Go To Line Image](github/imgs/readme/linenumber.png)
