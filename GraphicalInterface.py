@@ -11,7 +11,6 @@ from PIL import ImageTk, Image
 from functools import partial
 from pygame import mixer
 import json
-import winreg
 
 from pygments.lexers.dotnet import CSharpLexer
 import pyroprompt
