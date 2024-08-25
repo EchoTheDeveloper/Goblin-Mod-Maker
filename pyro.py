@@ -284,9 +284,6 @@ class CoreUI(object):
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
         self.toolsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
 
-
-        self.menubar.add_cascade(label="Snippets", command=self.snippetsmenu)
-
         # self.toolsmenu.add_command(label="Public Void", command=inject_line(self, codeToInject="private"))
         self.snippetsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
 

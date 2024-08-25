@@ -12,7 +12,7 @@ Credits to Watt Designs for making Isle Goblin [Watt Designs Youtube Channel](ht
 
 Credits to HippoLippo for making the original Unity Mod Maker [HippoLippo's Mod Maker](https://github.com/HippoLippo/Unity-Mod-Maker)
 
-Credits to SpiralDev for updating/working on the modding page of the wiki (@spirallikespc on Discord)
+Credits to Spiral for updating/working on the modding page of the wiki (@spirallikespc on Discord)
 
 ## Licence
 

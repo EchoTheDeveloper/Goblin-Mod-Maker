@@ -1,29 +1,187 @@
-# Documentation for the Isle Goblin Mod Maker
+# Isle Goblin Mod Maker Documentation
 
-# Important Stuff:
+## Table of Contents
+- [Isle Goblin Mod Maker Documentation](#isle-goblin-mod-maker-documentation)
+  - [Table of Contents](#table-of-contents)
+  - [Editor Menu](#editor-menu)
+    - [Edit](#edit)
+      - [Change Mod Name](#change-mod-name)
+      - [Change Mod Version](#change-mod-version)
+      - [Change Mod Developers](#change-mod-developers)
+    - [Create](#create)
+      - [Create Harmony Patch](#create-harmony-patch)
+      - [Create Config Item](#create-config-item)
+      - [Create Keybind](#create-keybind)
+    - [Build](#build)
+      - [Build and Install](#build-and-install)
+      - [Export C# File](#export-c-file)
+      - [Generate Dotnet Files](#generate-dotnet-files)
+    - [Tools](#tools)
+      - [Search](#search)
+      - [Go To Line](#go-to-line)
+  - [Errors](#errors)
+    - [Known Errors](#known-errors)
+      - [Mod Menu Not Showing Up](#mod-menu-not-showing-up)
+
+---
+
+## Editor Menu
+<!-- **`MOST EXAMPLES ARE JUST EXAMPLES THEY ARE NOT CONNECTED TO THE GAME`** -->
+
+
+### Edit
+
+#### Change Mod Name
+![Rename Mod Image](github/imgs/readme/rename.png)
+- **Path:** `Edit > Change Mod Name`
+- **New Name:** The name that your mod will be renamed to.
+  - ex: *The Ultimate Goblin Mod*
+
+---
+
+#### Change Mod Version
+![Change Mod Version Image](github/imgs/readme/changeversion.png)
+- **Path:** `Edit > Change Mod Version`
+- **New Version:** The version number your mod will be changed to.
+  - Semantic versioning recommended (major.minor.patch). Example: `1.3.0` where:
+    - **Major:** 1
+    - **Minor:** 3
+    - **Patch:** 0
+  - ex: *1.0.1*
+---
+
+#### Change Mod Developers
+![Change Developers Image](github/imgs/readme/changedevs.png)
+- **Path:** `Edit > Change Mod Developer`
+- **Developer Names:** Enter the name(s) of the developer(s) working on the mod. Separate names with commas.
+  - ex: *Watt, Matt*
+
+---
+
+### Create
+
+#### Create Harmony Patch
+![Create Harmony Patch Image](github/imgs/readme/createharmonypatch.png)
+- **Path:** `Create > Create Harmony Patch`
+- **Function Name:** This is the name of the method that you want to patch in the target class.
+  - ex: *Attack*
+- **Function Class:** This is the class that contains the method you want to patch. You must specify the class name where the target method is defined.
+  - ex: *AttackManager*
+- **Parameters (seperated by comma):** These are the parameters of the method being patched, separated by commas. You need to provide the parameter types and names in the format `Type paramName`. If you don’t need to modify certain parameters, they can be left out of this list.
+  - ex: *float damage, bool critical*
+- **Prefix/Postfix:** This determines whether the patch should be applied *before*(Prefix) or *after*(Postfix) the original method.
+  - ex: *Prefix*
+- **Return Type:** This specifies the return type of the method you want to patch. If the original method returns a value and you want to override or manipulate the result, you can specify it here. If there is no return value, it can be set to None.
+  - ex: *string*
+- **Have Instance?:** This determines if the patch has access to the instance of the class. If true, the patch will have access to `__instance`, which allows it to interact with instance-specific data.
+  - ex: *True*
+
+`these examples are just examples they are not connected to the game`
+
+---
+
+#### Create Config Item
+![Create Config Item Image](github/imgs/readme/createconfigitem.png)
+- **Path:** `Create > Create Config Item`
+- **Variable Name:** This is the name of the config variable that will be used in the code.
+  - ex: *maxHealth*
+- **Data Type:** This defines the type of data the config item will hold. Common data types include `int`, `float`, `bool`, `string`, etc.
+  - ex: *int*
+- **Default Value (C# Formatting):** This is the default value for the config item. It must be provided in proper C# format. For instance, strings should be wrapped in quotes, booleans should be true or false, ints as-is, floats with a `f` a the end, etc.
+  - ex: *100*
+- **Definition:** This is the display name that appears in the config list (usually in the game’s settings UI). It’s a human-readable name for the setting.
+  - ex: *Max Health*
+- **Description (Info When Hovered Over):** This provides additional information about the config item. It’s typically shown when the user hovers over the setting in the UI, helping them understand what the setting does.
+  - ex: *The maximum health the player can have*
+
+`these examples are just examples they are not connected to the game`
+
+---
+
+#### Create Keybind
+![Create Keybind Image](github/imgs/readme/createkeybind.png)
+- **Path:** `Create > Create Keybind`
+- **Variable Name:** This is the name of the keybind variable that will be used in the code.
+  - ex: *"dashKey"*
+- **[Default Keycode (Click For List)](https://docs.unity3d.com/ScriptReference/KeyCode.html):** This specifies the default key that the keybind will be mapped to when first initialized. The value should be a valid Unity `KeyCode`. For a full list, click on the label, which opens the Unity KeyCode documentation.
+  - ex: *LeftShift*
+- **Definition (Name in Settings):** This is the display name that appears in the settings menu for the keybind. It’s the name users will see when configuring the keybind in the UI.
+  - ex: *Dash*
+- **Description (Info When Hovered Over):** This provides additional information about the keybind. It’s typically shown when the user hovers over the keybind setting in the UI, explaining what the keybind does.
+  - ex: *Press to dash*
+
+`these examples are just examples they are not connected to the game`
+
+---
+
+### Build
+
+#### Build and Install
+- **Path:** `Build > Build and Install`
+- **Description:** This option builds your mod in `[igmm folder] > projects > [mod name]` and then copies it into a folder named after your mod in `Isle Goblin Playtest > BepInEx > plugins`.
+  - The folder will also include a `manifest.json`, `CHANGELOG.md`, and `README.md`.
+  - It is recommended to adjust these files to match your mod.
+
+---
+
+#### Export C# File
+- **Path:** `Build > Export C# File`
+- This generates and exports a C# file of the mod's code within the application. 
+- You can find this file at `[igmm folder] > projects > [mod name] > [mod name].cs`
+
+---
+
+#### Generate Dotnet Files
+- **Path:** `Build > Generate Dotnet Files`
+- This option generates and exports all dotnet files for your mod, including the C# code, a `.csproj` file, a manifest, and other a few other resources.
+- These files are located at `[igmm folder] > projects > [mod name]`. The structure includes:
+  - `[mod name].cs`
+  - `[mod name].csproj`
+  - `manifest.json`
+  - `README.md`
+  - `CHANGELOG.md`
+  - `Libraries` folder (containing required game and BepInEx libraries)
+---
+
+### Tools
+
+#### Search
+![Search Image](github/imgs/readme/search.png)
+- **Path:** `Tools > Search`
+- **Description:** Allows you to search for text in the code.
+
+---
+
+#### Go To Line
+![Go To Line Image](github/imgs/readme/linenumber.png)
+- **Path:** `Tools > Go To Line`
+- **Description:** Enter a line number and it will take you directly to that line in the code.
+- **Note:** To view line numbers, ensure they are enabled in the settings.
+
+---
 
 ## Errors
 
-* If you have any errors with the mod maker itself feel free to join [Isle Goblin Modding Discord Sever](https://discord.gg/vKy7YHPMmx).
-* The [Isle Goblin Wiki modding section](https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Errors) has a really good error handling page. Please note that some of these errors, including the NetStandard2.0 -> 2.1 error has been fixed and will be deployed in update v1.1.0 (semantic versioning)
+If you encounter errors with the mod maker itself, you can:
+- Join the [Isle Goblin Modding Discord Server](https://discord.gg/vKy7YHPMmx).
+- Check out the [Isle Goblin Wiki Modding Section](https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Errors) for a detailed error-handling guide.
 
-Common Errors:
+### Known Errors
 
-### Netstandard error
+#### Mod Menu Not Showing Up
 
-* If you get **an error** that has something to do with **netstandard** then go to your **Isle Goblin Mod Maker folder resources>csporjtemplate**
-* In this file **change the 3rd line** from `<TargetFramework>netstandard2.0</TargetFramework>` to `<TargetFramework>netstandard2.1</TargetFramework>`
-* **Now re-build your mod** and it should work if you code itself has no errors
+<details>
+<summary>Solution</summary>
 
-## Mod Menu not showing up
+1. Go to the [BepInEx ConfigManager](https://thunderstore.io/c/valheim/p/Azumatt/Official_BepInEx_ConfigurationManager/) page.
+2. Click **Manual Download**.
+3. Extract the downloaded zip file.
+4. Once extraction is complete, you can delete the zip file.
+5. Open the extracted folder.
+6. Inside, navigate to `BepInEx > plugins > ConfigurationManager`.
+7. Open your **Isle Goblin Playtest** folder.
+8. Navigate to `BepInEx > plugins`.
+9. Drag and drop the `ConfigurationManager.dll` from the extracted folder into your `Isle Goblin Playtest > BepInEx > plugins` folder.
+10. Start Isle Goblin, and the mod menu should appear.
 
-* Go to [BepinEX ConfigManager](https://thunderstore.io/c/valheim/p/Azumatt/Official_BepInEx_ConfigurationManager/)
-* Then click **Manual Download**
-* Now **extract** the **downloaded** **zip**
-* **After** it's **done extracting**, you can **delete the zip*
-* **Open** up the **extracted folder**
-* Inside of that folder, **open BepinEX>plugins>ConfigurationManager**
-* **Make sure you have the Isle Goblin Playtest folder open as well**
-* Inside of your **Isle Goblin folder** open **BepinEX>plugins**
-* Now drag and drop the **ConfigurationManager.dll** from the **ConfigurationManager** folder **to the Isle Goblin Playtest>BepinEX>plugins folder**
-* Start up Isle Goblin and you should be good to go.
+</details>
