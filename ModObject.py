@@ -40,6 +40,8 @@ class ModObject(LimitedModObject):
         self.index = 0
         self.mod_maker_version = VERSION
         self.game = game
+        global settings
+        settings = load_settings()
         steampath = settings.get("Default Steam Directory", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\")
         self.folder_name = self.game if folder_name is None else folder_name
         self.steampath = steampath
@@ -280,6 +282,8 @@ class ModObject(LimitedModObject):
 
 
 def create_files(mod: ModObject, destroyonerror=None):
+    global settings
+    settings = load_settings()
     name_no_space = mod.mod_name_no_space.get_text()
     current_directory = os.getcwd()
     folder_path = os.path.join(current_directory, "projects/" + name_no_space)
