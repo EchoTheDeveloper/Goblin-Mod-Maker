@@ -3,6 +3,12 @@
 ## Table of Contents
 - [Isle Goblin Mod Maker Documentation](#isle-goblin-mod-maker-documentation)
   - [Table of Contents](#table-of-contents)
+  - [Main Menu](#main-menu)
+    - [Mods](#mods)
+      - [New Mod](#new-mod)
+      - [Open/Load Mod](#openload-mod)
+      - [Open/Load Mod from .igmm file](#openload-mod-from-igmm-file)
+    - [Settings Window](#settings-window)
   - [Editor Menu](#editor-menu)
     - [Edit](#edit)
       - [Change Mod Name](#change-mod-name)
@@ -22,6 +28,44 @@
   - [Errors](#errors)
     - [Known Errors](#known-errors)
       - [Mod Menu Not Showing Up](#mod-menu-not-showing-up)
+
+---
+
+## Main Menu
+### Mods
+#### New Mod
+![New Mod Image](github/imgs/readme/newmod.png)
+- **Mod Name:** This is where you enter the name of your mod. Can be changed later.
+- **Description:** This is a description of your mod for the manifest.json file. Can be changed in manifest.json after building.
+- **Developers:** If entering multiple, seperate with a comma. Can be changed later.
+
+---
+
+#### Open/Load Mod
+
+![Open Mod Image](github/imgs/readme/openmod.png)
+- **Mod Name:** The name of the mod(without spaces) you want to open. If you forgot or it isn't working go to `[igmm folder] > projects`. Find the mod you want, copy its name, and paste that into the input field
+
+---
+
+#### Open/Load Mod from .igmm file
+<img src="github/imgs/readme/openfromfile.png" alt="Open Mod From File" width="200"/>
+<img src="github/imgs/readme/openfromfilewarning.png" alt="Open Mod From File" width="200"/>
+
+- **On Opening**
+    1. A warning pops up letting you know to not open mods from untrusted sources
+    2. A file dialog pops up prompting you to find the location of the mod
+    3. After selecting the `.igmm` file, the mod will open up in the editor
+- **Note:** If you have any `.ugmm` that you want to use in IGMM try renaming it from `.ugmm` to `.igmm`
+
+---
+
+### Settings Window
+![Mod Maker Settings Image](github/imgs/readme/igmm_settings.png)
+- **Default Game Folder:** Set to Isle Goblin Playtest because of the current beta version of the game.
+- **Default Steam Directory:** Can be found automatically (RECOMMENDED), the common folder where steam games are held.
+- **Select Themes:** A dropdown box to select themes. automatically scans themes. See the Making Your Own theme section below. Will reapply theme on startup
+- **Show Line Numbers:** If checked line numbers will be shown in the text editor.
 
 ---
 
