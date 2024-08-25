@@ -229,3 +229,8 @@ If you encounter errors with the mod maker itself, you can:
 10. Start Isle Goblin, and the mod menu should appear.
 
 </details>
+
+## Support
+
+### Discord Server
+#### If you join our [discord server](https://discord.gg/ZbeuzR2rRC) you can get support from the devs and community!
