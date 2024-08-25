@@ -11,7 +11,10 @@ from PIL import ImageTk, Image
 from functools import partial
 from pygame import mixer
 import json
-import winreg
+try:
+    import winreg
+except:
+    import plistlib
 
 from pygments.lexers.dotnet import CSharpLexer
 import pyroprompt
@@ -204,21 +207,24 @@ class InterfaceMenu:
         
         foldername = self.settings.get("Default Game Folder", "")
         steampath = self.settings.get("Default Steam Directory", "")
-        if not os.path.isdir(os.path.join(steampath, foldername)):
-            # Try to find the correct Steam directory
-            steam_path = find_steam_directory(foldername)
-            if not steam_path:
-                messagebox.showerror("Game Not Found",
-                                    f"Game Not Found. There is no directory \"{os.path.join(steam_path, foldername)}\"",
-                                    parent=self)
-                return False
-            with open("settings.json", 'r') as file:
-                settings = json.load(file)
-            
-            settings["Default Steam Directory"] = steam_path
-            
-            with open("settings.json", 'w') as file:
-                json.dump(settings, file, indent=4)
+        try:
+            if not os.path.isdir(os.path.join(steampath, foldername)):
+                # Try to find the correct Steam directory
+                steam_path = find_steam_directory(foldername)
+                if not steam_path:
+                    messagebox.showerror("Game Not Found",
+                                        f"Game Not Found. There is no directory \"{os.path.join(steam_path, foldername)}\"",
+                                        parent=self)
+                    return False
+                with open("settings.json", 'r') as file:
+                    settings = json.load(file)
+                
+                settings["Default Steam Directory"] = steam_path
+                
+                with open("settings.json", 'w') as file:
+                    json.dump(settings, file, indent=4)
+        except:
+            pass
                 
         # theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Isle Goblin") + ".json")
             
@@ -457,7 +463,14 @@ class InterfaceMenu:
             possible_path = os.path.join(drive, "SteamLibrary", "steamapps", "common")
             if os.path.exists(os.path.join(possible_path, folder_name)):
                 return possible_path
+            program_files_path = os.path.join(drive, "Program Files", "Steam", "steamapps", "common", folder_name)
+            if os.path.exists(program_files_path):
+                return os.path.join(drive, "Program Files", "Steam", "steamapps", "common")
             
+            program_files_x86_path = os.path.join(drive, "Program Files (x86)", "Steam", "steamapps", "common", folder_name)
+            if os.path.exists(program_files_x86_path):
+                return os.path.join(drive, "Program Files (x86)", "Steam", "steamapps", "common")
+                
         # If registry lookup fails, prompt user to select Steam library directory
         steam_path = prompt_for_custom_steam_directory()
         if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):

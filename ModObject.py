@@ -12,7 +12,10 @@ import requests
 import zipfile
 import platform
 from datetime import datetime
-import winreg
+try:
+    import winreg
+except:
+    import plistlib
 
 VERSION = "1.3.0"
 windows = []
@@ -459,7 +462,6 @@ def find_steam_directory(folder_name):
     steam_path = get_steam_directory()
     if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
         return steam_path
-
     # Check common custom drive locations
     common_drives = ["C:", "D:", "E:", "F:", "Z:"]
     for drive in common_drives:
@@ -467,6 +469,24 @@ def find_steam_directory(folder_name):
         if os.path.exists(os.path.join(possible_path, folder_name)):
             return possible_path
         
+        program_files_path = os.path.join(drive, "Program Files", "Steam", "steamapps", "common", folder_name)
+        if os.path.exists(program_files_path):
+            return os.path.join(drive, "Program Files", "Steam", "steamapps", "common")
+        
+        program_files_x86_path = os.path.join(drive, "Program Files (x86)", "Steam", "steamapps", "common", folder_name)
+        if os.path.exists(program_files_x86_path):
+            return os.path.join(drive, "Program Files (x86)", "Steam", "steamapps", "common")
+    # except:
+    #     plist_path = os.path.expanduser('~/Library/Preferences/com.example.myapp.plist')
+    #     if os.path.exists(plist_path):
+    #         update_steam_directory_in_plist(plist_path, steam_path)
+    #         messagebox.showinfo("Steam Directory Updated",
+    #                             f"Steam directory updated in .plist file to: {steam_path}",
+    #                             parent=self)
+    #     else:
+    #         messagebox.showerror("Error", "Unable to find or create the .plist file.",
+    #                             parent=self)      
+    
     # If registry lookup fails, prompt user to select Steam library directory
     steam_path = prompt_for_custom_steam_directory()
     if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
