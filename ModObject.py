@@ -40,6 +40,7 @@ class ModObject(LimitedModObject):
         self.index = 0
         self.mod_maker_version = VERSION
         self.game = game
+        steampath = settings.get("Default Steam Directory", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\")
         self.folder_name = self.game if folder_name is None else folder_name
         self.steampath = steampath
         self.config_number = 0
