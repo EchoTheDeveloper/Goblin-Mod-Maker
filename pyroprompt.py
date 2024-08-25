@@ -129,7 +129,10 @@ def done(root, fallback, answers, error):
         root.focus()
     else:
         cancel(root, None)
-    apply_theme(root)  # Reload the theme after prompt completion
+    try:    
+        apply_theme(root)  # Reload the theme after prompt completion
+    except:
+        pass
 
 def done_int(root, fallback, answer, error, min_value):
     try:

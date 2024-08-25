@@ -509,8 +509,8 @@ class InterfaceMenu:
         name = file.name
         file.close()
         mod = load(name)
-        create_prompt("Create Mod From .igmm file", ("New Mod Name",), partial(self._copy_fallback, mod), None)
-        #pyro.CoreUI(lexer=CSharpLexer(), filename=mod.mod_name_no_space.get_text(), mod=mod)
+        close(self, False)
+        pyro.CoreUI(lexer=CSharpLexer(), filename=mod.mod_name_no_space.get_text(), mod=mod, settings=self.settings)
 
     def enter(self, e):
         # mod_name is the contents of the text box
