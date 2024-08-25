@@ -30,22 +30,5 @@ If you need help just join the Isle Goblin Modding discord server and ask in any
 
 This is a fork of the Unity Mod Maker by HippoLippo being continued by EchoTheDeveloper and Spiral.
 
-# Themes
-
-## Default:
-![Default Theme Img](github/imgs/themes/default.png)
-## Light:
-![Light Theme Img](github/imgs/themes/light.png)
-## Dark:
-![Dark Theme Img](github/imgs/themes/dark.png)
-## Midnight:
-![Midnight Theme Img](github/imgs/themes/midnight.png)
-## Forest:
-![Midnight Theme Img](github/imgs/themes/forest.png)
-## Ocean:
-![Midnight Theme Img](github/imgs/themes/ocean.png)
-## Retro:
-![Midnight Theme Img](github/imgs/themes/retro.png)
-
 <!-- # Feature Overview:
 ## For the sake of this tutorial, everything will be done using the dark theme and all screenshots are provided from the source code of version v1.3.0 by Spiral -->

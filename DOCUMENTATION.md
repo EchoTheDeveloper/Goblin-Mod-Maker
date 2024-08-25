@@ -28,13 +28,24 @@
   - [Errors](#errors)
     - [Known Errors](#known-errors)
       - [Mod Menu Not Showing Up](#mod-menu-not-showing-up)
+  - [Themes](#themes)
+    - [Isle Goblin:](#isle-goblin)
+    - [Light:](#light)
+    - [Dark:](#dark)
+    - [Midnight:](#midnight)
+    - [Forest:](#forest)
+    - [Ocean:](#ocean)
+    - [Retro:](#retro)
+  - [Support](#support)
+    - [Discord Server](#discord-server)
+      - [If you join our discord server you can get support from the devs and community!](#if-you-join-our-discord-server-you-can-get-support-from-the-devs-and-community)
 
 ---
 
 ## Main Menu
 ### Mods
 #### New Mod
-![New Mod Image](github/imgs/readme/newmod.png)
+![New Mod Image](resources/imgs/readme/newmod.png)
 - **Mod Name:** This is where you enter the name of your mod. Can be changed later.
 - **Description:** This is a description of your mod for the manifest.json file. Can be changed in manifest.json after building.
 - **Developers:** If entering multiple, seperate with a comma. Can be changed later.
@@ -43,14 +54,14 @@
 
 #### Open/Load Mod
 
-![Open Mod Image](github/imgs/readme/openmod.png)
+![Open Mod Image](resources/imgs/readme/openmod.png)
 - **Mod Name:** The name of the mod(without spaces) you want to open. If you forgot or it isn't working go to `[igmm folder] > projects`. Find the mod you want, copy its name, and paste that into the input field
 
 ---
 
 #### Open/Load Mod from .igmm file
-<img src="github/imgs/readme/openfromfile.png" alt="Open Mod From File" width="200"/>
-<img src="github/imgs/readme/openfromfilewarning.png" alt="Open Mod From File" width="200"/>
+<img src="resources/imgs/readme/openfromfile.png" alt="Open Mod From File" width="200"/>
+<img src="resources/imgs/readme/openfromfilewarning.png" alt="Open Mod From File" width="200"/>
 
 - **On Opening**
     1. A warning pops up letting you know to not open mods from untrusted sources
@@ -61,7 +72,7 @@
 ---
 
 ### Settings Window
-![Mod Maker Settings Image](github/imgs/readme/igmm_settings.png)
+![Mod Maker Settings Image](resources/imgs/readme/igmm_settings.png)
 - **Default Game Folder:** Set to Isle Goblin Playtest because of the current beta version of the game.
 - **Default Steam Directory:** Can be found automatically (RECOMMENDED), the common folder where steam games are held.
 - **Select Themes:** A dropdown box to select themes. automatically scans themes. See the Making Your Own theme section below. Will reapply theme on startup
@@ -76,7 +87,7 @@
 ### Edit
 
 #### Change Mod Name
-![Rename Mod Image](github/imgs/readme/rename.png)
+![Rename Mod Image](resources/imgs/readme/rename.png)
 - **Path:** `Edit > Change Mod Name`
 - **New Name:** The name that your mod will be renamed to.
   - ex: *The Ultimate Goblin Mod*
@@ -84,7 +95,7 @@
 ---
 
 #### Change Mod Version
-![Change Mod Version Image](github/imgs/readme/changeversion.png)
+![Change Mod Version Image](resources/imgs/readme/changeversion.png)
 - **Path:** `Edit > Change Mod Version`
 - **New Version:** The version number your mod will be changed to.
   - Semantic versioning recommended (major.minor.patch). Example: `1.3.0` where:
@@ -95,7 +106,7 @@
 ---
 
 #### Change Mod Developers
-![Change Developers Image](github/imgs/readme/changedevs.png)
+![Change Developers Image](resources/imgs/readme/changedevs.png)
 - **Path:** `Edit > Change Mod Developer`
 - **Developer Names:** Enter the name(s) of the developer(s) working on the mod. Separate names with commas.
   - ex: *Watt, Matt*
@@ -105,7 +116,7 @@
 ### Create
 
 #### Create Harmony Patch
-![Create Harmony Patch Image](github/imgs/readme/createharmonypatch.png)
+![Create Harmony Patch Image](resources/imgs/readme/createharmonypatch.png)
 - **Path:** `Create > Create Harmony Patch`
 - **Function Name:** This is the name of the method that you want to patch in the target class.
   - ex: *Attack*
@@ -125,7 +136,7 @@
 ---
 
 #### Create Config Item
-![Create Config Item Image](github/imgs/readme/createconfigitem.png)
+![Create Config Item Image](resources/imgs/readme/createconfigitem.png)
 - **Path:** `Create > Create Config Item`
 - **Variable Name:** This is the name of the config variable that will be used in the code.
   - ex: *maxHealth*
@@ -143,7 +154,7 @@
 ---
 
 #### Create Keybind
-![Create Keybind Image](github/imgs/readme/createkeybind.png)
+![Create Keybind Image](resources/imgs/readme/createkeybind.png)
 - **Path:** `Create > Create Keybind`
 - **Variable Name:** This is the name of the keybind variable that will be used in the code.
   - ex: *"dashKey"*
@@ -190,14 +201,14 @@
 ### Tools
 
 #### Search
-![Search Image](github/imgs/readme/search.png)
+![Search Image](resources/imgs/readme/search.png)
 - **Path:** `Tools > Search`
 - **Description:** Allows you to search for text in the code.
 
 ---
 
 #### Go To Line
-![Go To Line Image](github/imgs/readme/linenumber.png)
+![Go To Line Image](resources/imgs/readme/linenumber.png)
 - **Path:** `Tools > Go To Line`
 - **Description:** Enter a line number and it will take you directly to that line in the code.
 - **Note:** To view line numbers, ensure they are enabled in the settings.
@@ -229,6 +240,35 @@ If you encounter errors with the mod maker itself, you can:
 10. Start Isle Goblin, and the mod menu should appear.
 
 </details>
+
+---
+
+
+## Themes
+
+### Isle Goblin:
+<img src="resources/imgs/themes/default.png" alt="Isle Goblin Theme Img" width="300"/>
+
+### Light:
+<img src="resources/imgs/themes/light.png" alt="Light Theme Img" width="300"/>
+
+### Dark:
+<img src="resources/imgs/themes/dark.png" alt="Dark Theme Img" width="300"/>
+
+### Midnight:
+<img src="resources/imgs/themes/midnight.png" alt="Midnight Theme Img" width="300"/>
+
+### Forest:
+<img src="resources/imgs/themes/forest.png" alt="Forest Theme Img" width="300"/>
+
+### Ocean:
+<img src="resources/imgs/themes/ocean.png" alt="Ocean Theme Img" width="300"/>
+
+### Retro:
+<img src="resources/imgs/themes/retro.png" alt="Retro Theme Img" width="300"/>
+
+
+---
 
 ## Support
 
