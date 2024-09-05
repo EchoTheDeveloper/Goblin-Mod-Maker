@@ -23,11 +23,6 @@ def load_settings():
     with builtins.open("settings.json", 'r') as file:
         data = json.load(file)
     return data
-# settings = load_settings()
-# theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
-# InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
-# InterfaceMenu_Foreground = theme_data.get("buttonconfig", {}).get("foreground", "")
-# PyroPrompt_LinkText = theme_data.get("pyroprompt", {}).get("linktextcolor", "")
 
 def refresh_theme():
     global theme_data, InterfaceMenu_Background, InterfaceMenu_Foreground, PyroPrompt_LinkText

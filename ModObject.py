@@ -461,7 +461,8 @@ def find_steam_directory(folder_name):
     # First, attempt to get the Steam directory from the registry
     steam_path = get_steam_directory()
     if steam_path and os.path.exists(os.path.join(steam_path, "steamapps", "common", folder_name)):
-        return steam_path
+        return os.path.join(steam_path, "steamapps", "common")
+    
     # Check common custom drive locations
     common_drives = ["C:", "D:", "E:", "F:", "Z:"]
     for drive in common_drives:
