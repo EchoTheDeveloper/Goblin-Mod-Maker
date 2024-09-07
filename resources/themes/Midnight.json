@@ -21,6 +21,7 @@
     "background": "#1c1c1c",
     "foreground": "#d3d3d3",
     "warningtextcolor": "#ff6347",
-    "linktextcolor": "#20b2aa"
+    "linktextcolor": "#20b2aa",
+    "selected": "#2f4f4f"
   }
 }

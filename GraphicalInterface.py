@@ -550,7 +550,10 @@ class InterfaceMenu:
     def new_fallback(self, data, window):
         # first item in the list is the name of the mod
         name = data[0]
-
+        
+        if len(name.strip()) > 50:
+            return "Mod name is too long"
+        
         if not name or name.strip() == "":
             return "Mod name cannot be empty or null"
         # check if there is a directory that corresponds to a mod with this name

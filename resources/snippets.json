@@ -123,5 +123,8 @@
     "dictionaryAdd": "dict.Add(key, value);",
     "dictionaryRemove": "dict.Remove(key);",
     "dictionaryContainsKey": "if (dict.ContainsKey(key))\n{\n\t\n}",
-    "dictionaryContainsValue": "if (dict.ContainsValue(value))\n{\n\t\n}"
+    "dictionaryContainsValue": "if (dict.ContainsValue(value))\n{\n\t\n}",
+    "log": "Debug.Log()",
+    "warning": "Debug.LogWarning()",
+    "error": "Debug.LogError()"
 }

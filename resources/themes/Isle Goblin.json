@@ -21,6 +21,7 @@
     "background": "#ceb093",
     "foreground": "#000000",
     "warningtextcolor": "red",
-    "linktextcolor": "#347deb"
+    "linktextcolor": "#347deb",
+    "selected": "#ffb347"
   }
 }

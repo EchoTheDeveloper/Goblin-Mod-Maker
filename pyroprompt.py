@@ -25,7 +25,7 @@ def apply_theme(root):
     theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
     PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
     PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
-    PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")
+    PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("warningtextcolor", "")
 
     Click = theme_data.get("click", "")
     Hover = theme_data.get("hover", "")

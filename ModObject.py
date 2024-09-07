@@ -55,40 +55,61 @@ class ModObject(LimitedModObject):
         self.mod_name = CodeLine(mod_name, locked=True)
         self.mod_name_no_space = CodeLine(mod_name.replace(" ", ""), locked=True)
         self.code = LargeCodeBlockWrapper()
+        
+        # Insert header first
         self.header = create_headers()
         self.code.insert_block_before(self.header)
+
+        # Create and insert namespace
         self.namespace = create_namespace(self.mod_name, self.mod_name_no_space)
         self.code.insert_block_after(self.namespace)
+
+        # Create namespace contents
         self.in_namespace = create_namespace_contents(self.game)
         self.namespace.contents = self.in_namespace
+
+        # Create and insert class
         self.class_wrap = create_class(self.mod_name, self.mod_name_no_space)
-        self.namespace.contents.insert_block_after(self.class_wrap)
+        self.in_namespace.insert_block_after(self.class_wrap)
+
+        # Add constants and other class content
         self.constants = create_constants(self.mod_name, self.mod_name_no_space, self.version)
         self.class_wrap.contents.insert_block_after(self.constants)
+
         self.config_entry_declarations = LargeCodeBlockWrapper()
         self.class_wrap.contents.insert_block_after(self.config_entry_declarations)
+
         self.config_definitions = LargeCodeBlockWrapper()
         self.class_wrap.contents.insert_block_after(self.config_definitions)
+
         self.reflections_declarations = LargeCodeBlockWrapper([LargeCodeBlockWrapper(), LargeCodeBlockWrapper()])
-        # ^^ First is for methods second is for fields
         self.class_wrap.contents.insert_block_after(self.reflections_declarations)
+
         self.general_declarations = LargeCodeBlockWrapper()
         self.class_wrap.contents.insert_block_after(self.general_declarations)
+
         self.class_constructor = CodeBlockWrapper(
             prefix=CodeBlock([CodeLine("public "), self.mod_name_no_space, CodeLine("(){")], delimiter=""),
             contents=LargeCodeBlockWrapper(),
             postfix=end_block()
         )
         self.class_wrap.contents.insert_block_after(self.class_constructor)
+
+        # Add methods
         self.awake = create_awake(self.mod_name, self.mod_name_no_space)
         self.update = create_update(self.mod_name, self.mod_name_no_space)
         self.class_wrap.contents.insert_block_after(self.awake)
         self.class_wrap.contents.insert_block_after(self.update)
+
+        # Add configuration entry
         self.add_config("mEnabled", "bool", "false", "Enable/Disable Mod",
                         "Controls if the mod should be enabled or disabled", should_indent=False)
+
         self.main_contents = self.class_wrap.contents
         self.indent()
         self.code.insert_block_after(CodeLine("\n"))
+        
+        self.save_files_as_cs()
 
     def add_config(self, name, data_type, default, definition, description="", should_indent=True):
         if should_indent:
@@ -282,6 +303,21 @@ class ModObject(LimitedModObject):
             return None
 
         return True
+    def save_files_as_cs(self):
+        name_no_space = self.mod_name_no_space.get_text()
+        current_directory = os.getcwd()
+        folder_path = os.path.join(current_directory, "projects", name_no_space, "Files")
+        try:
+            os.mkdir(os.path.join(current_directory, "projects"))
+        except FileExistsError:
+            pass
+        try:
+            os.makedirs(folder_path, exist_ok=True)
+        except FileExistsError:
+            pass
+        with open(f"{folder_path}/{name_no_space}.cs", "w") as f:
+            code = "\n".join([s for s in self.code.get_text().splitlines() if s])
+            f.write(code)
 
 
 def create_files(mod: ModObject, destroyonerror=None):
