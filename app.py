@@ -1,4 +1,6 @@
 import pyro
+import tkinter
+import GraphicalInterface
 
 
 def interface():

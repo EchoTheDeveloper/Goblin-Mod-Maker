@@ -2,7 +2,7 @@
 
 
 """
-    UnityModderPyro, Modified to work for Unity Mod Maker By Hippolippo
+    IGMMpyro, modified to work with the Isle Goblin Mod Maker, an extension of UnityModderPyro, Modified to work for Unity Mod Maker By Hippolippo
 
     Original Code https://github.com/JamesStallings/pyro/blob/master/pyro:
     simple elegant text editor built on python/tkinter
