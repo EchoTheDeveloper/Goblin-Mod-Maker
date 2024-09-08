@@ -36,7 +36,6 @@ def load_settings():
 settings = load_settings()
 
 class ModObject(LimitedModObject):
-
     def __init__(self, mod_name="mod", version="0.0.1", description="", authors="", game="Isle Goblin", folder_name="Isle Goblin Playtest",
                  steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
@@ -483,6 +482,7 @@ def download_file(url, dest_path):
 def extract_zip(file_path, extract_to):
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
         zip_ref.extractall(extract_to)
+    
 
 def prompt_for_custom_steam_directory(cursteampath):
     root = Tk()
@@ -584,6 +584,10 @@ def verify_game(name, folder_name, steam_path, prompt):
             # download_bepinex(bepinex_url, os.path.join(steam_path, folder_name))
             download_file(download_url, dest)
             extract_zip(dest, os.path.join(steam_path, folder_name))
+            os.remove(dest)
+            doorstop_dest = os.path.join(steam_path, folder_name, ".doorstop_version")
+            os.remove(doorstop_dest)
+            print(doorstop_dest)
             messagebox.showinfo("BepInEx Installed", "BepInEx has been installed, please run the game once and then "
                                                      "exit in order to generate the proper files, then click \"OK\"",
                                 parent=prompt)

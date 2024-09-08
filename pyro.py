@@ -80,6 +80,7 @@ import ChangeManager
 from GraphicalInterface import *
 import MenuMethods
 from functools import partial
+import time
 
 try:
     # Python 3
@@ -108,9 +109,50 @@ from pygments.lexers.dotnet import CSharpLexer
 from pygments.lexers.sql import MySqlLexer
 
 from pygments.styles import get_style_by_name
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import queue
+import threading
 
 pyros = []
 windows = []
+
+def load_theme(filename):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+    return data
+
+def load_settings():
+    with open("settings.json", 'r') as file:
+        data = json.load(file)
+    return data
+
+def refresh_theme():
+    global InterfaceMenu_Background, InterfaceMenu_Geometry, InterfaceMenu_NewButtonBackground, InterfaceMenu_OpenButtonBackground
+    global InterfaceMenu_MouseEnter, InterfaceMenu_MouseExit, InterfaceMenu_ButtonConfigFG, InterfaceMenu_ButtonConfigBG
+    global PyroPrompt_Background, PyroPrompt_Foreground, PyroPrompt_WarningTextColor, PyroPrompt_Selected
+    global NewButton, OpenButton
+    global Click, Hover
+
+    # Reload the theme data
+    settings = load_settings()
+    theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
+    
+    # Update global theme variables
+    InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
+    InterfaceMenu_Geometry = theme_data.get("interfacemenu", {}).get("geometry", "")
+    InterfaceMenu_NewButtonBackground = theme_data.get("interfacemenu", {}).get("newbuttonbackground", "")
+    InterfaceMenu_OpenButtonBackground = theme_data.get("interfacemenu", {}).get("openbuttonbackground", "")
+    InterfaceMenu_MouseEnter = theme_data.get("interfacemenu", {}).get("mouseenter", "")
+    InterfaceMenu_MouseExit = theme_data.get("interfacemenu", {}).get("mouseexit", "")
+    InterfaceMenu_ButtonConfigFG = theme_data.get("buttonconfig", {}).get("foreground", "")
+    InterfaceMenu_ButtonConfigBG = theme_data.get("buttonconfig", {}).get("background", "")
+    PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
+    PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
+    PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("warningtextcolor", "")
+    PyroPrompt_Selected = theme_data.get("pyroprompt", {}).get("selected", "")
+    Click = theme_data.get("click", "")
+    Hover = theme_data.get("hover", "")
 
 class LineNumbers(Text): #scrolledtext.ScrolledText
     def __init__(self, master, text, **kwargs):
@@ -139,6 +181,202 @@ class LineNumbers(Text): #scrolledtext.ScrolledText
         self.yview_moveto(self.scroll_data[0])
 
 
+class FileTreeview:
+    def __init__(self, master, core_ui, mod_name_no_space, **uiopts):
+        self.core_ui = core_ui
+        self.master = master
+        self.mod_name_no_space = mod_name_no_space
+        self.update_queue = queue.Queue()
+
+        # Create a Frame for the Treeview with a background color
+        self.tree_frame = Frame(master)  # Background color for the frame (dark color)
+        self.tree_frame.grid(column=0, row=0, sticky='nsew', padx=(5, 0), pady=5)
+        refresh_theme()
+        # Create and configure the Treeview inside the Frame
+        self.tree = ttk.Treeview(self.tree_frame, **uiopts)
+        self.setup_treeview_style()
+        self.setup_treeview()
+
+        # Horizontal Scrollbar for TreeView
+        self.xsb = Scrollbar(self.tree_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(xscrollcommand=self.xsb.set)
+        self.xsb.grid(row=1, column=0, sticky="ew")
+
+        # Vertical Scrollbar for TreeView
+        self.ysb = Scrollbar(self.tree_frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=self.ysb.set)
+        self.ysb.grid(row=0, column=1, sticky="ns")
+        
+        self.xsb.configure(bg=PyroPrompt_Background, troughcolor="gray", highlightthickness=0)
+        self.ysb.configure(bg=PyroPrompt_Background, troughcolor="gray", highlightthickness=0)
+
+        # Ensure Treeview fills its parent Frame
+        self.tree.grid(row=0, column=0, sticky='nsew')
+
+        # Adjust column and row configuration of the frame
+        self.tree_frame.grid_columnconfigure(0, weight=1)  # Expand to fill available space
+        self.tree_frame.grid_rowconfigure(0, weight=1)  # Expand to fill available space
+
+        # Ensure Treeview's column and row weights are set for proper expansion
+        self.tree_frame.grid_columnconfigure(1, weight=0)  # Scrollbar column
+        self.tree_frame.grid_rowconfigure(1, weight=0)  # Scrollbar row
+
+        self.folderpath = os.path.join(os.getcwd(), "projects", self.mod_name_no_space.get_text(), "Files")
+        self.event_handler = self.FileChangeHandler(self.update_queue)
+        self.observer = Observer()
+        self.observer.schedule(self.event_handler, self.folderpath, recursive=True)
+        self.observer.start()
+
+        self.master.after(100, self.process_updates)
+        
+        self.tree.bind("<<TreeviewSelect>>", self.on_item_double_click)
+
+    def setup_treeview_style(self):
+        # Create a style for the Treeview
+        style = ttk.Style()
+        style.theme_use("clam")
+        # Configure Treeview style to have a dark background and match your theme
+        style.configure("Treeview",
+                        background=PyroPrompt_Background,  # Background color for Treeview items
+                        foreground=PyroPrompt_Foreground,  # Text color for Treeview items
+                        fieldbackground=InterfaceMenu_MouseEnter,  # Field background color
+                        bordercolor=PyroPrompt_Background)  # Border color
+        
+        # Add hover effects and selection color
+        style.map("Treeview",
+                background=[("selected", PyroPrompt_Selected)],  # Color when an item is selected
+                foreground=[("selected", PyroPrompt_Foreground)],  # Text color when selected
+                fieldbackground=[("hover", InterfaceMenu_MouseEnter)],  # Background on hover
+                highlightcolor=[("hover", "#45d6cf")])  # Highlight color on hover
+        
+        # Ensure the headers and scrollbars match the theme
+        style.configure("Treeview.Heading",
+                        background=PyroPrompt_Background,  # Background for headers
+                        foreground=PyroPrompt_Foreground,  # Header text color
+                        bordercolor=InterfaceMenu_MouseEnter)
+        
+        
+        # style.configure("Horizontal.TScrollbar", background=PyroPrompt_Background)
+        # style.configure("Vertical.TScrollbar", background=PyroPrompt_Background)
+
+        # Apply this style to the treeview
+        self.tree.configure(style="Treeview")
+        
+        self.tree.tag_configure('row', background=InterfaceMenu_MouseEnter, foreground=PyroPrompt_Foreground)
+        
+        style.configure("Treeview.Column",
+                        background=PyroPrompt_Background,  # Background for headers
+                        foreground=PyroPrompt_Foreground,  # Header text color
+                        bordercolor=InterfaceMenu_MouseEnter)
+
+
+    def setup_treeview(self):
+        self.tree.delete(*self.tree.get_children())  # Clear existing content
+
+        # Define the folder and file paths
+        current_directory = os.getcwd()
+        folderpath = os.path.join(current_directory, "projects", self.mod_name_no_space.get_text(), "Files")
+
+        # Create the main folder if it doesn't exist
+        if not os.path.isdir(folderpath):
+            os.makedirs(folderpath)
+
+        # Add the root folder
+        self.tree.insert("", "end", "Files", text="Files")
+
+        # Populate the Treeview with files and folders
+        self.populate_treeview("Files", folderpath)
+        self.adjust_column_width()  # Adjust column width after populating
+        
+        self.expand_folder("Files")
+        
+    def expand_folder(self, folder_id):
+        self.tree.item(folder_id, open=True)  # Open the folder
+
+    def populate_treeview(self, parent, path):
+        for name in os.listdir(path):
+            item_path = os.path.join(path, name)
+            if os.path.isdir(item_path):
+                # Add folder and populate it
+                folder_id = self.tree.insert(parent, "end", name, text=name)
+                self.populate_treeview(folder_id, item_path)
+            else:
+                # Add file
+                self.tree.insert(parent, "end", name, text=name)
+
+    def adjust_column_width(self):
+        # Define base values for padding and padding per character
+        base_padding_per_char = 50
+        base_additional_padding = 120
+
+        # Define scaling factors
+        length_threshold = 45
+        scaling_factor = 4
+        
+        # Calculate the maximum number of characters in any item
+        max_length = max(len(self.tree.item(item, "text")) for item in self.tree.get_children())
+        
+        # Scale padding per character and additional padding based on length
+        if max_length > length_threshold:
+            padding_per_char = base_padding_per_char * scaling_factor
+            additional_padding = base_additional_padding * scaling_factor
+        else:
+            padding_per_char = base_padding_per_char
+            additional_padding = base_additional_padding
+        
+        # Calculate the column width based on the maximum length and character width
+        max_width = max_length * padding_per_char
+        
+        # Add some padding for better appearance
+        new_width = max_width + additional_padding
+        if new_width < 225:
+            new_width = 225
+        
+        self.tree.column("#0", minwidth=new_width)
+
+    def refresh_treeview(self):
+        self.update_queue.put("refresh")
+
+    def process_updates(self):
+        while not self.update_queue.empty():
+            message = self.update_queue.get()
+            if message == "refresh":
+                self.setup_treeview()
+        self.master.after(100, self.process_updates)
+
+    def on_item_double_click(self, event):
+        # Get the item that was clicked
+        item = self.tree.selection()
+        if not item:
+            return
+        
+        # Get the file path for the selected item
+        file_path = self.get_file_path(item[0])
+        if file_path and os.path.isfile(file_path):
+            # Open the file in the default IDE or editor
+            # self.core_ui.save_file(self.core_ui.filename)
+            self.core_ui.loadfile(file_path)
+
+    def get_file_path(self, item_id):
+        return os.path.join(self.folderpath, item_id)
+
+    class FileChangeHandler(FileSystemEventHandler):
+        def __init__(self, update_queue):
+            self.update_queue = update_queue
+
+        def on_modified(self, event):
+            self.update_queue.put("refresh")
+
+        def on_created(self, event):
+            self.update_queue.put("refresh")
+
+        def on_deleted(self, event):
+            self.update_queue.put("refresh")
+
+        def on_moved(self, event):
+            self.update_queue.put("refresh")
+
+
 class CoreUI(object):
     """
         CoreUI is the editor object, derived from class 'object'. It's instantiation initilizer requires the
@@ -146,7 +384,7 @@ class CoreUI(object):
         the lexer to be used for text decoration.
     """
 
-    def __init__(self, lexer, filename="Untitled", mod=None, settings={}):
+    def __init__(self, lexer, filename="Untitled", filepath=None, mod=None, settings={}):
         global RECENT
         RECENT = self
         self.settings = settings
@@ -166,29 +404,30 @@ class CoreUI(object):
         self.root.withdraw()
         self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
+        self.open_files = {}
+        # Call uiconfig to set up the UI
+        if filepath:
+            self.filepath = filepath
+        # current_directory = os.getcwd()
         self.uiconfig()
+        if self.filepath and os.path.isfile(self.filepath):
+            self.loadfile(self.filepath)
+        # Ensure text is set before using it
+        if not hasattr(self, 'text'):
+            raise RuntimeError("Text widget not initialized")
+        
         self.root.bind("<Key>", self.event_key)
         self.root.bind('<Control-KeyPress-q>', self.close)
-        self.root.bind('<Control-KeyPress-z>', self.undo)
-        self.root.bind('<Control-KeyPress-y>', self.redo)
         # self.root.bind('<Control-KeyPress-f>', MenuMethods.openSearch(self)) DOESNT WORK CURRENTLY
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
-        self.text.bind('<Return>', self.autoindent)
-        self.text.bind('<Tab>', self.tab2spaces4)
-        self.create_tags()
-        self.text.edit_modified(False)
-        self.bootstrap = [self.recolorize]
-        self.loadfile(self.contents)
-        self.recolorize()
+        
         self.root.geometry("1200x700+10+10")
         self.initialize_menubar()
         self.updatetitlebar()
-        self.scroll_data = self.text.yview()
         self.starting()
         global pyros
         pyros.append(self)
-        self.text.tag_configure("highlight", background="yellow")
         self.search_done = False
         self.search_regexp = None
 
@@ -201,28 +440,31 @@ class CoreUI(object):
 
         # Define snippets
         self.snippets = load_file("resources/snippets.json")
-
-        self.text.bind("<KeyRelease>", self.on_key_release)
-        self.text.bind("<Button-1>", self.hide_autocomplete)
-        self.text.bind("<Tab>", self.accept_autocomplete_or_snippet)
-        self.text.bind("<space>", self.on_space_press)
-        self.text.bind("<Up>", self.on_arrow_key)
-        self.text.bind("<Down>", self.on_arrow_key)
-
         self.autocomplete_window = None
 
-    def undo(self, e=None):
+
+    def save_file(self, filepath=None):
+        """Save the current contents to a file."""
+        if filepath is None:
+            filepath = self.filepath
+        if filepath:
+            with open(filepath, 'w') as file:
+                file.write(self.text.get('1.0', tkinter.END))
+            self.filepath = filepath
+            self.updatetitlebar()
+    
+    def undo(self, e=None, text_widget=None):
         mod = ChangeManager.undo()
         if mod is not None:
             self.mod = mod
-            self.refresh(False)
+            self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
         return "break"
 
-    def redo(self, e):
+    def redo(self, e=None, text_widget=None):
         mod = ChangeManager.redo()
         if mod is not None:
             self.mod = mod
-            self.refresh(False)
+            self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
         return "break"
 
     def initialize_menubar(self):
@@ -242,7 +484,7 @@ class CoreUI(object):
 
         self.filemenu.add_command(label="New", command=partial(MenuMethods.new, self))
         self.filemenu.add_command(label="Open", command=partial(MenuMethods.open, self.settings))
-        self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filename))
+        self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filepath))
         self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Close", command=self.close)
@@ -291,7 +533,7 @@ class CoreUI(object):
         # self.menubar.add_command(label="Remove Highlights", command=self.remove_highlights)
 
         self.root.config(menu=self.menubar)
-
+    
     #-------------------- Autocomplete and Snippets --------------------#
     def on_key_release(self, event):
         if event.keysym in ["Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "Tab"]:
@@ -432,7 +674,6 @@ class CoreUI(object):
         if self.autocomplete_window and not self.autocomplete_window.winfo_containing(event.x_root, event.y_root):
             self.hide_autocomplete()
 
-
     def on_space_press(self, event):
         if self.autocomplete_window:
             self.hide_autocomplete()
@@ -460,7 +701,7 @@ class CoreUI(object):
             index = self.mod.index
         self.text.delete("1.0", tkinter.END)
         self.text.insert("1.0", self.mod.get_text())
-        self.recolorize()
+        self.recolorize(self.text)
         if self.mod.get_text() == text and text is not None:
             self.text.mark_set("insert", str(cursor))
         else:
@@ -477,90 +718,66 @@ class CoreUI(object):
 
     def uiconfig(self):
         """
-            this method sets up the main window and two text widgets (the editor widget, and a
-            text entry widget for the commandline).
+        This method sets up the main window and two text widgets (the editor widget, and a
+        text entry widget for the commandline).
         """
-        self.uiopts = {"height": "1000",
-                       "width": "1000",
-                       "cursor": "xterm",
-                       "bg": "#0d1117",
-                       "fg": "#FFAC00",
-                       "insertbackground": "#FFD310",
-                       "insertborderwidth": "1",
-                       "insertwidth": "3",
-                       "exportselection": True,
-                       "undo": True,
-                       "selectbackground": "#E0000E",
-                       "inactiveselectbackground": "#E0E0E0",
-                       }
-        self.text = Text(master=self.root, wrap="none", **self.uiopts)
-        self.xsb = Scrollbar(self.root, orient="horizontal", command=self.text.xview)
-        self.text.configure(xscrollcommand=self.xsb.set)
-        self.xsb.grid(row=1, column=0, columnspan=2,sticky=(E,W))
-        self.ysb = Scrollbar(self.root, orient="vertical", command=self.text.yview)
-        self.text.configure(yscrollcommand=self.ysb.set)
-        self.ysb.grid(row=0, column=2,sticky=(N,S), rowspan=2)
-        self.ysb.configure(
-            activebackground="#0d1117",
-            borderwidth="0",
-            background="#0d1117",
-            highlightthickness="0",
-            highlightcolor="#00062A",
-            highlightbackground="#252c36",
-            troughcolor="#20264A",
-            relief="flat")
-        '''self.cli = tkinter.Text(self.root, {"height": "1",
-                                            "bg": "#191F44",
-                                            "fg": "#FFC014",
-                                            "insertbackground": "#FFD310",
-                                            "insertborderwidth": "1",
-                                            "insertwidth": "3",
-                                            "exportselection": True,
-                                            "undo": True,
-                                            "selectbackground": "#E0000E",
-                                            "inactiveselectbackground": "#E0E0E0"
-                                            })'''
-        self.info = tkinter.Label(self.root, {"height": "1",
-                                            "bg": "#0d1117",
-                                            "fg": "#FFC014",
-                                            "anchor": "w"
-                                            })
-        lineNums_uiopts = {"height": "60",
-                       "width": "8",
-                       "cursor": "xterm",
-                       "bg": "#2c314d",
-                       "fg": "#FFAC00",
-                       "insertbackground": "#FFD310",
-                       "insertborderwidth": "1",
-                       "insertwidth": "3",
-                       "exportselection": True,
-                       "undo": True,
-                       "selectbackground": "#E0000E",
-                       "inactiveselectbackground": "#E0E0E0"
-                       }
-        if self.settings["Show Line Numbers"] == True:
-            self.lineNums = LineNumbers(self.root, self.text, **lineNums_uiopts)
-            self.lineNums.grid(column=0,row=0,sticky=('nsew'))
-        self.text.grid(column=1, row=0, sticky=('nsew'))
-        self.root.grid_columnconfigure(0, weight=0)
-        self.root.grid_columnconfigure(1, weight=1)
-        self.info.grid(column=0, row=2, pady=1, sticky=('nsew'),columnspan=3)
-        self.info.visible = True
-        #self.cli.grid(column=0, row=1, pady=1, sticky=('nsew'))
-        #self.cli.bind("<Return>", self.cmdlaunch)
-        #self.cli.bind("<KeyRelease>", self.adjust_cli)
-        #self.cli.visible = True
-        #self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_rowconfigure(0, weight=1)
-        self.root.grid_rowconfigure(1, weight=0)
+        self.uiopts = {
+            "height": 1000,
+            "width": 1000,
+            "cursor": "xterm",
+            "bg": "#0d1117",
+            "fg": "#FFAC00",
+            "insertbackground": "#FFD310",
+            "insertborderwidth": 1,
+            "insertwidth": 3,
+            "exportselection": True,
+            "undo": True,
+            "selectbackground": "#E0000E",
+            "inactiveselectbackground": "#E0E0E0",
+        }
+        
+        # Treeview UI options
+        treeview_uiopts = {
+            "columns": ["1"],  # Adjust columns as needed
+            "show": "tree"
+        }
+        
+        # Create FileTreeview instance
+        self.file_treeview = FileTreeview(self.root, self, self.mod.mod_name_no_space, **treeview_uiopts)
+        # Ensure Treeview column width is set and adjust if needed
+        self.file_treeview.tree.column("#0", width=50, minwidth=350, stretch=True)  # Adjust width as needed
+        # Add Treeview to the grid
+        self.file_treeview.tree.grid(row=0, column=0, sticky=(N, S, E, W))
+
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.grid(row=0, column=2, sticky='nsew', columnspan=2)
+
+        # Create and configure info label
+        self.info = tkinter.Label(self.root, height=1, bg="#0d1117", fg="#FFC014", anchor="w")
+
+        self.info.grid(column=0, row=2, pady=1, sticky=('nsew'), columnspan=4)
+        
+        # Column and row configuration
+        self.root.grid_columnconfigure(0, weight=0)  # Treeview column
+        self.root.grid_columnconfigure(1, weight=0)  # Line Numbers column (if enabled)
+        self.root.grid_columnconfigure(2, weight=1)  # Notebook column
+        self.root.grid_columnconfigure(3, weight=0)  # Vertical Scrollbar column
+        self.root.grid_columnconfigure(4, weight=0)  # Close Button
+        self.root.grid_rowconfigure(0, weight=1)  # Main row for TreeView and Text widget
+        self.root.grid_rowconfigure(1, weight=0)  # Horizontal scrollbar row
+        self.root.grid_rowconfigure(2, weight=0)  # Info label row
+
+        # Adjust Treeview width if needed
+        self.file_treeview.adjust_column_width()
 
     def updatetitlebar(self):
-        self.root.title("Isle Goblin Mod Maker - " + self.filename)
+        self.root.title("Isle Goblin Mod Maker - " + self.mod.mod_name.get_text() + " - " + self.filepath)
         #self.root.update()
 
     def destroy_window(self):
         self.close()
 
+    #<< Tools >>#
     def cut(self):
         self.text.event_generate("<<Cut>>")
 
@@ -801,16 +1018,114 @@ class CoreUI(object):
         self.text.insert(self.text.index("insert"), "    ")
         return "break"
 
-    def loadfile(self, text):
+    # Files and Tabs
+    def loadfile(self, filename):
         """
-            this method implements loading a file into the editor.
-            arguments: the scrollable text object into which the text is to be loaded
+        Load a file into a new tab in the Notebook.
         """
-        if text:
-            self.text.insert(tkinter.INSERT, text)
-            self.text.tag_remove(tkinter.SEL, '1.0', tkinter.END)
-            self.text.see(tkinter.INSERT)
+        if filename and filename not in self.open_files:
+            # Create a new frame for the tab
+            new_tab = ttk.Frame(self.notebook)
 
+            # Create a Text widget for the file content in the new tab
+            text_widget = Text(new_tab, wrap="none", **self.uiopts)
+
+            # Create scrollbars for the Text widget
+            xsb = Scrollbar(new_tab, orient="horizontal", command=text_widget.xview)
+            ysb = Scrollbar(new_tab, orient="vertical", command=text_widget.yview)
+            text_widget.configure(xscrollcommand=xsb.set, yscrollcommand=ysb.set)
+
+            lineNums_uiopts = {
+                "height": 60,
+                "width": 5,
+                "cursor": "xterm",
+                "bg": "#2c314d",
+                "fg": "#FFAC00",
+                "insertbackground": "#FFD310",
+                "insertborderwidth": 1,
+                "insertwidth": 3,
+                "exportselection": True,
+                "undo": True,
+                "selectbackground": "#E0000E",
+                "inactiveselectbackground": "#E0E0E0"
+            }
+            if self.settings["Show Line Numbers"]:
+                self.lineNums = LineNumbers(new_tab, text_widget, **lineNums_uiopts)
+                
+            # Grid layout for the Text widget and scrollbars in the tab
+            self.lineNums.grid(row=0, column=0, sticky='ns')
+            text_widget.grid(row=0, column=1, sticky='nsew')  # Allow the Text widget to expand
+            ysb.grid(row=0, column=2, sticky='ns')  # Place vertical scrollbar to the right of the Text widget
+            xsb.grid(row=1, column=1, sticky='ew')  # Place horizontal scrollbar below the Text widget
+
+            # Configure grid layout within the tab to allow resizing
+            new_tab.grid_rowconfigure(0, weight=1)
+            new_tab.grid_columnconfigure(1, weight=1)
+
+            # Create and configure the line number widget (if needed)
+            # Insert file contents into the Text widget
+            with open(filename, 'r') as file:
+                contents = file.read()
+                text_widget.insert('1.0', contents)
+            self.text = text_widget
+            
+            # close_button = Button(new_tab, text="X", command=lambda: self.close_tab(filename))
+            # close_button.grid(row=0, column=4, sticky='ne', padx=5, pady=5)
+            revised_name = os.path.basename(filename)
+            # self.notebook.add(new_tab, text=revised_name)
+            # self.notebook.select(new_tab)
+            
+            tab_frame = Frame(self.notebook)
+            tab_label = Label(tab_frame, text=revised_name)
+            close_button = Button(tab_frame, text="X", command=lambda: self.close_tab(filename), relief="flat", padx=2, pady=2)
+
+            # Pack the label and close button next to each other
+            tab_label.pack(side="left", padx=5)
+            close_button.pack(side="right", padx=5)
+
+            # Add the tab with the custom title (label + close button)
+            self.notebook.add(new_tab, text="")
+            self.notebook.tab(new_tab, compound="left", window=tab_frame)
+            self.notebook.select(new_tab)
+            
+            # Style the text and stuff
+            self.refresh(updateMod=True)
+            self.create_tags(text_widget)
+            self.bootstrap = [partial(self.recolorize, text_widget)]
+            self.recolorize(text_widget)
+
+            # Create the close button for the tab
+
+            # Bindings for the text widget
+            text_widget.bind('<Return>', self.autoindent)
+            text_widget.bind('<Tab>', self.tab2spaces4)
+            text_widget.bind("<KeyRelease>", self.on_key_release)
+            text_widget.bind("<Button-1>", self.hide_autocomplete)
+            text_widget.bind("<Tab>", self.accept_autocomplete_or_snippet)
+            text_widget.bind("<space>", self.on_space_press)
+            text_widget.bind("<Up>", self.on_arrow_key)
+            text_widget.bind("<Down>", self.on_arrow_key)
+            self.root.bind('<Control-KeyPress-z>', partial(self.undo, text_widget))
+            self.root.bind('<Control-KeyPress-y>', partial(self.redo, text_widget))
+
+            text_widget.edit_modified(False)
+            self.scroll_data = text_widget.yview()
+            text_widget.tag_configure("highlight", background="yellow")
+
+            # Add the new tab to the Notebook with the filename as the tab title
+            self.open_files[filename] = (text_widget, new_tab)
+
+            # If line numbers are enabled, set up the line number widget
+            
+    def close_tab(self, file_path):
+        if file_path in self.open_files:
+            # Remove the tab from the notebook
+            tab_frame = self.open_files[file_path][1]
+            self.notebook.forget(tab_frame)
+            # Remove the file from open_files dictionary
+            del self.open_files[file_path]
+            
+    # Inputs
     def event_key(self, event):
         """
             this method traps the keyboard events. anything that needs doing when a key is pressed is done here.
@@ -818,7 +1133,7 @@ class CoreUI(object):
         """
         keycode = event.keycode
         char = event.char
-        self.recolorize()
+        self.recolorize(self.text)
         self.updatetitlebar()
 
     def event_write(self, event):
@@ -826,7 +1141,7 @@ class CoreUI(object):
             the callback method for the root window 'ctrl+w' event (write the file to disk)
             arguments: the associated event object.
         """
-        with open(self.filename, "w") as filedescriptor:
+        with open(self.filepath, "w") as filedescriptor:
             filedescriptor.write(self.text.get("1.0", tkinter.END)[:-1])
 
         self.text.edit_modified(False)
@@ -850,8 +1165,7 @@ class CoreUI(object):
             GraphicalInterface.set_window_count(0)
             InterfaceMenu()
 
-    # ---------------------------------------------------------------------------------------
-
+    # 
     def starting(self):
         """
             the classical tkinter event driver loop invocation, after running through any
@@ -860,17 +1174,17 @@ class CoreUI(object):
         for task in self.bootstrap:
             task()
 
-    def create_tags(self):
+    def create_tags(self, text_widget):
         """
-            thmethod creates the tags associated with each distinct style element of the
-            source code 'dressing'
+        Creates the necessary tags for syntax highlighting in the given Text widget.
         """
-        bold_font = font.Font(self.text, self.text.cget("font"))
+        bold_font = font.Font(text_widget, text_widget.cget("font"))
         bold_font.configure(weight=font.BOLD)
-        italic_font = font.Font(self.text, self.text.cget("font"))
+        italic_font = font.Font(text_widget, text_widget.cget("font"))
         italic_font.configure(slant=font.ITALIC)
-        bold_italic_font = font.Font(self.text, self.text.cget("font"))
+        bold_italic_font = font.Font(text_widget, text_widget.cget("font"))
         bold_italic_font.configure(weight=font.BOLD, slant=font.ITALIC)
+
         style = get_style_by_name('default')
 
         for ttype, ndef in style:
@@ -883,18 +1197,15 @@ class CoreUI(object):
             elif ndef['italic']:
                 tag_font = italic_font
 
-            if ndef['color']:
-                foreground = "#%s" % ndef['color']
-            else:
-                foreground = None
+            foreground = "#%s" % ndef['color'] if ndef['color'] else None
 
-            self.text.tag_configure(str(ttype), foreground=foreground, font=tag_font)
+            text_widget.tag_configure(str(ttype), foreground=foreground, font=tag_font)
 
-    def recolorize(self):
+    def recolorize(self, text_widget):
         """
-            this method colors and styles the prepared tags
+        Recolorizes the syntax in the given Text widget based on token types.
         """
-        code = self.text.get("1.0", "end-1c")
+        code = text_widget.get("1.0", "end-1c")
         tokensource = self.lexer.get_tokens(code)
         start_line = 1
         start_index = 0
@@ -912,10 +1223,10 @@ class CoreUI(object):
                 index1 = "%s.%s" % (start_line, start_index)
                 index2 = "%s.%s" % (end_line, end_index)
 
-                for tagname in self.text.tag_names(index1):  # FIXME
-                    self.text.tag_remove(tagname, index1, index2)
+                for tagname in text_widget.tag_names(index1):
+                    text_widget.tag_remove(tagname, index1, index2)
 
-                self.text.tag_add(str(ttype), index1, index2)
+                text_widget.tag_add(str(ttype), index1, index2)
 
             start_line = end_line
             start_index = end_index

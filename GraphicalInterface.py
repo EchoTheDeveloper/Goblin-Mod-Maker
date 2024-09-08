@@ -86,7 +86,7 @@ InterfaceMenu_ButtonConfigBG = theme_data.get("buttonconfig", {}).get("backgroun
 
 PyroPrompt_Background = theme_data.get("pyroprompt", {}).get("background", "")
 PyroPrompt_Foreground = theme_data.get("pyroprompt", {}).get("foreground", "")
-PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("background", "")
+PyroPrompt_WarningTextColor = theme_data.get("pyroprompt", {}).get("warningtextcolor", "")
 
 NewButton = theme_data.get("newbutton", "")
 OpenButton = theme_data.get("openbutton", "")
@@ -420,6 +420,10 @@ class InterfaceMenu:
             if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx")):
                 download_file(download_url, dest)
                 extract_zip(dest, os.path.join(steam_path, foldername))
+                os.remove(dest)
+                doorstop_dest = os.path.join(steam_path, foldername, ".doorstop_version")
+                os.remove(doorstop_dest)
+                print(doorstop_dest)
                 messagebox.showinfo("BepInEx Installed", "BepInEx has been installed, please run the game once and then "
                                                         "exit in order to generate the proper files, then click \"OK\"",
                                     parent=settings_window)
@@ -439,7 +443,6 @@ class InterfaceMenu:
         buttons = Frame(settings_window, background=PyroPrompt_Background)
         buttons.pack()
         Button(buttons, text="Install BepInEX", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=install_bepinex).grid(row=0, column=1, padx=10, pady=(10, 10))
-        
         Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=1, column=1, padx=10, pady=(10, 10))
         
     def prompt_for_custom_steam_directory():
@@ -510,7 +513,10 @@ class InterfaceMenu:
         file.close()
         mod = load(name)
         close(self, False)
-        pyro.CoreUI(lexer=CSharpLexer(), filename=mod.mod_name_no_space.get_text(), mod=mod, settings=self.settings)
+        name_no_space = mod.mod_name_no_space.get_text()
+        current_directory = os.getcwd()
+        csfilepath = os.path.join(current_directory, "projects", name_no_space, "Files", name_no_space + ".cs")
+        pyro.CoreUI(lexer=CSharpLexer(), filename=mod.mod_name_no_space.get_text(), filepath=csfilepath, mod=mod, settings=self.settings)
 
     def enter(self, e):
         # mod_name is the contents of the text box
@@ -550,12 +556,13 @@ class InterfaceMenu:
     def new_fallback(self, data, window):
         # first item in the list is the name of the mod
         name = data[0]
-        
+    
         if len(name.strip()) > 50:
             return "Mod name is too long"
         
         if not name or name.strip() == "":
             return "Mod name cannot be empty or null"
+        
         # check if there is a directory that corresponds to a mod with this name
         # (spaces aren't included in the file names)
         if exists(os.getcwd() + "/projects/" + name.replace(" ", "")):
@@ -575,9 +582,13 @@ class InterfaceMenu:
         mod = ModObject(mod_name=name, description=data[1], authors=data[2],  game=gameName, folder_name=folderName,
                         steampath=steamPath)
         # close the menu window because we don't need it anymore
+        
         close(self, False)
+        name_no_space = mod.mod_name_no_space.get_text()
+        current_directory = os.getcwd()
+        csfilepath = os.path.join(current_directory, "projects", name_no_space, "Files", name_no_space + ".cs")
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
-        pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
+        pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), filepath=csfilepath, mod=mod, settings=self.settings)
 
 
     # This gets called when the "open" button is pressed so it creates a prompt asking for the name of the mod and
@@ -586,7 +597,7 @@ class InterfaceMenu:
     # due to the fact that a malicious .igmm file could allow for arbitrary code execution
     def load(self, e):
         create_prompt("Load Mod", ("Mod Name",), self.load_fallback, None,
-                      warning="Never Open Mods From Untrusted Sources")
+                    warning="Never Open Mods From Untrusted Sources")
         try:
             mixer.music.load(Click)
             mixer.music.play(loops=0)
@@ -615,7 +626,10 @@ class InterfaceMenu:
         # close the main menu because we do not need it anymore
         close(self, False)
         # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
-        pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
+        name_no_space = mod.mod_name_no_space.get_text()
+        current_directory = os.getcwd()
+        csfilepath = os.path.join(current_directory, "projects", name_no_space, "Files", name_no_space + ".cs")
+        pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), filepath=csfilepath, mod=mod, settings=self.settings)
 
 if __name__ == "__main__":
     # Creates the main menu and then calls the pyro mainloop
