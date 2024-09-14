@@ -423,7 +423,6 @@ class InterfaceMenu:
                 os.remove(dest)
                 doorstop_dest = os.path.join(steam_path, foldername, ".doorstop_version")
                 os.remove(doorstop_dest)
-                print(doorstop_dest)
                 messagebox.showinfo("BepInEx Installed", "BepInEx has been installed, please run the game once and then "
                                                         "exit in order to generate the proper files, then click \"OK\"",
                                     parent=settings_window)

@@ -117,6 +117,8 @@ import threading
 pyros = []
 windows = []
 
+
+
 def load_theme(filename):
     with open(filename, 'r') as file:
         data = json.load(file)
@@ -748,10 +750,32 @@ class CoreUI(object):
         self.file_treeview.tree.column("#0", width=50, minwidth=350, stretch=True)  # Adjust width as needed
         # Add Treeview to the grid
         self.file_treeview.tree.grid(row=0, column=0, sticky=(N, S, E, W))
+        
+        closedir = os.path.join("resources", "imgs", "close")
+        i1 = PhotoImage(file=os.path.join(closedir, "close.gif"))
+        i2 = PhotoImage(file=os.path.join(closedir, "close_active.gif"))
+        i3 = PhotoImage(file=os.path.join(closedir, "close_pressed.gif"))
+        style = ttk.Style()
+        style.element_create("close", "image", i1,
+            ("active", "pressed", "!disabled", i3),
+            ("active", "!disabled", i2), border=8, sticky='')
+        style.layout("ButtonNotebook", [("ButtonNotebook.client", {"sticky": "nswe"})])
+        style.layout("ButtonNotebook.Tab", [
+            ("ButtonNotebook.tab", {"sticky": "nswe", "children":
+                [("ButtonNotebook.padding", {"side": "top", "sticky": "nswe",
+                                            "children":
+                    [("ButtonNotebook.focus", {"side": "top", "sticky": "nswe",
+                                                "children":
+                        [("ButtonNotebook.label", {"side": "left", "sticky": ''}),
+                        ("ButtonNotebook.close", {"side": "left", "sticky": ''})]
+                    })]
+                })]
+            })]
+        )
 
-        self.notebook = ttk.Notebook(self.root)
+        self.notebook = ttk.Notebook(self.root, style="ButtonNotebook")
         self.notebook.grid(row=0, column=2, sticky='nsew', columnspan=2)
-
+        self.notebook.pressed_index = None
         # Create and configure info label
         self.info = tkinter.Label(self.root, height=1, bg="#0d1117", fg="#FFC014", anchor="w")
 
@@ -762,7 +786,6 @@ class CoreUI(object):
         self.root.grid_columnconfigure(1, weight=0)  # Line Numbers column (if enabled)
         self.root.grid_columnconfigure(2, weight=1)  # Notebook column
         self.root.grid_columnconfigure(3, weight=0)  # Vertical Scrollbar column
-        self.root.grid_columnconfigure(4, weight=0)  # Close Button
         self.root.grid_rowconfigure(0, weight=1)  # Main row for TreeView and Text widget
         self.root.grid_rowconfigure(1, weight=0)  # Horizontal scrollbar row
         self.root.grid_rowconfigure(2, weight=0)  # Info label row
@@ -1021,9 +1044,10 @@ class CoreUI(object):
     # Files and Tabs
     def loadfile(self, filename):
         """
-        Load a file into a new tab in the Notebook.
+        Load a file into a new tab in the Notebook with a close button.
         """
         if filename and filename not in self.open_files:
+            
             # Create a new frame for the tab
             new_tab = ttk.Frame(self.notebook)
 
@@ -1049,9 +1073,10 @@ class CoreUI(object):
                 "selectbackground": "#E0000E",
                 "inactiveselectbackground": "#E0E0E0"
             }
+
             if self.settings["Show Line Numbers"]:
                 self.lineNums = LineNumbers(new_tab, text_widget, **lineNums_uiopts)
-                
+
             # Grid layout for the Text widget and scrollbars in the tab
             self.lineNums.grid(row=0, column=0, sticky='ns')
             text_widget.grid(row=0, column=1, sticky='nsew')  # Allow the Text widget to expand
@@ -1062,39 +1087,59 @@ class CoreUI(object):
             new_tab.grid_rowconfigure(0, weight=1)
             new_tab.grid_columnconfigure(1, weight=1)
 
-            # Create and configure the line number widget (if needed)
             # Insert file contents into the Text widget
             with open(filename, 'r') as file:
                 contents = file.read()
                 text_widget.insert('1.0', contents)
             self.text = text_widget
-            
-            # close_button = Button(new_tab, text="X", command=lambda: self.close_tab(filename))
-            # close_button.grid(row=0, column=4, sticky='ne', padx=5, pady=5)
+
+            # Set the tab title and close button
             revised_name = os.path.basename(filename)
-            # self.notebook.add(new_tab, text=revised_name)
-            # self.notebook.select(new_tab)
-            
-            tab_frame = Frame(self.notebook)
-            tab_label = Label(tab_frame, text=revised_name)
-            close_button = Button(tab_frame, text="X", command=lambda: self.close_tab(filename), relief="flat", padx=2, pady=2)
 
             # Pack the label and close button next to each other
-            tab_label.pack(side="left", padx=5)
-            close_button.pack(side="right", padx=5)
-
             # Add the tab with the custom title (label + close button)
-            self.notebook.add(new_tab, text="")
-            self.notebook.tab(new_tab, compound="left", window=tab_frame)
+            self.notebook.add(new_tab, text=revised_name, compound="right", padding=5)
+            # self.notebook.tab(new_tab, compound="left")
             self.notebook.select(new_tab)
-            
-            # Style the text and stuff
+
+            # Refresh and style the text widget
             self.refresh(updateMod=True)
             self.create_tags(text_widget)
             self.bootstrap = [partial(self.recolorize, text_widget)]
             self.recolorize(text_widget)
+            
+            def btn_press(event):
+                x, y, widget = event.x, event.y, event.widget
+                elem = widget.identify(x, y)
+                index = widget.index("@%d,%d" % (x, y))
 
-            # Create the close button for the tab
+                if "close" in elem:
+                    widget.state(['pressed'])
+                    widget.pressed_index = index
+
+            def btn_release(event):
+                x, y, widget = event.x, event.y, event.widget
+
+                if not widget.instate(['pressed']):
+                    return
+
+                elem =  widget.identify(x, y)
+                index = widget.index("@%d,%d" % (x, y))
+
+                if "close" in elem and widget.pressed_index == index:
+                    widget.forget(index)
+                    widget.event_generate("<<NotebookClosedTab>>")
+                    if filename in self.open_files:
+                        # Remove the tab from the notebook
+                        self.notebook.forget(new_tab)
+                        # Remove the file from open_files dictionary
+
+                widget.state(["!pressed"])
+                widget.pressed_index = None
+
+
+            self.root.bind_class("TNotebook", "<ButtonPress-1>", btn_press, True)
+            self.root.bind_class("TNotebook", "<ButtonRelease-1>", btn_release)
 
             # Bindings for the text widget
             text_widget.bind('<Return>', self.autoindent)
@@ -1113,18 +1158,8 @@ class CoreUI(object):
             text_widget.tag_configure("highlight", background="yellow")
 
             # Add the new tab to the Notebook with the filename as the tab title
-            self.open_files[filename] = (text_widget, new_tab)
+            # self.open_files[filename] = (text_widget, new_tab)
 
-            # If line numbers are enabled, set up the line number widget
-            
-    def close_tab(self, file_path):
-        if file_path in self.open_files:
-            # Remove the tab from the notebook
-            tab_frame = self.open_files[file_path][1]
-            self.notebook.forget(tab_frame)
-            # Remove the file from open_files dictionary
-            del self.open_files[file_path]
-            
     # Inputs
     def event_key(self, event):
         """
