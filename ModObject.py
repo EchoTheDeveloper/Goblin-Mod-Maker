@@ -206,7 +206,7 @@ class ModObject(LimitedModObject):
         if changeSaved:
             self.saved = False
 
-        save(self, location=folder_path + "/" + name_no_space + "-auto.igmm", overwrite_auto=False)
+        save(self, location=folder_path + "/" + name_no_space + "-auto.gmm", overwrite_auto=False)
 
     def set_mod_name(self, new_name):
         self.mod_name.code = new_name
@@ -289,7 +289,7 @@ class ModObject(LimitedModObject):
                 destroyonerror.destroy()
             root = Tk()
             root.title("Build Failed")
-            root.iconbitmap("resources/isle-goblin-mod-maker.ico")
+            root.iconbitmap("resources/goblin-mod-maker.ico")
             from tkinter import scrolledtext
             textbox = scrolledtext.ScrolledText(root)
             textbox.configure(bg="#191F44", fg="#FFC014")
@@ -333,7 +333,7 @@ def create_files(mod: ModObject, destroyonerror=None):
         os.mkdir(folder_path)
     except FileExistsError:
         pass
-    save(mod, location=folder_path + "/" + name_no_space + ".igmm")
+    save(mod, location=folder_path + "/" + name_no_space + ".gmm")
     shutil.copyfile("resources/gitignoretemplate", folder_path + "/.gitignore")
     shutil.copyfile("resources/configmanagertemplate", folder_path + "/ConfigurationManagerAttributes.cs")
     with open(folder_path + "/" + name_no_space + ".cs", "w") as f:
@@ -402,7 +402,7 @@ def dotnet_build(path):
     return command.stdout.read()
 
 
-def save(mod_object, location="mod.igmm", overwrite_auto=True):
+def save(mod_object, location="mod.gmm", overwrite_auto=True):
     mod_object.saved = True
     auto_path = location.split(".")
     if len(auto_path) == 1:
@@ -416,7 +416,7 @@ def save(mod_object, location="mod.igmm", overwrite_auto=True):
     pickle.dump(mod_object, open(location, "wb"))
 
 
-def load(location="mod.igmm", auto_option=True):
+def load(location="mod.gmm", auto_option=True):
     auto_path = location.split(".")
     if len(auto_path) == 1:
         auto_path += "-auto"
@@ -445,10 +445,10 @@ def copy(mod_object, name):
         os.mkdir(folder_path)
     except FileExistsError:
         return "That Project Already Exists"
-    save(mod_object, location=folder_path + "/" + name_no_space + ".igmm")
-    mod2 = load(folder_path + "/" + name_no_space + ".igmm")
+    save(mod_object, location=folder_path + "/" + name_no_space + ".gmm")
+    mod2 = load(folder_path + "/" + name_no_space + ".gmm")
     mod2.set_mod_name(name)
-    save(mod2, location=folder_path + "/" + name_no_space + ".igmm")
+    save(mod2, location=folder_path + "/" + name_no_space + ".gmm")
 
 def get_system_architecture():
     architecture = platform.architecture()[0]

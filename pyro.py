@@ -2,7 +2,7 @@
 
 
 """
-    IGMMpyro, modified to work with the Isle Goblin Mod Maker, an extension of UnityModderPyro, Modified to work for Unity Mod Maker By Hippolippo
+    GMMpyro, modified to work with the Goblin Mod Maker, an extension of UnityModderPyro, Modified to work for Unity Mod Maker By Hippolippo
 
     Original Code https://github.com/JamesStallings/pyro/blob/master/pyro:
     simple elegant text editor built on python/tkinter
@@ -404,7 +404,7 @@ class CoreUI(object):
         self.markedLine = 0
         self.root = tkinter.Tk()
         self.root.withdraw()
-        self.root.iconbitmap("resources/isle-goblin-mod-maker.ico")
+        self.root.iconbitmap("resources/goblin-mod-maker.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.open_files = {}
         # Call uiconfig to set up the UI
@@ -794,7 +794,7 @@ class CoreUI(object):
         self.file_treeview.adjust_column_width()
 
     def updatetitlebar(self):
-        self.root.title("Isle Goblin Mod Maker - " + self.mod.mod_name.get_text() + " - " + self.filepath)
+        self.root.title("Goblin Mod Maker - " + self.mod.mod_name.get_text() + " - " + self.filepath)
         #self.root.update()
 
     def destroy_window(self):

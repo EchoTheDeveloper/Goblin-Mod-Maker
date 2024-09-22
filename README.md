@@ -1,4 +1,4 @@
-# Isle Goblin Mod Maker
+# Goblin Mod Maker
 
 ### DOCUMENTATION.MD HAS BEEN UPDATED GO THERE FOR DETAILED DOCUMENTATION
 
@@ -8,9 +8,10 @@
 * Spiral
 
 ## Credits
+
 Credits to Watt Designs for making Isle Goblin [Watt Designs Youtube Channel](https://www.youtube.com/@WattDesigns) | [Kilowatt games discord server](https://discord.gg/TM8n7ENJPa) | [Watt Designs patreon](https://www.patreon.com/WattDesigns)
 
-Credits to HippoLippo for making the original Unity Mod Maker [HippoLippo's Mod Maker](https://github.com/HippoLippo/Unity-Mod-Maker)
+Credits to HippoLippo for making the original Unity Mod Maker [HippoLippo&#39;s Mod Maker](https://github.com/HippoLippo/Unity-Mod-Maker)
 
 Credits to Spiral for updating/working on the modding page of the wiki (@spirallikespc on Discord)
 

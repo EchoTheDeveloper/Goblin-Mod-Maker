@@ -48,7 +48,7 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
     apply_theme(root)  # Apply the theme before creating the prompt
     root.title(title)
     root.resizable(0, 0)
-    root.iconbitmap("resources/isle-goblin-mod-maker.ico")
+    root.iconbitmap("resources/goblin-mod-maker.ico")
     Frame(root, width=400 if width is None else width, background=PyroPrompt_Background).pack()
     frame = Frame(root, width=400 if width is None else width, background=PyroPrompt_Background)
     frame.pack(fill="x")
@@ -80,7 +80,7 @@ def create_int_prompt(title, question, fallback, cancel_fallback, default=None, 
     apply_theme(root)  # Apply the theme before creating the prompt
     root.title(title)
     root.resizable(0, 0)
-    root.iconbitmap("resources/isle-goblin-mod-maker.ico")
+    root.iconbitmap("resources/goblin-mod-maker.ico")
     Frame(root, width=400 if width is None else width, background=PyroPrompt_Background).pack()
     frame = Frame(root, width=400 if width is None else width, background=PyroPrompt_Background)
     frame.pack(fill="x")

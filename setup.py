@@ -12,7 +12,7 @@ executables = [
     Executable(
         "app.py",
         base=None,
-        target_name="IsleGoblinModMaker"
+        target_name="GoblinModMaker"
     )
 ]
 
@@ -29,9 +29,9 @@ build_options = {
 
 # Setup configuration
 setup(
-    name="Isle Goblin Mod Maker",
+    name="Goblin Mod Maker",
     version=version,
-    description="Isle Goblin Mod Maker Application",
+    description="Goblin Mod Maker Application",
     options={"build_app": build_options},
     executables=executables,
 )

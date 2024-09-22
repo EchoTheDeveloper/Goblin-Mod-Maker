@@ -52,7 +52,7 @@ def create_loading_screen(message="Please Wait..."):
     root = Tk()
     root.title("Please Wait...")
     refresh_theme()
-    root.iconbitmap("resources/isle-goblin-mod-maker.ico")
+    root.iconbitmap("resources/goblin-mod-maker.ico")
     root.configure(background=InterfaceMenu_Background)
     # The text it shows it provided via the message parameter
     x = Label(root, text=message, font=("Calibri", 20), background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
@@ -117,7 +117,7 @@ def _open_fallback(name):
     if not exists(os.getcwd() + "/projects/" + name.replace(" ", "")):
         return "Project Doesn't Exist"
     try:
-        mod = ModObject.load(os.getcwd() + "/projects/" + name.replace(" ", "") + "/" + name.replace(" ", "") + ".igmm")
+        mod = ModObject.load(os.getcwd() + "/projects/" + name.replace(" ", "") + "/" + name.replace(" ", "") + ".gmm")
     except FileNotFoundError:
         return "Unity Mod Maker File Missing"
     global SETTINGS
@@ -149,7 +149,7 @@ def save(window, filename):
         # it already exists so we are good
         pass
     # calls the save method on the mod object now that we made sure all the correct folders existed
-    ModObject.save(window.mod, location=folder_path + "/" + filename + ".igmm")
+    ModObject.save(window.mod, location=folder_path + "/" + filename + ".gmm")
 
 
 def _copy_fallback(window, name):
