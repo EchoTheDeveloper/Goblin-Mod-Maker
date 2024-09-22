@@ -117,6 +117,7 @@ import threading
 pyros = []
 windows = []
 
+open_files = {}
 
 
 def load_theme(filename):
@@ -156,7 +157,7 @@ def refresh_theme():
     Click = theme_data.get("click", "")
     Hover = theme_data.get("hover", "")
 
-class LineNumbers(Text): #scrolledtext.ScrolledText
+class LineNumbers(Text):  # scrolledtext.ScrolledText
     def __init__(self, master, text, **kwargs):
         super().__init__(master, **kwargs)
         self.text = text
@@ -168,19 +169,27 @@ class LineNumbers(Text): #scrolledtext.ScrolledText
     def match_up(self, e=None):
         p, q = self.text.index("@0,0").split('.')
         p = int(p)
-        final_index = str(self.text.index(tkinter.END))
+        
+        # Get the final index without counting the trailing newline
+        final_index = str(self.text.index(tkinter.END + "-1c"))
         temp = self.num_of_lines
         self.num_of_lines = final_index.split('.')[0]
+        
+        # Generate line numbers string
         line_numbers_string = "\n".join(str(1 + no) for no in range(int(self.num_of_lines)))
         width = len(str(self.num_of_lines)) + 3
 
+        # Update line numbers text
         self.configure(state='normal', width=width)
         if self.num_of_lines != temp:
             self.delete(1.0, tkinter.END)
             self.insert(1.0, line_numbers_string)
         self.configure(state='disabled')
+        
+        # Sync scrolling
         self.scroll_data = self.text.yview()
         self.yview_moveto(self.scroll_data[0])
+
 
 
 class FileTreeview:
@@ -231,13 +240,13 @@ class FileTreeview:
 
         self.master.after(100, self.process_updates)
         
-        self.tree.bind("<<TreeviewSelect>>", self.on_item_double_click)
+        self.tree.bind("<<TreeviewSelect>>", self.on_item_select)
 
     def setup_treeview_style(self):
         # Create a style for the Treeview
         style = ttk.Style()
         style.theme_use("clam")
-        # Configure Treeview style to have a dark background and match your theme
+        
         style.configure("Treeview",
                         background=PyroPrompt_Background,  # Background color for Treeview items
                         foreground=PyroPrompt_Foreground,  # Text color for Treeview items
@@ -256,7 +265,6 @@ class FileTreeview:
                         background=PyroPrompt_Background,  # Background for headers
                         foreground=PyroPrompt_Foreground,  # Header text color
                         bordercolor=InterfaceMenu_MouseEnter)
-        
         
         # style.configure("Horizontal.TScrollbar", background=PyroPrompt_Background)
         # style.configure("Vertical.TScrollbar", background=PyroPrompt_Background)
@@ -346,7 +354,7 @@ class FileTreeview:
                 self.setup_treeview()
         self.master.after(100, self.process_updates)
 
-    def on_item_double_click(self, event):
+    def on_item_select(self, event):
         # Get the item that was clicked
         item = self.tree.selection()
         if not item:
@@ -355,8 +363,6 @@ class FileTreeview:
         # Get the file path for the selected item
         file_path = self.get_file_path(item[0])
         if file_path and os.path.isfile(file_path):
-            # Open the file in the default IDE or editor
-            # self.core_ui.save_file(self.core_ui.filename)
             self.core_ui.loadfile(file_path)
 
     def get_file_path(self, item_id):
@@ -406,7 +412,6 @@ class CoreUI(object):
         self.root.withdraw()
         self.root.iconbitmap("resources/goblin-mod-maker.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
-        self.open_files = {}
         # Call uiconfig to set up the UI
         if filepath:
             self.filepath = filepath
@@ -1044,7 +1049,7 @@ class CoreUI(object):
         """
         Load a file into a new tab in the Notebook with a close button.
         """
-        if filename and filename not in self.open_files:
+        if filename and filename not in open_files:
             
             # Create a new frame for the tab
             new_tab = ttk.Frame(self.notebook)
@@ -1122,19 +1127,23 @@ class CoreUI(object):
                 if not widget.instate(['pressed']):
                     return
 
-                elem =  widget.identify(x, y)
+                elem = widget.identify(x, y)
                 index = widget.index("@%d,%d" % (x, y))
 
                 if "close" in elem and widget.pressed_index == index:
-                    widget.forget(index)
+                    if filename in open_files:
+                        try:
+                            # Remove the tab from the notebook
+                            self.notebook.forget(new_tab)
+                            # Remove the file from open_files dictionary
+                            del open_files[filename]
+                        except _tkinter.TclError:
+                            print(f"Tab for {filename} could not be removed.")
                     widget.event_generate("<<NotebookClosedTab>>")
-                    if filename in self.open_files:
-                        # Remove the tab from the notebook
-                        self.notebook.forget(new_tab)
-                        # Remove the file from open_files dictionary
 
                 widget.state(["!pressed"])
                 widget.pressed_index = None
+
 
 
             self.root.bind_class("TNotebook", "<ButtonPress-1>", btn_press, True)
@@ -1157,7 +1166,13 @@ class CoreUI(object):
             text_widget.tag_configure("highlight", background="yellow")
 
             # Add the new tab to the Notebook with the filename as the tab title
-            self.open_files[filename] = (text_widget, new_tab)
+            open_files[filename] = (text_widget, new_tab)
+        elif filename in open_files:
+            _, existing_tab = open_files[filename]
+            try:
+                self.notebook.select(existing_tab)
+            except _tkinter.TclError:
+                print(f"Tab for {filename} is not available for selection.")
 
     # Inputs
     def event_key(self, event):
@@ -1274,8 +1289,6 @@ class CoreUI(object):
 def add_window(window):
     global windows
     windows.append(window)
-
-
 
 
 def mainloop():
