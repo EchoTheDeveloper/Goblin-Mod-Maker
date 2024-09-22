@@ -1,4 +1,4 @@
-*When we refer to Isle Goblin, we are referring to the videogame Isle Goblin, which is trademarked in the United States of America.
+When we refer to Isle Goblin, we are referring to the videogame Isle Goblin, which is trademarked in the United States of America.
 
 When we refer to Kilowatt Games, we are referring to the indie game studio "Kilowatt Games," which is trademarked in the United States of America.
 
@@ -16,4 +16,4 @@ The creators of Goblin Mod Maker are committed to respecting intellectual proper
 
 We recommend backing up your game data before using Goblin Mod Maker and ensuring that any modifications comply with the terms of service of Isle Goblin.
 
-Thank you for supporting community-driven modding efforts and for respecting the intellectual property rights of all parties involved.*
+Thank you for supporting community-driven modding efforts and for respecting the intellectual property rights of all parties involved.
