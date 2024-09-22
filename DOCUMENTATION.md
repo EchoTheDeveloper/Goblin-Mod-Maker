@@ -1,7 +1,7 @@
-# Isle Goblin Mod Maker Documentation
+# Goblin Mod Maker Documentation
 
 ## Table of Contents
-- [Isle Goblin Mod Maker Documentation](#isle-goblin-mod-maker-documentation)
+- [Goblin Mod Maker Documentation](#goblin-mod-maker-documentation)
   - [Table of Contents](#table-of-contents)
   - [Main Menu](#main-menu)
     - [Mods](#mods)
