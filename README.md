@@ -1,6 +1,8 @@
-# Isle Goblin Mod Maker
+# Goblin Mod Maker
 
 ### DOCUMENTATION.MD HAS BEEN UPDATED GO THERE FOR DETAILED DOCUMENTATION
+
+# WE ARE IN NO WAY ASSOCIATED WITH KILOWATT GAMES. THIS IS A COMMUNITY MADE PROJECT.
 
 ## Devs
 
@@ -24,7 +26,7 @@ I would recommend following the guide on the wiki: [Using Mod Summary](https://i
 
 ## Help
 
-If you need help just join the Isle Goblin Modding discord server and ask in any of the help channels! [Isle Goblin Modding Discord Sever](https://discord.gg/vKy7YHPMmx)
+If you need help just join the (Unofficial) Isle Goblin Modding discord server and ask in any of the help channels! [Isle Goblin Modding Discord Sever](https://discord.gg/vKy7YHPMmx)
 
 ## Author
 
