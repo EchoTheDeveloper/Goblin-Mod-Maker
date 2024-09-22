@@ -701,20 +701,18 @@ class CoreUI(object):
         else:
             text = None
             index = self.mod.index
-        self.text.delete("1.0", tkinter.END)
-        self.text.insert("1.0", self.mod.get_text())
         self.recolorize(self.text)
         if self.mod.get_text() == text and text is not None:
             self.text.mark_set("insert", str(cursor))
         else:
             text = self.text.get("1.0", tkinter.END).split("\n")
             a, i = 0, 0
-            while a + len(text[i]) + 1 < index and i < len(text):
+            while a + len(text[i]) < index and i < len(text):
                 a += len(text[i])
                 a += 1
                 i += 1
             j = index - a
-            self.text.mark_set("insert", "%d.%d" % (i + 1, j))
+            self.text.mark_set("insert", "%d.%d" % (i, j))
         # self.root.update()
         self.text.yview_moveto(self.scroll_data[0])
 
@@ -1090,7 +1088,8 @@ class CoreUI(object):
             # Insert file contents into the Text widget
             with open(filename, 'r') as file:
                 contents = file.read()
-                text_widget.insert('1.0', contents)
+                text_widget.delete("1.0", tkinter.END)
+                text_widget.insert("1.0", contents)
             self.text = text_widget
 
             # Set the tab title and close button
@@ -1158,7 +1157,7 @@ class CoreUI(object):
             text_widget.tag_configure("highlight", background="yellow")
 
             # Add the new tab to the Notebook with the filename as the tab title
-            # self.open_files[filename] = (text_widget, new_tab)
+            self.open_files[filename] = (text_widget, new_tab)
 
     # Inputs
     def event_key(self, event):
