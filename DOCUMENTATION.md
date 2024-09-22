@@ -1,7 +1,6 @@
 # Goblin Mod Maker Documentation
 
 ## Table of Contents
-
 - [Goblin Mod Maker Documentation](#goblin-mod-maker-documentation)
   - [Table of Contents](#table-of-contents)
   - [Main Menu](#main-menu)
