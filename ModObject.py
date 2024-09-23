@@ -17,7 +17,7 @@ try:
 except:
     import plistlib
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 windows = []
 
 
@@ -229,7 +229,10 @@ class ModObject(LimitedModObject):
 
     def get_list(self):
         return self.code.get_list()
-
+    
+    def get_mod_maker_version():
+        return VERSION
+    
     def indent(self):
         self.code.default_indent()
 
