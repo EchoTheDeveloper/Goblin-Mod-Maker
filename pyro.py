@@ -421,10 +421,14 @@ class CoreUI(object):
             self.loadfile(self.filepath)
         # Ensure text is set before using it
         if not hasattr(self, 'text'):
-            raise RuntimeError("Text widget not initialized")
+            try:
+                self.loadfile(self.filepath)
+            except:
+                raise RuntimeError("Text widget not initialized")
         
         self.root.bind("<Key>", self.event_key)
         self.root.bind('<Control-KeyPress-q>', self.close)
+        self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
         # self.root.bind('<Control-KeyPress-f>', MenuMethods.openSearch(self)) DOESNT WORK CURRENTLY
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
@@ -474,6 +478,9 @@ class CoreUI(object):
             self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
         return "break"
 
+    def save_file_key_press(self, e):
+        self.save_file(self.filepath)
+    
     def initialize_menubar(self):
         self.menubar = tkinter.Menu(self.root)
 
@@ -493,6 +500,7 @@ class CoreUI(object):
         self.filemenu.add_command(label="Open", command=partial(MenuMethods.open, self.settings))
         self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filepath))
         self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))
+        self.filemenu.add_command(label="Save C# File", command=partial(self.save_file, self.filepath)) 
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Close", command=self.close)
 
@@ -517,13 +525,13 @@ class CoreUI(object):
         self.createmenu.add_command(label="Create Harmony Patch", command=partial(MenuMethods.create_harmony_patch, self))
         self.createmenu.add_command(label="Create Config Item", command=partial(MenuMethods.create_config_item, self))
         self.createmenu.add_command(label="Create Keybind", command=partial(MenuMethods.create_keybind, self))
+        self.createmenu.add_command(label="Create NPC Asset", command=partial(MenuMethods.create_npc_data_asset, self))
 
 
 
         self.menubar.add_cascade(label="Build", menu=self.buildmenu)
 
         self.buildmenu.add_command(label="Build and Install", command=partial(MenuMethods.build_install, self))
-        self.buildmenu.add_command(label="Export C# File", command=partial(MenuMethods.export_cs, self))
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
 
 
@@ -533,11 +541,8 @@ class CoreUI(object):
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
         self.toolsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
 
-        # self.toolsmenu.add_command(label="Public Void", command=inject_line(self, codeToInject="private"))
         self.snippetsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
 
-
-        # self.menubar.add_command(label="Remove Highlights", command=self.remove_highlights)
 
         self.root.config(menu=self.menubar)
     
@@ -707,17 +712,6 @@ class CoreUI(object):
             text = None
             index = self.mod.index
         self.recolorize(self.text)
-        if self.mod.get_text() == text and text is not None:
-            self.text.mark_set("insert", str(cursor))
-        else:
-            text = self.text.get("1.0", tkinter.END).split("\n")
-            a, i = 0, 0
-            while a + len(text[i]) < index and i < len(text):
-                a += len(text[i])
-                a += 1
-                i += 1
-            j = index - a
-            self.text.mark_set("insert", "%d.%d" % (i, j))
         # self.root.update()
         self.text.yview_moveto(self.scroll_data[0])
 
@@ -1049,131 +1043,135 @@ class CoreUI(object):
         """
         Load a file into a new tab in the Notebook with a close button.
         """
-        if filename and filename not in open_files:
-            
-            # Create a new frame for the tab
-            new_tab = ttk.Frame(self.notebook)
+        try:
+            if filename and filename not in open_files:
+                
+                # Create a new frame for the tab
+                new_tab = ttk.Frame(self.notebook)
 
-            # Create a Text widget for the file content in the new tab
-            text_widget = Text(new_tab, wrap="none", **self.uiopts)
+                # Create a Text widget for the file content in the new tab
+                text_widget = Text(new_tab, wrap="none", **self.uiopts)
+                self.text = text_widget
 
-            # Create scrollbars for the Text widget
-            xsb = Scrollbar(new_tab, orient="horizontal", command=text_widget.xview)
-            ysb = Scrollbar(new_tab, orient="vertical", command=text_widget.yview)
-            text_widget.configure(xscrollcommand=xsb.set, yscrollcommand=ysb.set)
+                # Create scrollbars for the Text widget
+                xsb = Scrollbar(new_tab, orient="horizontal", command=text_widget.xview)
+                ysb = Scrollbar(new_tab, orient="vertical", command=text_widget.yview)
+                text_widget.configure(xscrollcommand=xsb.set, yscrollcommand=ysb.set)
 
-            lineNums_uiopts = {
-                "height": 60,
-                "width": 5,
-                "cursor": "xterm",
-                "bg": "#2c314d",
-                "fg": "#FFAC00",
-                "insertbackground": "#FFD310",
-                "insertborderwidth": 1,
-                "insertwidth": 3,
-                "exportselection": True,
-                "undo": True,
-                "selectbackground": "#E0000E",
-                "inactiveselectbackground": "#E0E0E0"
-            }
+                lineNums_uiopts = {
+                    "height": 60,
+                    "width": 5,
+                    "cursor": "xterm",
+                    "bg": "#2c314d",
+                    "fg": "#FFAC00",
+                    "insertbackground": "#FFD310",
+                    "insertborderwidth": 1,
+                    "insertwidth": 3,
+                    "exportselection": True,
+                    "undo": True,
+                    "selectbackground": "#E0000E",
+                    "inactiveselectbackground": "#E0E0E0"
+                }
 
-            if self.settings["Show Line Numbers"]:
-                self.lineNums = LineNumbers(new_tab, text_widget, **lineNums_uiopts)
+                if self.settings["Show Line Numbers"]:
+                    self.lineNums = LineNumbers(new_tab, text_widget, **lineNums_uiopts)
 
-            # Grid layout for the Text widget and scrollbars in the tab
-            self.lineNums.grid(row=0, column=0, sticky='ns')
-            text_widget.grid(row=0, column=1, sticky='nsew')  # Allow the Text widget to expand
-            ysb.grid(row=0, column=2, sticky='ns')  # Place vertical scrollbar to the right of the Text widget
-            xsb.grid(row=1, column=1, sticky='ew')  # Place horizontal scrollbar below the Text widget
+                # Grid layout for the Text widget and scrollbars in the tab
+                self.lineNums.grid(row=0, column=0, sticky='ns')
+                text_widget.grid(row=0, column=1, sticky='nsew')  # Allow the Text widget to expand
+                ysb.grid(row=0, column=2, sticky='ns')  # Place vertical scrollbar to the right of the Text widget
+                xsb.grid(row=1, column=1, sticky='ew')  # Place horizontal scrollbar below the Text widget
 
-            # Configure grid layout within the tab to allow resizing
-            new_tab.grid_rowconfigure(0, weight=1)
-            new_tab.grid_columnconfigure(1, weight=1)
+                # Configure grid layout within the tab to allow resizing
+                new_tab.grid_rowconfigure(0, weight=1)
+                new_tab.grid_columnconfigure(1, weight=1)
 
-            # Insert file contents into the Text widget
-            with open(filename, 'r') as file:
-                contents = file.read()
-                text_widget.delete("1.0", tkinter.END)
-                text_widget.insert("1.0", contents)
-            self.text = text_widget
+                # Insert file contents into the Text widget
+                with open(filename, 'r') as file:
+                    contents = file.read()
+                    text_widget.delete("1.0", tkinter.END)
+                    text_widget.insert("1.0", contents)
 
-            # Set the tab title and close button
-            revised_name = os.path.basename(filename)
+                # Set the tab title and close button
+                revised_name = os.path.basename(filename)
 
-            # Pack the label and close button next to each other
-            # Add the tab with the custom title (label + close button)
-            self.notebook.add(new_tab, text=revised_name, compound="right", padding=5)
-            # self.notebook.tab(new_tab, compound="left")
-            self.notebook.select(new_tab)
+                # Pack the label and close button next to each other
+                # Add the tab with the custom title (label + close button)
+                self.notebook.add(new_tab, text=revised_name, compound="right", padding=5)
+                # self.notebook.tab(new_tab, compound="left")
+                self.notebook.select(new_tab)
 
-            # Refresh and style the text widget
-            self.refresh(updateMod=True)
-            self.create_tags(text_widget)
-            self.bootstrap = [partial(self.recolorize, text_widget)]
-            self.recolorize(text_widget)
-            
-            def btn_press(event):
-                x, y, widget = event.x, event.y, event.widget
-                elem = widget.identify(x, y)
-                index = widget.index("@%d,%d" % (x, y))
+                # Refresh and style the text widget
+                self.refresh(updateMod=True)
+                self.create_tags(text_widget)
+                self.bootstrap = [partial(self.recolorize, text_widget)]
+                self.recolorize(text_widget)
+                
+                def btn_press(event):
+                    x, y, widget = event.x, event.y, event.widget
+                    elem = widget.identify(x, y)
+                    index = widget.index("@%d,%d" % (x, y))
 
-                if "close" in elem:
-                    widget.state(['pressed'])
-                    widget.pressed_index = index
+                    if "close" in elem:
+                        widget.state(['pressed'])
+                        widget.pressed_index = index
 
-            def btn_release(event):
-                x, y, widget = event.x, event.y, event.widget
+                def btn_release(event):
+                    x, y, widget = event.x, event.y, event.widget
 
-                if not widget.instate(['pressed']):
-                    return
+                    if not widget.instate(['pressed']):
+                        return
 
-                elem = widget.identify(x, y)
-                index = widget.index("@%d,%d" % (x, y))
+                    elem = widget.identify(x, y)
+                    index = widget.index("@%d,%d" % (x, y))
 
-                if "close" in elem and widget.pressed_index == index:
-                    if filename in open_files:
-                        try:
-                            # Remove the tab from the notebook
-                            self.notebook.forget(new_tab)
-                            # Remove the file from open_files dictionary
-                            del open_files[filename]
-                        except _tkinter.TclError:
-                            print(f"Tab for {filename} could not be removed.")
-                    widget.event_generate("<<NotebookClosedTab>>")
+                    if "close" in elem and widget.pressed_index == index:
+                        if filename in open_files:
+                            try:
+                                # Remove the tab from the notebook
+                                self.notebook.forget(new_tab)
+                                # Remove the file from open_files dictionary
+                                del open_files[filename]
+                            except _tkinter.TclError:
+                                print(f"Tab for {filename} could not be removed.")
+                        widget.event_generate("<<NotebookClosedTab>>")
 
-                widget.state(["!pressed"])
-                widget.pressed_index = None
-
+                    widget.state(["!pressed"])
+                    widget.pressed_index = None
 
 
-            self.root.bind_class("TNotebook", "<ButtonPress-1>", btn_press, True)
-            self.root.bind_class("TNotebook", "<ButtonRelease-1>", btn_release)
 
-            # Bindings for the text widget
-            text_widget.bind('<Return>', self.autoindent)
-            text_widget.bind('<Tab>', self.tab2spaces4)
-            text_widget.bind("<KeyRelease>", self.on_key_release)
-            text_widget.bind("<Button-1>", self.hide_autocomplete)
-            text_widget.bind("<Tab>", self.accept_autocomplete_or_snippet)
-            text_widget.bind("<space>", self.on_space_press)
-            text_widget.bind("<Up>", self.on_arrow_key)
-            text_widget.bind("<Down>", self.on_arrow_key)
-            self.root.bind('<Control-KeyPress-z>', partial(self.undo, text_widget))
-            self.root.bind('<Control-KeyPress-y>', partial(self.redo, text_widget))
+                self.root.bind_class("TNotebook", "<ButtonPress-1>", btn_press, True)
+                self.root.bind_class("TNotebook", "<ButtonRelease-1>", btn_release)
 
-            text_widget.edit_modified(False)
-            self.scroll_data = text_widget.yview()
-            text_widget.tag_configure("highlight", background="yellow")
+                # Bindings for the text widget
+                text_widget.bind('<Return>', self.autoindent)
+                text_widget.bind('<Tab>', self.tab2spaces4)
+                text_widget.bind("<KeyRelease>", self.on_key_release)
+                text_widget.bind("<Button-1>", self.hide_autocomplete)
+                text_widget.bind("<Tab>", self.accept_autocomplete_or_snippet)
+                text_widget.bind("<space>", self.on_space_press)
+                text_widget.bind("<Up>", self.on_arrow_key)
+                text_widget.bind("<Down>", self.on_arrow_key)
+                self.root.bind('<Control-KeyPress-z>', partial(self.undo, text_widget))
+                self.root.bind('<Control-KeyPress-y>', partial(self.redo, text_widget))
 
-            # Add the new tab to the Notebook with the filename as the tab title
-            open_files[filename] = (text_widget, new_tab)
-        elif filename in open_files:
-            _, existing_tab = open_files[filename]
-            try:
-                self.notebook.select(existing_tab)
-            except _tkinter.TclError:
-                print(f"Tab for {filename} is not available for selection.")
+                text_widget.edit_modified(False)
+                self.scroll_data = text_widget.yview()
+                text_widget.tag_configure("highlight", background="yellow")
 
+                # Add the new tab to the Notebook with the filename as the tab title
+                open_files[filename] = (text_widget, new_tab)
+            elif filename in open_files:
+                text_widget, existing_tab = open_files[filename]
+                try:
+                    self.notebook.select(existing_tab)
+                    self.text = text_widget
+                    
+                except _tkinter.TclError:
+                    print(f"Tab for {filename} is not available for selection.")
+        except UnicodeDecodeError:
+            messagebox.showerror("File Error", f"Unable to read the file '{filename}' due to unsupported characters.")
     # Inputs
     def event_key(self, event):
         """
@@ -1213,8 +1211,7 @@ class CoreUI(object):
         if get_window_count() <= 0:
             GraphicalInterface.set_window_count(0)
             InterfaceMenu()
-
-    # 
+    
     def starting(self):
         """
             the classical tkinter event driver loop invocation, after running through any

@@ -123,7 +123,6 @@ def _open_fallback(name):
     global SETTINGS
     pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=SETTINGS)
 
-
 def open(settings):
     global SETTINGS
     SETTINGS = settings
@@ -132,39 +131,49 @@ def open(settings):
 
 # This gets called when they press the save button on the menubar (and later when they do ctrl+s)
 def save(window, filename):
-    # directory this programming is running in
+    # directory this program is running in
     current_directory = os.getcwd()
-    # this is the directory for the mod
-    folder_path = os.path.join(current_directory, "projects/" + filename)
+    
+    # check if filename is an absolute path
+    if not os.path.isabs(filename):
+        # this is the directory for the mod
+        folder_path = os.path.join(current_directory, "projects", filename)
+    else:
+        folder_path = filename
+    
     try:
         # try to make the project folder because it might not exist
         os.mkdir(os.path.join(current_directory, "projects"))
     except FileExistsError:
         # it already exists so it is fine, you can continue
         pass
+
     try:
-        # try to make the mod directory (it's in the project folder which is why we needed to make sure that existed)
+        # try to make the mod directory (inside the project folder)
         os.mkdir(folder_path)
     except FileExistsError:
         # it already exists so we are good
         pass
+    
     # calls the save method on the mod object now that we made sure all the correct folders existed
-    ModObject.save(window.mod, location=folder_path + "/" + filename + ".gmm")
+    ModObject.save(window.mod, location=os.path.join(folder_path, filename + ".gmm"))
+
 
 
 def _copy_fallback(window, name):
     name = name[0]
     return ModObject.copy(window.mod, name)
 
-
 def copy(window):
     create_prompt("Copy Mod", ("New Mod Name",), partial(_copy_fallback, window), None)
+
 
 def openSearch(window):
     create_prompt("Search", ("Search For",), partial(searchFallback, window), None)
 
 def searchFallback(window, text):
     window.search(regexp=text[0])
+
 
 def openGTL(window):
     create_int_prompt("Go To Line", ("Enter Line Number"), partial(gTLFallback, window), None, min_value=1)
@@ -180,7 +189,7 @@ def build_install(window):
         text.configure(text=x)
         root.update()
 
-    if window.mod.install(destroyonerror=root, progress_updater=set_text):
+    if window.mod.install(window=window, destroyonerror=root, progress_updater=set_text):
         root.destroy()
         messagebox.showinfo("Success", "Mod Successfully Installed")
         
@@ -204,9 +213,12 @@ def export_cs(window):
         os.mkdir(folder_path)
     except FileExistsError:
         pass
-    with builtins.open(f"{folder_path}/{name_no_space}.cs", "w") as f:
-        code = "\n".join([s for s in window.mod.code.get_text().splitlines() if s])
-        f.write(code)
+    try:
+        with builtins.open(f"{folder_path}/{name_no_space}.cs", "w") as f:
+            # code = "\n".join([s for s in  if s])
+            f.write(window.text.get()) # doesnt work
+    except:
+        messagebox.showerror("Error", "Unable to get code from script")
     root.destroy()
     messagebox.showinfo("Success", "File Created Successfully")
     return root
@@ -237,12 +249,12 @@ def _change_version_fallback(window, name):
 
 def change_mod_version(window):
     create_prompt("Change Mod Version", ("New Version",), partial(_change_version_fallback, window), None, {"New Version": window.mod.version.get_text()})
-    
-    
+
+
 def _change_authors_fallback(window, name):
     ChangeManager.log_action(window.mod, True)
     window.mod.set_authors(name[0])
-    
+
 def change_mod_authors(window):
     create_prompt("Change Developers", ("Developer Names (Seperate Names by comma)",), partial(_change_authors_fallback, window), None, {"Developer Names (Seperate Names by comma)": window.mod.authors})
 
@@ -257,7 +269,6 @@ def _harmony_patch_fallback(window, values):
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
 
-
 def create_harmony_patch(window):
     create_prompt("Create Harmony Patch", ("Function Name", "Function's Class", "Parameters (separate by comma)", "Prefix/Postfix", "Return Type", "Have Instance?"),
                   partial(_harmony_patch_fallback, window), None,
@@ -270,7 +281,6 @@ def _config_item_fallback(window, values):
     window.mod.add_config(values[0], values[1], values[2], values[3], values[4])
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
-
 
 def create_config_item(window):
     create_prompt("Create Config Item", ("Variable Name", "Data Type (e.g. int)", "Default Value (C# formatting)",
@@ -304,7 +314,6 @@ def _keybind_fallback(window, values):
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
 
-
 def keycode_link(e):
     try:
         import webbrowser
@@ -312,7 +321,6 @@ def keycode_link(e):
     except ImportError:
         messagebox.create_error("Missing Module",
                                 "Missing the \"webbrowser\" module")
-
 
 def create_keybind(window):
     labels = create_prompt("Create Keybind", ("Variable Name", "Default Keycode (Click For List)",
@@ -322,3 +330,10 @@ def create_keybind(window):
     labels[1].bind("<Button-1>", keycode_link)
     refresh_theme()
     labels[1].config(fg=PyroPrompt_LinkText)
+
+def _npc_fallback(window, values):
+    print("fallback")
+def create_npc_data_asset(window):
+    create_prompt("Create Config Item", ("Variable Name", "Data Type (e.g. int)", "Default Value (C# formatting)",
+                                         "Definition (Name in List)", "Description (Info When Hovered Over)"),
+                partial(_npc_fallback, window), None)

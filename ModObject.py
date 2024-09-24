@@ -236,9 +236,11 @@ class ModObject(LimitedModObject):
     def indent(self):
         self.code.default_indent()
 
-    def install(self, destroyonerror=None, progress_updater=print):
+    def install(self, window, destroyonerror=None, progress_updater=print):
         progress_updater("Generating Dotnet Files...")
+        window.save_file(window.filepath)
         path = create_files(self, destroyonerror=destroyonerror)
+        
         if path is None:
             return None
         
@@ -339,11 +341,8 @@ def create_files(mod: ModObject, destroyonerror=None):
     save(mod, location=folder_path + "/" + name_no_space + ".gmm")
     shutil.copyfile("resources/gitignoretemplate", folder_path + "/.gitignore")
     shutil.copyfile("resources/configmanagertemplate", folder_path + "/ConfigurationManagerAttributes.cs")
-    with open(folder_path + "/" + name_no_space + ".cs", "w") as f:
-        code = "\n".join([s for s in mod.code.get_text().splitlines() if s])
-        f.write(code)
     with open(folder_path + "/" + name_no_space + ".csproj", "w") as f:
-        code = open("resources/csprojtemplate", "r").read().replace("{{mod_name}}", name_no_space).replace("{{ptf}}", "")
+        code = open("resources/csprojtemplate", "r").read().replace("{{mod_name}}", name_no_space)
         f.write(code)
         
     authors_list = mod.authors  # Get the comma-separated developers' names

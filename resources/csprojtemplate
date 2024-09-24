@@ -16,7 +16,6 @@
     <Reference Include="BepInEx.Harmony">
       <HintPath>Libraries/BepInEx.Harmony.dll</HintPath>
     </Reference>
-    {{ptf}}
     <Reference Include="UnityEngine">
       <HintPath>Libraries/UnityEngine.dll</HintPath>
     </Reference>
