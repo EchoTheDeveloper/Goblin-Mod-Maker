@@ -550,7 +550,7 @@ class CoreUI(object):
 
         self.root.config(menu=self.menubar)
     
-    #-------------------- Autocomplete and Snippets --------------------#
+    #-------------------- START Autocomplete and Snippets START --------------------#
     def on_key_release(self, event):
         if event.keysym in ["Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "Tab"]:
             return  # Ignore modifier keys and Tab
@@ -616,9 +616,14 @@ class CoreUI(object):
             # self.suggestion_listbox.focus_set()
 
             # Bind click outside the autocomplete window to hide it
+            self.suggestion_listbox.insert(END, display_text)
+        
+        # Automatically select the first suggestion
+            self.suggestion_listbox.selection_set(0)
+            self.suggestion_listbox.activate(0)
             self.root.bind("<Button-1>", self.on_click_outside)
 
-    def insert_autocomplete(self):
+    def insert_autocomplete(self, e):
         if not self.suggestion_listbox:
             return
 
@@ -643,12 +648,29 @@ class CoreUI(object):
 
     def accept_autocomplete_or_snippet(self, event):
         cursor_position = self.text.index(INSERT)
-        line_text = self.text.get(f"{cursor_position} linestart", cursor_position)
+        line_start = f"{cursor_position} linestart"
+        line_text = self.text.get(line_start, cursor_position)
+
         current_word = line_text.split()[-1] if line_text.split() else ""
 
-        # Check if the current word matches a snippet trigger
-        if current_word in self.snippets and current_word not in self.keywords:
-            self.text.insert(INSERT, self.snippets[current_word])
+        selected_indices = self.suggestion_listbox.curselection()
+
+        if selected_indices:
+            selected_index = selected_indices[0]
+            selected_suggestion = self.suggestion_listbox.get(selected_index)
+
+            # If the selected suggestion contains a colon, treat it as a snippet
+            if ':' in selected_suggestion:
+                keyword = selected_suggestion.split(':')[0].strip()
+                text_to_insert = self.snippets.get(keyword, selected_suggestion)  # Default to the suggestion if not found
+            else:
+                text_to_insert = selected_suggestion
+
+            # Replace the current word with the selected text to insert
+            self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
+            self.text.insert(INSERT, text_to_insert)
+
+            self.hide_autocomplete()
             return "break"  # Prevent default behavior
 
     def on_arrow_key(self, event):
@@ -699,7 +721,7 @@ class CoreUI(object):
             self.autocomplete_window.destroy()
             self.autocomplete_window = None
             self.root.unbind("<Button-1>")   # Unbind click outside event
-    #-------------------- Autocomplete and Snippets --------------------#
+    #-------------------- END Autocomplete and Snippets END --------------------#
 
     def refresh(self, updateMod=True):
         if updateMod:
