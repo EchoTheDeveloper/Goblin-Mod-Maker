@@ -7,11 +7,13 @@ import pickle
 import os
 import subprocess
 from tkinter import *
+from tkinter import scrolledtext
 import json
 import requests
 import zipfile
 import platform
 from datetime import datetime
+import re
 try:
     import winreg
 except:
@@ -292,14 +294,58 @@ class ModObject(LimitedModObject):
         except FileNotFoundError:
             if destroyonerror is not None:
                 destroyonerror.destroy()
+            
             root = Tk()
             root.title("Build Failed")
             root.iconbitmap("resources/goblin-mod-maker.ico")
-            from tkinter import scrolledtext
-            textbox = scrolledtext.ScrolledText(root)
-            textbox.configure(bg="#191F44", fg="#FFC014")
-            textbox.insert(1.0, build_result)
-            textbox.pack(fill="both")
+
+            textbox = scrolledtext.ScrolledText(root, wrap="word")
+            textbox.configure(bg="#191F44", fg="#FFC014")  # Default text color (yellowish)
+
+            def clean_error_log():
+                lines = build_result.decode('utf-8').splitlines()
+                cleaned_lines = []
+                seen_errors = set()
+
+                cleaned_lines.append("=== Build Log ===")
+                cleaned_lines.append("")  # Blank line for spacing
+
+                for line in lines:
+                    if "MSBuild version" in line or "Time Elapsed" in line:
+                        cleaned_lines.append(line)
+                        cleaned_lines.append("")  # Blank line for spacing
+                    elif "Warning(s)" in line or "Error(s)" in line:
+                        cleaned_lines.append(line)
+                        cleaned_lines.append("")  # Blank line for spacing
+                    elif "error CS" in line:
+                        # Remove unnecessary details (e.g., file path) and square brackets
+                        formatted_line = re.sub(r'\s+\[.*\]', '', line)
+                        if formatted_line not in seen_errors:
+                            seen_errors.add(formatted_line)
+                            cleaned_lines.append(f"Error: {formatted_line}")
+                            cleaned_lines.append("")  # Blank line for spacing
+                    elif "Build FAILED" in line:
+                        cleaned_lines.append("=== Build FAILED ===")
+                        cleaned_lines.append("")  # Blank line for spacing
+
+                cleaned_lines.append("=====================")
+                cleaned_lines.append("")  # Blank line for spacing
+
+                return "\n".join(cleaned_lines)
+
+            clean_build = clean_error_log()
+
+            textbox.insert(1.0, clean_build)
+
+            textbox.tag_configure("error", foreground="red")  # Set the error tag color to red
+
+            for line_num, line in enumerate(clean_build.splitlines(), start=1):
+                if line.startswith("Error:"):
+                    start_index = f"{line_num}.0"
+                    end_index = f"{line_num}.end"
+                    textbox.tag_add("error", start_index, end_index)
+
+            textbox.pack(fill="both", expand=True)
             root.update()
             global windows
             windows.append(root)
@@ -307,6 +353,7 @@ class ModObject(LimitedModObject):
             return None
 
         return True
+    
     def save_files_as_cs(self):
         name_no_space = self.mod_name_no_space.get_text()
         current_directory = os.getcwd()
@@ -322,7 +369,6 @@ class ModObject(LimitedModObject):
         with open(f"{folder_path}/{name_no_space}.cs", "w") as f:
             code = "\n".join([s for s in self.code.get_text().splitlines() if s])
             f.write(code)
-
 
 def create_files(mod: ModObject, destroyonerror=None):
     global settings

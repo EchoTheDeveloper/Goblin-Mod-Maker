@@ -24,45 +24,48 @@ def load_settings():
         data = json.load(file)
     return data
 
-def refresh_theme():
+def refresh_theme(root=None):
     global theme_data, InterfaceMenu_Background, InterfaceMenu_Foreground, PyroPrompt_LinkText
 
     # Reload the theme data
     settings = load_settings()
     theme_data = load_theme('resources/themes/' + settings.get("Selected Theme", "Isle Goblin") + ".json")
-    
+
     # Update global theme variables
     InterfaceMenu_Background = theme_data.get("interfacemenu", {}).get("background", "")
     InterfaceMenu_Foreground = theme_data.get("buttonconfig", {}).get("foreground", "")
     PyroPrompt_LinkText = theme_data.get("pyroprompt", {}).get("linktextcolor", "")
 
-    # Update the UI elements that rely on these variables
-    # Example: Updating the background and foreground colors
-    for window in pyro.get_windows():  # Assuming pyro has a method to get active windows
-        window.configure(background=InterfaceMenu_Background)
-        for widget in window.winfo_children():
+    if root:
+        root.configure(background=InterfaceMenu_Background)
+        for widget in root.winfo_children():
             if isinstance(widget, Label):
                 widget.configure(background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
+    else:
+        # Update the UI elements that rely on these variables
+        # Example: Updating the background and foreground colors
+        for window in pyro.get_windows():  # Assuming pyro has a method to get active windows
+            window.configure(background=InterfaceMenu_Background)
+            for widget in window.winfo_children():
+                if isinstance(widget, Label):
+                    widget.configure(background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
 
     print("Theme updated successfully!")
 
-# This function is used to make the loading screens for Building the mod and for generating the Dotnet files
+
 def create_loading_screen(message="Please Wait..."):
     # Visuals
     root = Tk()
     root.title("Please Wait...")
-    refresh_theme()
+    refresh_theme(root)  # Pass root to refresh_theme
     root.iconbitmap("resources/goblin-mod-maker.ico")
     root.configure(background=InterfaceMenu_Background)
-    # The text it shows it provided via the message parameter
+
+    # The text it shows is provided via the message parameter
     x = Label(root, text=message, font=("Calibri", 20), background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
     x.pack(padx=20, pady=20)
-    # This isn't added to the pyro list of windows because it will be deleted before the next visual tick anyway
-    # (Visuals freeze during these build methods) - This could be "fixed" by running the build method in a
-    # different thread but it isn't necessary to allow them to edit the mod while it is installing
+
     root.update()
-    # it returns x so that you can update the loading text while it is doing one task
-    # it returns root so you can destroy it when you are done
     return root, x
 
 

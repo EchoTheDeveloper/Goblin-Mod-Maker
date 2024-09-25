@@ -116,7 +116,7 @@ import threading
 
 pyros = []
 windows = []
-
+core_ui = None
 open_files = {}
 
 
@@ -393,8 +393,8 @@ class CoreUI(object):
     """
 
     def __init__(self, lexer, filename="Untitled", filepath=None, mod=None, settings={}):
-        global RECENT
-        RECENT = self
+        global core_ui
+        core_ui = self
         self.settings = settings
         set_window_count(get_window_count() + 1)
         self.filename = filename
@@ -412,11 +412,14 @@ class CoreUI(object):
         self.root.withdraw()
         self.root.iconbitmap("resources/goblin-mod-maker.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
+        self.bootstrap = []
+        
         # Call uiconfig to set up the UI
         if filepath:
             self.filepath = filepath
         # current_directory = os.getcwd()
         self.uiconfig()
+        
         if self.filepath and os.path.isfile(self.filepath):
             self.loadfile(self.filepath)
         # Ensure text is set before using it
@@ -425,7 +428,8 @@ class CoreUI(object):
                 self.loadfile(self.filepath)
             except:
                 raise RuntimeError("Text widget not initialized")
-        
+        global RECENT
+        RECENT = self
         self.root.bind("<Key>", self.event_key)
         self.root.bind('<Control-KeyPress-q>', self.close)
         self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
@@ -1208,6 +1212,8 @@ class CoreUI(object):
         import GraphicalInterface
         GraphicalInterface.set_window_count(GraphicalInterface.get_window_count() - 1)
         self.root.destroy()
+        global open_files
+        open_files = {}
         if get_window_count() <= 0:
             GraphicalInterface.set_window_count(0)
             InterfaceMenu()
@@ -1217,8 +1223,11 @@ class CoreUI(object):
             the classical tkinter event driver loop invocation, after running through any
             startup tasks
         """
-        for task in self.bootstrap:
-            task()
+        try:
+            for task in self.bootstrap:
+                task()
+        except:
+            self.bootstrap = []
 
     def create_tags(self, text_widget):
         """
@@ -1297,7 +1306,17 @@ def mainloop():
             RECENT.root.deiconify()
             RECENT.root.update()
             RECENT.root.lift()
-            RECENT.text.focus()
+            try:
+                RECENT.text.focus()
+            except:
+                global core_ui
+                if core_ui.filepath and os.path.isfile(core_ui.filepath):
+                    core_ui.loadfile(core_ui.filepath)
+                try: 
+                    RECENT.text.focus()
+                except:
+                    pass
+
             RECENT = None
         count = 0
         for pyro in pyros:
