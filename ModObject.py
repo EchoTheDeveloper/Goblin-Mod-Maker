@@ -300,12 +300,15 @@ class ModObject(LimitedModObject):
             root.iconbitmap("resources/goblin-mod-maker.ico")
 
             textbox = scrolledtext.ScrolledText(root, wrap="word")
-            textbox.configure(bg="#191F44", fg="#FFC014")  # Default text color (yellowish)
+            textbox.configure(bg="#191F44", fg="white")  # Default text color (yellowish)
 
             def clean_error_log():
                 lines = build_result.decode('utf-8').splitlines()
                 cleaned_lines = []
+                
+                # We have to do this because the build result doubles the errors
                 seen_errors = set()
+                seen_warnings = set() 
 
                 cleaned_lines.append("=== Build Log ===")
                 cleaned_lines.append("")  # Blank line for spacing
@@ -324,6 +327,12 @@ class ModObject(LimitedModObject):
                             seen_errors.add(formatted_line)
                             cleaned_lines.append(f"Error: {formatted_line}")
                             cleaned_lines.append("")  # Blank line for spacing
+                    elif "warning CS" in line:
+                        formatted_line = re.sub(r'\s+\[.*\]', '', line)
+                        if formatted_line not in seen_warnings:
+                            seen_warnings.add(formatted_line)
+                            cleaned_lines.append(f"Warning: {formatted_line}")
+                            cleaned_lines.append("")  # Blank line for spacing
                     elif "Build FAILED" in line:
                         cleaned_lines.append("=== Build FAILED ===")
                         cleaned_lines.append("")  # Blank line for spacing
@@ -338,12 +347,17 @@ class ModObject(LimitedModObject):
             textbox.insert(1.0, clean_build)
 
             textbox.tag_configure("error", foreground="red")  # Set the error tag color to red
+            textbox.tag_configure("warning", foreground="yellow")  # Set the error tag color to red
 
             for line_num, line in enumerate(clean_build.splitlines(), start=1):
                 if line.startswith("Error:"):
                     start_index = f"{line_num}.0"
                     end_index = f"{line_num}.end"
                     textbox.tag_add("error", start_index, end_index)
+                if line.startswith("Warning:"):
+                    start_index = f"{line_num}.0"
+                    end_index = f"{line_num}.end"
+                    textbox.tag_add("warning", start_index, end_index)
 
             textbox.pack(fill="both", expand=True)
             root.update()

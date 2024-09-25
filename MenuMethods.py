@@ -50,7 +50,6 @@ def refresh_theme(root=None):
                 if isinstance(widget, Label):
                     widget.configure(background=InterfaceMenu_Background, fg=InterfaceMenu_Foreground)
 
-    print("Theme updated successfully!")
 
 
 def create_loading_screen(message="Please Wait..."):
