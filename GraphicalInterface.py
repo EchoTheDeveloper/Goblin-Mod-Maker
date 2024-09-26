@@ -635,7 +635,7 @@ class InterfaceMenu:
         csfilepath = os.path.join(current_directory, "projects", name_no_space, "Files", name_no_space + ".cs")
         pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), filepath=csfilepath, mod=mod, settings=self.settings)
 
-def get_github_version_line(line_number=20):
+def get_github_version_line(line_number=1):
     try:
         response = requests.get("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/ModObject.py")
         response.raise_for_status()  # Raise an exception for HTTP errors
@@ -652,9 +652,7 @@ def get_github_version_line(line_number=20):
         return None
 
 def extract_version(line):
-    # Assuming the version line is something like: `version = "1.0.0"`
     if "VERSION" in line:
-        # Extract version string, assuming it's in the format version = "x.x.x"
         version_part = line.split("=")
         if len(version_part) > 1:
             return version_part[1].strip().strip('"')  # Remove extra spaces and quotes

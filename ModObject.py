@@ -1,3 +1,4 @@
+VERSION = "1.4.0"
 import shutil
 from tkinter import messagebox, filedialog
 
@@ -19,7 +20,6 @@ try:
 except:
     import plistlib
 
-VERSION = "1.4.0"
 windows = []
 
 
