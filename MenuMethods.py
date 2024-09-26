@@ -113,7 +113,35 @@ def new_fallback(self, data, window):
     # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
     pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
 
+def new_file(self):
+    create_prompt("New File", 
+                ("File Name (add extension ex: .cs)",), 
+                    partial(new_file_fallback, self), 
+                    None, 
+                    defaults=None
+                )
 
+def new_file_fallback(self, data):
+    filename = data[0]
+    
+    current_directory = os.getcwd()
+    name_no_space = self.mod.mod_name_no_space.get_text()
+    filepath = os.path.join(current_directory, "projects", name_no_space, "Files", filename)
+    
+    try:
+        # Attempt to create a new file exclusively
+        with builtins.open(filepath, "x") as f:
+            pass
+    except FileExistsError:
+        return "File already exists."
+    except Exception as e:
+        messagebox.showerror("Error", e)
+
+    
+    
+    
+    self.loadfile(filepath)
+    
 def _open_fallback(name):
     name = name[0]
     if not exists(os.getcwd() + "/projects/" + name.replace(" ", "")):

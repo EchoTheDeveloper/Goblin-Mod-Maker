@@ -199,14 +199,20 @@ class FileTreeview:
         self.mod_name_no_space = mod_name_no_space
         self.update_queue = queue.Queue()
 
-        # Create a Frame for the Treeview with a background color
-        self.tree_frame = Frame(master)  # Background color for the frame (dark color)
+        # Create a Frame for the Treeview and button layout
+        self.tree_frame = Frame(master)
         self.tree_frame.grid(column=0, row=0, sticky='nsew', padx=(5, 0), pady=5)
         refresh_theme()
+
+
         # Create and configure the Treeview inside the Frame
         self.tree = ttk.Treeview(self.tree_frame, **uiopts)
         self.setup_treeview_style()
         self.setup_treeview()
+
+        # Create the "New File" button and place it over the Treeview header
+        # self.new_file_button = Button(self.tree_frame, text="+", command=self.on_new_file_button_click, relief="flat", width=2)
+        # self.new_file_button.place(relx=1.0, rely=0.0, anchor="ne", x=-25, y=0)
 
         # Horizontal Scrollbar for TreeView
         self.xsb = Scrollbar(self.tree_frame, orient="horizontal", command=self.tree.xview)
@@ -217,7 +223,7 @@ class FileTreeview:
         self.ysb = Scrollbar(self.tree_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=self.ysb.set)
         self.ysb.grid(row=0, column=1, sticky="ns")
-        
+
         self.xsb.configure(bg=PyroPrompt_Background, troughcolor="gray", highlightthickness=0)
         self.ysb.configure(bg=PyroPrompt_Background, troughcolor="gray", highlightthickness=0)
 
@@ -239,8 +245,12 @@ class FileTreeview:
         self.observer.start()
 
         self.master.after(100, self.process_updates)
-        
+
         self.tree.bind("<<TreeviewSelect>>", self.on_item_select)
+
+    # Button click event handler (empty logic, you can fill this in later)
+    def on_new_file_button_click(self):
+        pass
 
     def setup_treeview_style(self):
         # Create a style for the Treeview
@@ -264,7 +274,8 @@ class FileTreeview:
         style.configure("Treeview.Heading",
                         background=PyroPrompt_Background,  # Background for headers
                         foreground=PyroPrompt_Foreground,  # Header text color
-                        bordercolor=InterfaceMenu_MouseEnter)
+                        bordercolor=InterfaceMenu_MouseEnter,
+                        relief="flat")
         
         # style.configure("Horizontal.TScrollbar", background=PyroPrompt_Background)
         # style.configure("Vertical.TScrollbar", background=PyroPrompt_Background)
@@ -277,8 +288,8 @@ class FileTreeview:
         style.configure("Treeview.Column",
                         background=PyroPrompt_Background,  # Background for headers
                         foreground=PyroPrompt_Foreground,  # Header text color
-                        bordercolor=InterfaceMenu_MouseEnter)
-
+                        bordercolor=InterfaceMenu_MouseEnter,
+                        relief="flat")
 
     def setup_treeview(self):
         self.tree.delete(*self.tree.get_children())  # Clear existing content
@@ -462,7 +473,7 @@ class CoreUI(object):
         """Save the current contents to a file."""
         if filepath is None:
             filepath = self.filepath
-        if filepath:
+        else:
             with open(filepath, 'w') as file:
                 file.write(self.text.get('1.0', tkinter.END))
             self.filepath = filepath
@@ -500,11 +511,12 @@ class CoreUI(object):
 
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
-        self.filemenu.add_command(label="New", command=partial(MenuMethods.new, self))
+        self.filemenu.add_command(label="New Mod", command=partial(MenuMethods.new, self))
         self.filemenu.add_command(label="Open", command=partial(MenuMethods.open, self.settings))
         self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filepath))
         self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))
         self.filemenu.add_command(label="Save C# File", command=partial(self.save_file, self.filepath)) 
+        self.filemenu.add_command(label="New File", command=partial(MenuMethods.new_file, self))
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Close", command=self.close)
 
@@ -799,6 +811,7 @@ class CoreUI(object):
         self.notebook = ttk.Notebook(self.root, style="ButtonNotebook")
         self.notebook.grid(row=0, column=2, sticky='nsew', columnspan=2)
         self.notebook.pressed_index = None
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         # Create and configure info label
         self.info = tkinter.Label(self.root, height=1, bg="#0d1117", fg="#FFC014", anchor="w")
 
@@ -816,6 +829,16 @@ class CoreUI(object):
         # Adjust Treeview width if needed
         self.file_treeview.adjust_column_width()
 
+    def on_tab_changed(self, event):
+        selected_tab = self.notebook.select()
+
+        # Find the filename associated with this tab in open_files
+        for filename, (text_widget, tab) in open_files.items():
+            if str(tab) == selected_tab:
+                self.text = text_widget
+                self.filepath = filename
+                break
+    
     def updatetitlebar(self):
         self.root.title("Goblin Mod Maker - " + self.mod.mod_name.get_text() + " - " + self.filepath)
         #self.root.update()
@@ -1181,7 +1204,7 @@ class CoreUI(object):
                 text_widget.bind("<Down>", self.on_arrow_key)
                 self.root.bind('<Control-KeyPress-z>', partial(self.undo, text_widget))
                 self.root.bind('<Control-KeyPress-y>', partial(self.redo, text_widget))
-
+                self.filepath = filename
                 text_widget.edit_modified(False)
                 self.scroll_data = text_widget.yview()
                 text_widget.tag_configure("highlight", background="yellow")
@@ -1312,6 +1335,8 @@ class CoreUI(object):
         cursor = self.text.index(tkinter.INSERT)
         self.info['text'] = "Cursor Position: row {}, column {}".format(cursor.split(".")[0],cursor.split(".")[1])
 
+    def get_open_files(self):
+        return open_files
 
 
 def add_window(window):

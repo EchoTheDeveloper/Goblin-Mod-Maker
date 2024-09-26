@@ -640,7 +640,6 @@ def get_github_version_line(line_number=1):
         response = requests.get("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/ModObject.py")
         response.raise_for_status()  # Raise an exception for HTTP errors
         lines = response.text.splitlines()
-        
         # Fetch the specific line (e.g., line 20 for version)
         if len(lines) >= line_number:
             return lines[line_number - 1]  # Line 20 would be index 19
