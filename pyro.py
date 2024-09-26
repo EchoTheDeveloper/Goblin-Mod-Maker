@@ -118,6 +118,7 @@ pyros = []
 windows = []
 core_ui = None
 open_files = {}
+last_opened_file = None
 
 
 def load_theme(filename):
@@ -189,7 +190,6 @@ class LineNumbers(Text):  # scrolledtext.ScrolledText
         # Sync scrolling
         self.scroll_data = self.text.yview()
         self.yview_moveto(self.scroll_data[0])
-
 
 
 class FileTreeview:
@@ -444,6 +444,7 @@ class CoreUI(object):
         self.root.bind("<Key>", self.event_key)
         self.root.bind('<Control-KeyPress-q>', self.close)
         self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
+        self.root.bind('<Control-Shift-T>', self.open_last_file)
         # self.root.bind('<Control-KeyPress-f>', MenuMethods.openSearch(self)) DOESNT WORK CURRENTLY
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
@@ -468,6 +469,9 @@ class CoreUI(object):
         self.snippets = load_file("resources/snippets.json")
         self.autocomplete_window = None
 
+    def open_last_file(self, e):
+        global last_opened_file
+        self.loadfile(last_opened_file)
 
     def save_file(self, filepath=None):
         """Save the current contents to a file."""
@@ -1179,6 +1183,11 @@ class CoreUI(object):
                             try:
                                 # Remove the tab from the notebook
                                 self.notebook.forget(new_tab)
+                                
+                                # Set last open file
+                                global last_opened_file
+                                last_opened_file = filename
+                                
                                 # Remove the file from open_files dictionary
                                 del open_files[filename]
                             except _tkinter.TclError:
