@@ -11,6 +11,8 @@ import ChangeManager
 from pygments.lexers.dotnet import CSharpLexer
 from CodeManager import *
 import builtins  
+from ModObjectBuilder import *
+
 
 SETTINGS = {}
 
@@ -124,23 +126,39 @@ def new_file(self):
 def new_file_fallback(self, data):
     filename = data[0]
     
-    current_directory = os.getcwd()
     name_no_space = self.mod.mod_name_no_space.get_text()
+    
+    current_directory = os.getcwd()
     filepath = os.path.join(current_directory, "projects", name_no_space, "Files", filename)
     
+    class_name = os.path.splitext(filename)[0]
+    
+    file_content = f"""using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace {name_no_space}
+{{
+    public class {class_name}
+    {{
+        // Add Code
+    }}
+}}
+"""
+
     try:
-        # Attempt to create a new file exclusively
+        # Create the new file and write the content
         with builtins.open(filepath, "x") as f:
-            pass
+            f.write(file_content)
     except FileExistsError:
         return "File already exists."
     except Exception as e:
-        messagebox.showerror("Error", e)
+        messagebox.showerror("Error", str(e))
 
-    
-    
-    
     self.loadfile(filepath)
+
     
 def _open_fallback(name):
     name = name[0]

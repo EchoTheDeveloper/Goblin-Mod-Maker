@@ -240,7 +240,8 @@ class ModObject(LimitedModObject):
 
     def install(self, window, destroyonerror=None, progress_updater=print):
         progress_updater("Generating Dotnet Files...")
-        window.save_file(window.filepath)
+        # window.save_file(window.filepath)
+        window.sort_and_save_open_files()
         path = create_files(self, destroyonerror=destroyonerror)
         
         if path is None:

@@ -424,6 +424,7 @@ class CoreUI(object):
         self.root.iconbitmap("resources/goblin-mod-maker.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.bootstrap = []
+        self.modified = False
         
         # Call uiconfig to set up the UI
         if filepath:
@@ -478,9 +479,32 @@ class CoreUI(object):
         if filepath is None:
             filepath = self.filepath
         else:
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
             with open(filepath, 'w') as file:
                 file.write(self.text.get('1.0', tkinter.END))
             self.filepath = filepath
+            self.modified = False 
+            filename = os.path.basename(self.filepath)
+            self.notebook.tab(self.notebook.select(), text=filename) 
+            self.updatetitlebar()
+            
+    def sort_and_save_open_files(self):
+        """Sort and save the contents of all open files in the Notebook."""
+        # Create a list of filenames from open_files dictionary
+        filenames = list(open_files.keys())
+        
+        # Sort filenames (you can customize the sorting criteria here)
+        sorted_filenames = sorted(filenames)
+        
+        # Save each file's content
+        for filename in sorted_filenames:
+            text_widget, tab = open_files[filename]  # Retrieve the associated text widget
+            # Use the text widget to get the content and save it to the file
+            content = text_widget.get('1.0', tkinter.END)
+            with open(filename, 'w') as file:
+                file.write(content)
+            revised_filename = os.path.basename(filename)
+            self.notebook.tab(tab, text=revised_filename) 
             self.updatetitlebar()
     
     def undo(self, e=None, text_widget=None):
@@ -1230,6 +1254,8 @@ class CoreUI(object):
                     print(f"Tab for {filename} is not available for selection.")
         except UnicodeDecodeError:
             messagebox.showerror("File Error", f"Unable to read the file '{filename}' due to unsupported characters.")
+    
+    
     # Inputs
     def event_key(self, event):
         """
@@ -1241,6 +1267,20 @@ class CoreUI(object):
         self.recolorize(self.text)
         self.updatetitlebar()
 
+        with open(self.filepath, "r") as f:
+            file_content = f.read()
+
+        text = self.text.get("1.0", "end-1c") 
+        filename = os.path.basename(self.filepath)
+        if text == file_content:
+            self.modified = False 
+            self.notebook.tab(self.notebook.select(), text=filename) 
+        else:
+            self.modified = True 
+            self.notebook.tab(self.notebook.select(), text=f"{filename} *")
+
+            
+            
     def event_write(self, event):
         """
             the callback method for the root window 'ctrl+w' event (write the file to disk)
