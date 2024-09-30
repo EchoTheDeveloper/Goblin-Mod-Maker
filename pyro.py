@@ -815,34 +815,42 @@ class CoreUI(object):
         self.file_treeview.tree.grid(row=0, column=0, sticky=(N, S, E, W))
         
         closedir = os.path.join("resources", "imgs", "close")
-        i1 = PhotoImage(file=os.path.join(closedir, "close.gif"))
-        i2 = PhotoImage(file=os.path.join(closedir, "close_active.gif"))
-        i3 = PhotoImage(file=os.path.join(closedir, "close_pressed.gif"))
+        self.i1 = PhotoImage(file=os.path.join(closedir, "close.gif"))
+        self.i2 = PhotoImage(file=os.path.join(closedir, "close_active.gif"))
+        self.i3 = PhotoImage(file=os.path.join(closedir, "close_pressed.gif"))
         style = ttk.Style()
-        style.element_create("close", "image", i1,
-            ("active", "pressed", "!disabled", i3),
-            ("active", "!disabled", i2), border=8, sticky='')
-        style.layout("ButtonNotebook", [("ButtonNotebook.client", {"sticky": "nswe"})])
+        style.configure("ButtonNotebook.TNotebook", background="#0d1117", borderwidth=0)
+        style.map("ButtonNotebook.TNotebook", background=[("selected", "#1c1e22")])  # Change background when selected
+        style.element_create("close", "image", self.i1,
+            ("active", "pressed", "!disabled", self.i3),
+            ("!active", "!disabled", self.i1),  
+            ("hover", "!disabled", self.i2),  
+            border=8, sticky='')
         style.layout("ButtonNotebook.Tab", [
             ("ButtonNotebook.tab", {"sticky": "nswe", "children":
                 [("ButtonNotebook.padding", {"side": "top", "sticky": "nswe",
-                                            "children":
+                    "children":
                     [("ButtonNotebook.focus", {"side": "top", "sticky": "nswe",
-                                                "children":
+                        "children":
                         [("ButtonNotebook.label", {"side": "left", "sticky": ''}),
-                        ("ButtonNotebook.close", {"side": "left", "sticky": ''})]
+                        ("ButtonNotebook.close", {"side": "left", "sticky": '', "children":
+                            [("ButtonNotebook.hover", {"side": "top", "sticky": ''})
+                        ]})
+                        ]
+                        })]
                     })]
                 })]
-            })]
-        )
+            )
+        style.layout("ButtonNotebook", [("ButtonNotebook.client", {"sticky": "nswe"})])
+
 
         self.notebook = ttk.Notebook(self.root, style="ButtonNotebook")
         self.notebook.grid(row=0, column=2, sticky='nsew', columnspan=2)
         self.notebook.pressed_index = None
         self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
+
         # Create and configure info label
         self.info = tkinter.Label(self.root, height=1, bg="#0d1117", fg="#FFC014", anchor="w")
-
         self.info.grid(column=0, row=2, pady=1, sticky=('nsew'), columnspan=4)
         
         # Column and row configuration
@@ -1190,39 +1198,45 @@ class CoreUI(object):
                     index = widget.index("@%d,%d" % (x, y))
 
                     if "close" in elem:
-                        widget.state(['pressed'])
+                        widget.state(['pressed'])  # Set pressed state if "close" is identified
                         widget.pressed_index = index
+                    else:
+                        widget.state(["!pressed"])  # Clear the pressed state if not the close button
 
                 def btn_release(event):
                     x, y, widget = event.x, event.y, event.widget
-
-                    if not widget.instate(['pressed']):
-                        return
-
                     elem = widget.identify(x, y)
-                    index = widget.index("@%d,%d" % (x, y))
 
-                    if "close" in elem and widget.pressed_index == index:
-                        if filename in open_files:
+                    if "close" in elem:
+                        # Get the currently selected tab index
+                        selected_tab = self.notebook.index("current")
+
+                        # Remove the tab if it exists
+                        if selected_tab is not None:
                             try:
-                                # Remove the tab from the notebook
-                                self.notebook.forget(new_tab)
-                                
-                                # Set last open file
-                                global last_opened_file
-                                last_opened_file = filename
-                                
-                                # Remove the file from open_files dictionary
-                                del open_files[filename]
-                            except _tkinter.TclError:
-                                print(f"Tab for {filename} could not be removed.")
+                                self.notebook.forget(selected_tab)  # Forget the tab by index
+                                if filename in open_files:
+                                    del open_files[filename]  # Remove the file from open_files dictionary
+                            except _tkinter.TclError as e:
+                                print(f"Error closing tab: {e}")
+
+                        # Generate a custom event for tab closure, if needed
                         widget.event_generate("<<NotebookClosedTab>>")
 
-                    widget.state(["!pressed"])
-                    widget.pressed_index = None
+                    # Ensure the close button returns to its unpressed state
+                    widget.state(["!pressed"])  # Reset the button's state after release
+                    widget.pressed_index = None  # Reset the pressed index
 
+                def btn_hover(event):
+                    x, y, widget = event.x, event.y, event.widget
+                    elem = widget.identify(x, y)
 
+                    if "close" in elem:
+                        widget.state(['hover'])  
+                    else:
+                        widget.state(['!hover'])  # Ensure hover state is cleared when not hovering
 
+                self.root.bind_class("TNotebook", "<Motion>", btn_hover)
                 self.root.bind_class("TNotebook", "<ButtonPress-1>", btn_press, True)
                 self.root.bind_class("TNotebook", "<ButtonRelease-1>", btn_release)
 
@@ -1279,8 +1293,6 @@ class CoreUI(object):
             self.modified = True 
             self.notebook.tab(self.notebook.select(), text=f"{filename} *")
 
-            
-            
     def event_write(self, event):
         """
             the callback method for the root window 'ctrl+w' event (write the file to disk)
