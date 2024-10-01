@@ -37,8 +37,9 @@ DEFAULT_SETTINGS = {
     "Default Game": "Isle Goblin",
     "Default Game Folder": "Isle Goblin Playtest",
     "Default Steam Directory": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\",
-    "Show Line Numbers": True
-
+    "Show Line Numbers": True,
+    "Selected Theme": "Isle Goblin",
+    "Selected Code Font": "JetBrainsMono.ttf"
 }
 
 # These two functions are used to keep track of how many pyro windows are open becuase the main interface should open
@@ -282,15 +283,12 @@ class InterfaceMenu:
         settings_window.resizable(0, 0)
         settings_window.iconbitmap("resources/goblin-mod-maker.ico")
         
-
-        # Create and pack widgets with default values loaded from settings
-        
         global settings 
         settings = self.find_settings() #reload the settings
         
         foldername = self.settings.get("Default Game Folder", "")
         steampath = self.settings.get("Default Steam Directory", "")            
-        
+
         Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Default Game Folder").pack(fill="x", padx=10)
         game_folder_entry = Entry(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12))
         game_folder_entry.insert(0, self.settings.get("Default Game Folder", ""))
@@ -306,6 +304,7 @@ class InterfaceMenu:
         steam_dir_entry.insert(0, self.settings.get("Default Steam Directory", steam_path))
         steam_dir_entry.pack(fill="x", padx=10, pady=10)
         
+        # Function to auto-find the Steam directory
         def auto_find_steam_directory():
             foldername = self.settings.get("Default Game Folder", "")
             steampath = self.settings.get("Default Steam Directory", "")
@@ -326,7 +325,7 @@ class InterfaceMenu:
                     json.dump(settings, file, indent=4)
                 steam_dir_entry.delete(0, "end")
                 steam_dir_entry.insert(0, steam_path)
-            elif steampath==find_steam_directory(foldername):
+            elif steampath == find_steam_directory(foldername):
                 messagebox.showinfo("Steam Directory Already Set", "The correct Steam directory has already been set.")
             else:
                 messagebox.showwarning("Something went wrong :(", f"Directory {os.path.join(steampath, foldername)} does not exist.")
@@ -350,6 +349,18 @@ class InterfaceMenu:
         themeDrop["menu"].config(bg=PyroPrompt_Background, fg=PyroPrompt_Foreground)
         themeDrop.pack(fill="x", padx=10, pady=10)
 
+        font_folder = "resources/fonts"
+        fonts = [os.path.splitext(f)[0] for f in os.listdir(font_folder) if f.endswith('.ttf')]
+
+        selected_font = StringVar()
+        selected_font.set(self.settings.get("Selected Code Font", "JetBrainsMono"))  # Set default font without extension
+
+        Label(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), text="Select Code Font").pack(fill="x", padx=10)
+        fontDrop = OptionMenu(settings_window, selected_font, *fonts)
+        fontDrop.config(bg=PyroPrompt_Background, fg=PyroPrompt_Foreground)
+        fontDrop["menu"].config(bg=PyroPrompt_Background, fg=PyroPrompt_Foreground)
+        fontDrop.pack(fill="x", padx=10, pady=10)
+
         show_line_numbers_var = BooleanVar()
         show_line_numbers_var.set(self.settings.get("Show Line Numbers", True))  # Default to True if not found
         show_line_numbers_check = Checkbutton(settings_window, background=PyroPrompt_Background, fg=PyroPrompt_Foreground, font=("Calibri", 12), 
@@ -363,11 +374,12 @@ class InterfaceMenu:
             self.settings["Default Steam Directory"] = steam_dir_entry.get()
             self.settings["Show Line Numbers"] = show_line_numbers_var.get()
             self.settings["Selected Theme"] = clicked.get()
-                        
+            self.settings["Selected Code Font"] = selected_font.get()  # Save selected font
+            
             # Save the settings to the JSON file
             with open('settings.json', 'w') as json_file:
                 json.dump(self.settings, json_file, indent=4)
-            
+
             # Reload the theme
             theme_data = load_theme('resources/themes/' + self.settings.get("Selected Theme", "Isle Goblin") + ".json")
             
@@ -417,7 +429,6 @@ class InterfaceMenu:
             # Close the settings window
             settings_window.destroy()
 
-
         def install_bepinex():
             architecture = get_system_architecture()
             download_url = get_bepinex_download_url(architecture)
@@ -434,7 +445,7 @@ class InterfaceMenu:
                 if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx", "Plugins")):
                     return "BepInEx not fully installed"
             else:
-                messagebox.showinfo("BepInEx Already Installed", f"BepInEx has already been insatlled to {os.path.join(steam_path, foldername)}")
+                messagebox.showinfo("BepInEx Already Installed", f"BepInEx has already been installed to {os.path.join(steam_path, foldername)}")
             if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx", "Plugins")):
                 messagebox.showinfo("BepInEx Partially Installed",
                                     "BepInEx is installed with files missing, please run the game once and then "
@@ -443,12 +454,13 @@ class InterfaceMenu:
                 if not os.path.isdir(os.path.join(steam_path, foldername, "BepInEx", "Plugins")):
                     return "BepInEx not fully installed"
             settings_window.focus()
+
         # Done button to save changes and close the window
         buttons = Frame(settings_window, background=PyroPrompt_Background)
         buttons.pack()
         Button(buttons, text="Install BepInEX", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=install_bepinex).grid(row=0, column=1, padx=10, pady=(10, 10))
         Button(buttons, text="Done", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=save_settings).grid(row=1, column=1, padx=10, pady=(10, 10))
-        
+
     def prompt_for_custom_steam_directory():
         root = Tk()
         root.withdraw()  # Hide the root window

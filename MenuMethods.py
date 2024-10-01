@@ -158,6 +158,7 @@ namespace {name_no_space}
         messagebox.showerror("Error", str(e))
 
     self.loadfile(filepath)
+    self.file_treeview.adjust_column_width()
 
     
 def _open_fallback(name):

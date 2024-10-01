@@ -82,16 +82,10 @@ import MenuMethods
 from functools import partial
 import time
 
-try:
-    # Python 3
-    import tkinter
-    from tkinter import font, ttk, scrolledtext, _tkinter, simpledialog
-except ImportError:
-    # Python 2
-    import Tkinter as tkinter
-    from Tkinter import ttk
-    import tkFont as font
-    import ScrolledText as scrolledtext
+import tkinter
+from tkinter import font, ttk, scrolledtext, _tkinter, simpledialog
+import tkinter.font as tkFont
+
 
 from ModObject import *
 from pygments.lexers.python import PythonLexer
@@ -112,14 +106,21 @@ from pygments.styles import get_style_by_name
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import queue
-import threading
+from tkextrafont import Font
+from PIL import ImageFont
 
 pyros = []
 windows = []
 core_ui = None
 open_files = {}
 last_opened_file = None
-
+# codeFont = None
+# def load_font(path = "resources\FiraCode-VariableFont_wght.ttf", size=16):
+#     pyglet.font.add_file(path)
+#     # font_path = path
+#     # font_size = size
+#     # global codeFont
+#     # codeFont = ImageFont.truetype(font_path, font_size)
 
 def load_theme(filename):
     with open(filename, 'r') as file:
@@ -205,14 +206,7 @@ class FileTreeview:
         refresh_theme()
 
 
-        # Create and configure the Treeview inside the Frame
         self.tree = ttk.Treeview(self.tree_frame, **uiopts)
-        self.setup_treeview_style()
-        self.setup_treeview()
-
-        # Create the "New File" button and place it over the Treeview header
-        # self.new_file_button = Button(self.tree_frame, text="+", command=self.on_new_file_button_click, relief="flat", width=2)
-        # self.new_file_button.place(relx=1.0, rely=0.0, anchor="ne", x=-25, y=0)
 
         # Horizontal Scrollbar for TreeView
         self.xsb = Scrollbar(self.tree_frame, orient="horizontal", command=self.tree.xview)
@@ -227,6 +221,8 @@ class FileTreeview:
         self.xsb.configure(bg=PyroPrompt_Background, troughcolor="gray", highlightthickness=0)
         self.ysb.configure(bg=PyroPrompt_Background, troughcolor="gray", highlightthickness=0)
 
+        self.setup_treeview_style()
+        self.setup_treeview()
         # Ensure Treeview fills its parent Frame
         self.tree.grid(row=0, column=0, sticky='nsew')
 
@@ -326,34 +322,26 @@ class FileTreeview:
                 self.tree.insert(parent, "end", name, text=name)
 
     def adjust_column_width(self):
-        # Define base values for padding and padding per character
-        base_padding_per_char = 50
-        base_additional_padding = 120
-
-        # Define scaling factors
-        length_threshold = 45
-        scaling_factor = 4
-        
-        # Calculate the maximum number of characters in any item
+        base_padding_per_char = 50  # Adjust based on your font size
+        base_additional_padding = 50  # Additional padding for aesthetics
         max_length = max(len(self.tree.item(item, "text")) for item in self.tree.get_children())
-        
-        # Scale padding per character and additional padding based on length
-        if max_length > length_threshold:
-            padding_per_char = base_padding_per_char * scaling_factor
-            additional_padding = base_additional_padding * scaling_factor
-        else:
-            padding_per_char = base_padding_per_char
-            additional_padding = base_additional_padding
-        
-        # Calculate the column width based on the maximum length and character width
-        max_width = max_length * padding_per_char
-        
-        # Add some padding for better appearance
-        new_width = max_width + additional_padding
-        if new_width < 225:
-            new_width = 225
-        
-        self.tree.column("#0", minwidth=new_width)
+
+        # Calculate new width dynamically
+        new_width = max_length * base_padding_per_char + base_additional_padding
+
+        # Cap the width to prevent it from being too large
+        max_column_width = 200  # Set a reasonable max width
+        new_width = min(new_width, max_column_width)
+
+        # Configure the column with the new width and disable stretching
+        self.tree.column("#0", width=base_additional_padding, minwidth=new_width)
+
+        # Ensure scrollbars are configured
+        self.tree.configure(xscrollcommand=self.xsb.set)
+        self.xsb.configure(command=self.tree.xview)
+        self.tree.configure(yscrollcommand=self.ysb.set)
+        self.ysb.configure(command=self.tree.yview)
+
 
     def refresh_treeview(self):
         self.update_queue.put("refresh")
@@ -412,6 +400,7 @@ class CoreUI(object):
         if mod is None:
             mod = ModObject("Untitled")
         self.mod = mod
+        self.current_font_size = 10
         self.contents = mod.get_text()
         self.sourcestamp = {}
         self.filestamp = {}
@@ -425,7 +414,7 @@ class CoreUI(object):
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.bootstrap = []
         self.modified = False
-        
+        # load_font()
         # Call uiconfig to set up the UI
         if filepath:
             self.filepath = filepath
@@ -442,6 +431,7 @@ class CoreUI(object):
                 raise RuntimeError("Text widget not initialized")
         global RECENT
         RECENT = self
+        
         self.root.bind("<Key>", self.event_key)
         self.root.bind('<Control-KeyPress-q>', self.close)
         self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
@@ -469,7 +459,8 @@ class CoreUI(object):
         # Define snippets
         self.snippets = load_file("resources/snippets.json")
         self.autocomplete_window = None
-
+        
+    
     def open_last_file(self, e):
         global last_opened_file
         self.loadfile(last_opened_file)
@@ -512,6 +503,17 @@ class CoreUI(object):
         if mod is not None:
             self.mod = mod
             self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
+            
+            with open(self.filepath, "r") as f:
+                file_content = f.read()
+            text = self.text.get("1.0", "end-1c") 
+            filename = os.path.basename(self.filepath)
+            if text == file_content:
+                self.modified = False 
+                self.notebook.tab(self.notebook.select(), text=filename) 
+            else:
+                self.modified = True 
+                self.notebook.tab(self.notebook.select(), text=f"{filename} *")
         return "break"
 
     def redo(self, e=None, text_widget=None):
@@ -519,6 +521,16 @@ class CoreUI(object):
         if mod is not None:
             self.mod = mod
             self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
+            with open(self.filepath, "r") as f:
+                file_content = f.read()
+            text = self.text.get("1.0", "end-1c") 
+            filename = os.path.basename(self.filepath)
+            if text == file_content:
+                self.modified = False 
+                self.notebook.tab(self.notebook.select(), text=filename) 
+            else:
+                self.modified = True 
+                self.notebook.tab(self.notebook.select(), text=f"{filename} *")
         return "break"
 
     def save_file_key_press(self, e):
@@ -768,8 +780,7 @@ class CoreUI(object):
             self.scroll_data = self.text.yview()
             text = self.text.get("1.0", tkinter.END)[:-1]
             cursor = self.text.index(tkinter.INSERT)
-            # print(cursor)
-            index = ChangeManager.update(self.mod, self.text.get("1.0", tkinter.END)[:-1])
+            index = ChangeManager.update(self.mod, text)
             if index == "Locked":
                 self.undo()
                 return
@@ -777,7 +788,7 @@ class CoreUI(object):
         else:
             text = None
             index = self.mod.index
-        self.recolorize(self.text)
+        self.recolorize(self.text) 
         # self.root.update()
         self.text.yview_moveto(self.scroll_data[0])
 
@@ -810,9 +821,8 @@ class CoreUI(object):
         # Create FileTreeview instance
         self.file_treeview = FileTreeview(self.root, self, self.mod.mod_name_no_space, **treeview_uiopts)
         # Ensure Treeview column width is set and adjust if needed
-        self.file_treeview.tree.column("#0", width=50, minwidth=350, stretch=True)  # Adjust width as needed
+        self.file_treeview.tree.column("#0", width=50)  # Adjust width as needed
         # Add Treeview to the grid
-        self.file_treeview.tree.grid(row=0, column=0, sticky=(N, S, E, W))
         
         closedir = os.path.join("resources", "imgs", "close")
         self.i1 = PhotoImage(file=os.path.join(closedir, "close.gif"))
@@ -1134,8 +1144,15 @@ class CoreUI(object):
                 # Create a new frame for the tab
                 new_tab = ttk.Frame(self.notebook)
 
-                # Create a Text widget for the file content in the new tab
-                text_widget = Text(new_tab, wrap="none", **self.uiopts)
+                try:
+                    fontPath = "resources/fonts/" + self.settings["Selected Code Font"] + ".ttf"
+                    print(fontPath)
+                    font = ImageFont.truetype(fontPath, self.current_font_size)
+                    font_family = font.getname()[0] 
+                    self.codeFont = Font(file=fontPath, family=font_family, size=self.current_font_size)
+                except:
+                    pass
+                text_widget = Text(new_tab, wrap="none", **self.uiopts, font=self.codeFont)
                 self.text = text_widget
 
                 # Create scrollbars for the Text widget
@@ -1255,7 +1272,26 @@ class CoreUI(object):
                 text_widget.edit_modified(False)
                 self.scroll_data = text_widget.yview()
                 text_widget.tag_configure("highlight", background="yellow")
+                
+                def change_font_size(amount, event):
+                    new_font_size = self.current_font_size + amount
+                    if 5 <= new_font_size <= 16:
+                        self.current_font_size = new_font_size
+                        self.codeFont.configure(size=self.current_font_size)
+                        self.text.configure(font=self.codeFont)
+                        self.file_treeview.adjust_column_width() 
+                        self.text.tag_configure("custom_font", font=self.codeFont)
+                        self.text.tag_add("custom_font", "1.0", "end")
 
+                        # Force the layout to update
+                        self.root.update_idletasks()
+
+
+                self.root.bind('<Control-plus>', lambda event: change_font_size(2, event))  # Ctrl + +
+                self.root.bind('<Control-equal>', lambda event: change_font_size(2, event))  # Ctrl + = 
+                self.root.bind('<Control-minus>', lambda event: change_font_size(-1, event))  # Ctrl + -
+
+                
                 # Add the new tab to the Notebook with the filename as the tab title
                 open_files[filename] = (text_widget, new_tab)
             elif filename in open_files:
@@ -1268,8 +1304,7 @@ class CoreUI(object):
                     print(f"Tab for {filename} is not available for selection.")
         except UnicodeDecodeError:
             messagebox.showerror("File Error", f"Unable to read the file '{filename}' due to unsupported characters.")
-    
-    
+            
     # Inputs
     def event_key(self, event):
         """
@@ -1368,6 +1403,10 @@ class CoreUI(object):
         """
         code = text_widget.get("1.0", "end-1c")
         tokensource = self.lexer.get_tokens(code)
+        
+        # Collect changes in a list
+        changes = []
+        
         start_line = 1
         start_index = 0
         end_line = 1
@@ -1381,16 +1420,24 @@ class CoreUI(object):
                 end_index += len(value)
 
             if value not in (" ", "\n"):
-                index1 = "%s.%s" % (start_line, start_index)
-                index2 = "%s.%s" % (end_line, end_index)
-
-                for tagname in text_widget.tag_names(index1):
-                    text_widget.tag_remove(tagname, index1, index2)
-
-                text_widget.tag_add(str(ttype), index1, index2)
+                index1 = f"{start_line}.{start_index}"
+                index2 = f"{end_line}.{end_index}"
+                
+                # Check existing tags
+                existing_tags = text_widget.tag_names(index1)
+                if str(ttype) not in existing_tags:
+                    # Remove existing tags
+                    for tagname in existing_tags:
+                        text_widget.tag_remove(tagname, index1, index2)
+                    # Add new tag
+                    text_widget.tag_add(str(ttype), index1, index2)
 
             start_line = end_line
             start_index = end_index
+
+        # Optionally update once at the end
+        text_widget.update_idletasks()
+
 
     def update_info(self):
         cursor = self.text.index(tkinter.INSERT)
