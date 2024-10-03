@@ -1,6 +1,7 @@
 # Goblin Mod Maker Documentation
 
 ## Table of Contents
+
 - [Goblin Mod Maker Documentation](#goblin-mod-maker-documentation)
   - [Table of Contents](#table-of-contents)
   - [Main Menu](#main-menu)
@@ -8,8 +9,15 @@
       - [New Mod](#new-mod)
       - [Open/Load Mod](#openload-mod)
       - [Open/Load Mod from .gmm file](#openload-mod-from-gmm-file)
+      - [Multiple File Compilation](#multiple-file-compilation)
     - [Settings Window](#settings-window)
   - [Editor Menu](#editor-menu)
+    - [Files](#files)
+      - [New Mod](#new-mod-1)
+      - [Open Mod](#open-mod)
+      - [Save Mod](#save-mod)
+      - [New File](#new-file)
+      - [Save C# File](#save-c-file)
     - [Edit](#edit)
       - [Change Mod Name](#change-mod-name)
       - [Change Mod Version](#change-mod-version)
@@ -20,14 +28,15 @@
       - [Create Keybind](#create-keybind)
     - [Build](#build)
       - [Build and Install](#build-and-install)
-      - [Export C# File](#export-c-file)
       - [Generate Dotnet Files](#generate-dotnet-files)
     - [Tools](#tools)
       - [Search](#search)
       - [Go To Line](#go-to-line)
-  - [Errors](#errors)
-    - [Known Errors](#known-errors)
-      - [Mod Menu Not Showing Up](#mod-menu-not-showing-up)
+  - [Shortcuts](#shortcuts)
+  - [Fonts](#fonts)
+    - [JetBrains Mono:](#jetbrains-mono)
+    - [Fira Code:](#fira-code)
+    - [Cascadia Code:](#cascadia-code)
   - [Themes](#themes)
     - [Isle Goblin:](#isle-goblin)
     - [Light:](#light)
@@ -36,6 +45,19 @@
     - [Forest:](#forest)
     - [Ocean:](#ocean)
     - [Retro:](#retro)
+  - [Tutorials](#tutorials)
+    - [Creating your own theme](#creating-your-own-theme)
+      - [Good To Know](#good-to-know)
+      - [Getting Started](#getting-started)
+      - [Custom Assets](#custom-assets)
+      - [Change Themeing](#change-themeing)
+        - [Preperation](#preperation)
+        - [Changing Custom Asset Paths](#changing-custom-asset-paths)
+        - [Changing Theme Values](#changing-theme-values)
+    - [Adding Custom Fonts](#adding-custom-fonts)
+  - [Errors](#errors)
+    - [Known Errors](#known-errors)
+      - [Mod Menu Not Showing Up](#mod-menu-not-showing-up)
   - [Support](#support)
     - [Discord Server](#discord-server)
       - [If you join our discord server you can get support from the devs and community!](#if-you-join-our-discord-server-you-can-get-support-from-the-devs-and-community)
@@ -75,6 +97,11 @@
   3. After selecting the `.gmm` file, the mod will open up in the editor
 - **Note:** If you have any `.ugmm` or `.igmm` that you want to use in GMM try renaming it from that to `.gmm`
 
+#### Multiple File Compilation
+
+- When building a mod what ever .cs files are located in the files folder in your project will be built into the .dll
+- You can use a .dll decompiler such as dnSpy to view your mod
+
 ---
 
 ### Settings Window
@@ -85,12 +112,48 @@
 - **Default Steam Directory:** Can be found automatically (RECOMMENDED), the common folder where steam games are held.
 - **Select Themes:** A dropdown box to select themes. automatically scans themes. See the Making Your Own theme section below. Will reapply theme on startup
 - **Show Line Numbers:** If checked line numbers will be shown in the text editor.
+- **Selected Font:** Choose from 3 pre-loaded fonts or add your own fonts by dragging `.ttf` files into `{gmm folder}>resources>fonts`
 
 ---
 
 ## Editor Menu
 
-<!-- **`MOST EXAMPLES ARE JUST EXAMPLES THEY ARE NOT CONNECTED TO THE GAME`** -->
+### Files
+
+#### New Mod
+
+- **Path:** `File > New Mod`
+- **Use:** Same thing as [New Mod](#new-mod)
+
+---
+
+#### Open Mod
+
+- **Path:** `File > Open Mod`
+- **Use:** Same thing as [Open Mod](#openload-mod)
+
+---
+
+#### Save Mod
+
+- **Path:** `File > Save Mod`
+- **Use:** Saves the mod as a `.gmm` file that gets stored in `{gmm} > projects > {mod name}`
+
+---
+
+#### New File
+
+- **Path:** `File > Save C# File`
+- **File Name:** This is the name that the file will be created as. Stored in `{gmm} > projects > {mod name}>files`
+
+---
+
+#### Save C# File
+
+- **Path:** `File > Save C# File`
+- **Use:** Saves the .cs file thats is currently being edited `{gmm} > projects > {mod name} > files`
+
+---
 
 ### Edit
 
@@ -201,14 +264,6 @@
 
 ---
 
-#### Export C# File
-
-- **Path:** `Build > Export C# File`
-- This generates and exports a C# file of the mod's code within the application.
-- You can find this file at `[gmm folder] > projects > [mod name] > [mod name].cs`
-
----
-
 #### Generate Dotnet Files
 
 - **Path:** `Build > Generate Dotnet Files`
@@ -244,36 +299,36 @@
 
 ---
 
-## Errors
+## Shortcuts
 
-If you encounter errors with the mod maker itself, you can:
+| Shortcut        |        What it does |
+| :-------------- | ------------------: |
+| Ctrl+ Shift + T |   Opens up last tab |
+| Ctrl + Q        |        Close editor |
+| Ctrl + S        |   Save current file |
+| Ctrl + Z        |                Undo |
+| Ctrl + Y        |                Redo |
+| Ctrl + +/=      | Increases font size |
+| Ctrl + -        | Decreases font size |
 
-- Join the [Isle Goblin Modding Discord Server](https://discord.gg/vKy7YHPMmx).
-- Check out the [Isle Goblin Wiki Modding Section](https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Errors) for a detailed error-handling guide.
 
-### Known Errors
+## Fonts
+**There are 3 pre-packaged fonts you can choose to use in the code editor.**
 
-#### Mod Menu Not Showing Up
+### JetBrains Mono:
+<img src="resources/imgs/fonts/JetBrainsMono.png" alt="JetBrains Mono Font"/>
 
-<details>
-<summary>Solution</summary>
+### Fira Code:
+<img src="resources/imgs/fonts/FiraCode.png" alt="Fira Code Font"/>
 
-1. Go to the [BepInEx ConfigManager](https://thunderstore.io/c/valheim/p/Azumatt/Official_BepInEx_ConfigurationManager/) page.
-2. Click **Manual Download**.
-3. Extract the downloaded zip file.
-4. Once extraction is complete, you can delete the zip file.
-5. Open the extracted folder.
-6. Inside, navigate to `BepInEx > plugins > ConfigurationManager`.
-7. Open your **Isle Goblin Playtest** folder.
-8. Navigate to `BepInEx > plugins`.
-9. Drag and drop the `ConfigurationManager.dll` from the extracted folder into your `Isle Goblin Playtest > BepInEx > plugins` folder.
-10. Start Isle Goblin, and the mod menu should appear.
 
-</details>
+### Cascadia Code:
+<img src="resources/imgs/fonts/CascadiaCode.png" alt="Cascadia Code Font"/>
 
 ---
 
 ## Themes
+**GMM comes pre-packaged with 7 unique themes to choose from. You can always [create your own theme](#creating-your-own-theme).**
 
 ### Isle Goblin:
 
@@ -302,6 +357,75 @@ If you encounter errors with the mod maker itself, you can:
 ### Retro:
 
 <img src="resources/imgs/themes/retro.png" alt="Retro Theme Img" width="300"/>
+
+---
+
+
+## Tutorials
+
+### Creating your own theme
+#### Good To Know
+- Themes are loaded via `{gmm} > resources > themes`
+- It loads them by searching for `.json` files
+- You can change the new and open button images and change the click and hover SFX
+
+#### Getting Started
+1. Locate the themes folder `{gmm} > resources > themes`
+2. Duplicate the Isle Goblin.json file
+3. Rename this file to the name of your theme (put spaces between words)
+4. Open the `assets` folder and duplictate the `isle-goblin` folder
+5. Rename the folder to your mod name (instead of spaces use hyphens/minus sign and keep it lowercase)
+
+#### Custom Assets
+- **New and Open Buttom Images:** In your themes assets folder, change the `newbutton.png` and `openbutton.png` to their corresponding custom image.
+- **Click and Hover SFX:** In your themes assets folder, change the `click.wav` and `hover.wav` to their corresponding SFX.
+
+#### Change Themeing
+##### Preperation
+- In the `{gmm} > resources > themes` folder locate `{theme name}.json` and open it.
+
+##### Changing Custom Asset Paths
+- From line 2-6 exluding line 4 you have the paths to your custom assets
+- The lines will look should look like this `resources/themes/assets/isle-goblin/{filename}`
+- You want to change these lines to `resources/themes/assets/{theme name}/{filename}`
+- Obviously keep the newbutton.png etc at the end of the paths i just have `{filename}` to act as a placeholder.
+- Change `{theme name}` to the name that we set back in [getting started](#getting-started) when duplicating the isle-goblin folder
+
+##### Changing Theme Values
+<img src="resources/imgs/themes/ThemeValueGuide.png" alt="Theme Value Guide"/>
+
+- Lines 8-26 deal with the actual theming of the app.
+- Seen in the image above you can see what value goes with what
+- The theme used in the image is *Isle Goblin*
+- Feel free to tweak your theme to your liking
+- When you are done please post your theme in the [Discord](https://discord.gg/ZbeuzR2rRC)
+- ***NOTE: MAKE `openbuttonbackground`, `newbuttonbackground`, and `buttonconfig, background` EQUAL TO THE BACKGROUND COLOR***
+
+---
+
+### Adding Custom Fonts
+
+## Errors
+
+If you encounter errors with the mod maker itself, you can:
+
+- Join the [Isle Goblin Modding Discord Server](https://discord.gg/vKy7YHPMmx).
+- Check out the [Isle Goblin Wiki Modding Section](https://islegoblin.wiki/wiki/Modding_for_Isle_Goblin#Errors) for a detailed error-handling guide.
+
+### Known Errors
+
+#### Mod Menu Not Showing Up
+
+1. Go to the [BepInEx ConfigManager](https://thunderstore.io/c/valheim/p/Azumatt/Official_BepInEx_ConfigurationManager/) page.
+2. Click **Manual Download**.
+3. Extract the downloaded zip file.
+4. Once extraction is complete, you can delete the zip file.
+5. Open the extracted folder.
+6. Inside, navigate to `BepInEx > plugins > ConfigurationManager`.
+7. Open your **Isle Goblin Playtest** folder.
+8. Navigate to `BepInEx > plugins`.
+9. Drag and drop the `ConfigurationManager.dll` from the extracted folder into your `Isle Goblin Playtest > BepInEx > plugins` folder.
+10. Start Isle Goblin, and the mod menu should appear.
 
 ---
 

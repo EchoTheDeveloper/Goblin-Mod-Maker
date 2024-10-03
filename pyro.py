@@ -545,18 +545,15 @@ class CoreUI(object):
         self.buildmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.toolsmenu = tkinter.Menu(self.menubar, tearoff=False)
 
-        # -------------------Sub Menus------------------------
-        self.snippetsmenu = tkinter.Menu(self.menubar, tearoff=False)
-
-
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
         self.filemenu.add_command(label="New Mod", command=partial(MenuMethods.new, self))
-        self.filemenu.add_command(label="Open", command=partial(MenuMethods.open, self.settings))
-        self.filemenu.add_command(label="Save", command=partial(MenuMethods.save, self, self.filepath))
-        self.filemenu.add_command(label="Save as Renamed Copy", command=partial(MenuMethods.copy, self))
-        self.filemenu.add_command(label="Save C# File", command=partial(self.save_file, self.filepath)) 
+        self.filemenu.add_command(label="Open Mod", command=partial(MenuMethods.open, self.settings))
+        self.filemenu.add_command(label="Save Mod", command=partial(MenuMethods.save, self, self.filepath))
+        self.filemenu.add_command(label="Save Mod as Renamed Copy", command=partial(MenuMethods.copy, self))
+        self.filemenu.add_separator()
         self.filemenu.add_command(label="New File", command=partial(MenuMethods.new_file, self))
+        self.filemenu.add_command(label="Save C# File", command=partial(self.save_file, self.filepath)) 
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Close", command=self.close)
 
@@ -596,8 +593,6 @@ class CoreUI(object):
         self.toolsmenu.add_command(label="Search", command=partial(MenuMethods.openSearch, self))
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
         self.toolsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
-
-        self.snippetsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
 
 
         self.root.config(menu=self.menubar)
@@ -1349,6 +1344,7 @@ class CoreUI(object):
         # self.recolorize()
 
     def close(self, event=None):
+        self.sort_and_save_open_files()
         self.mod.autosave(False)
         import GraphicalInterface
         GraphicalInterface.set_window_count(GraphicalInterface.get_window_count() - 1)
