@@ -377,29 +377,38 @@ class CoreUI(object):
         self.root.bind("<Key>", self.event_key)
         
         # Can optimize this later (did this cause they dont work if you are on caps lock)
-        self.root.bind('<Control-KeyPress-q>', self.close)
-        self.root.bind('<Control-KeyPress-Q>', self.close)
         
-        self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
-        self.root.bind("<Control-KeyPress-S>", self.save_file_key_press)
-        
-        self.root.bind("<Control-Shift-s>", partial(MenuMethods.save, self, self.filepath))
-        self.root.bind("<Control-Shift-S>", partial(MenuMethods.save, self, self.filepath))
+        # Files
+        self.root.bind("<Control-n>", partial(MenuMethods.new_file, self))
+        self.root.bind("<Control-N>", partial(MenuMethods.new_file, self))
         
         self.root.bind("<Control-Shift-n>", partial(MenuMethods.new, self))
         self.root.bind("<Control-Shift-N>", partial(MenuMethods.new, self))
         
-        self.root.bind("<Control-n>", partial(MenuMethods.new_file, self))
-        self.root.bind("<Control-N>", partial(MenuMethods.new_file, self))
+        self.root.bind("<Control-o>", partial(MenuMethods.open, self.settings))
+        self.root.bind("<Control-O>", partial(MenuMethods.open, self.settings))
+        
+        self.root.bind("<Control-Shift-s>", partial(MenuMethods.save, self, self.filepath))
+        self.root.bind("<Control-Shift-S>", partial(MenuMethods.save, self, self.filepath))
+        
+        self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
+        self.root.bind("<Control-KeyPress-S>", self.save_file_key_press)
+        
+        self.root.bind('<Control-KeyPress-q>', self.close)
+        self.root.bind('<Control-KeyPress-Q>', self.close)
         
         self.root.bind('<Control-Shift-t>', self.open_last_file)
         self.root.bind('<Control-Shift-T>', self.open_last_file)
         
+        # View and Nav
+        self.root.bind('<Control-KeyPress-f>', partial(MenuMethods.openSearch, self))
+        self.root.bind('<Control-KeyPress-F>', partial(MenuMethods.openSearch, self))
+        
+        
         self.root.bind("<Control-Shift-d>", self.open_documentation)
         self.root.bind("<Control-Shift-D>", self.open_documentation)
         
-        self.root.bind('<Control-KeyPress-f>', partial(MenuMethods.openSearch, self))
-        self.root.bind('<Control-KeyPress-F>', partial(MenuMethods.openSearch, self))
+        
         
         self.root.bind('<Control-KeyPress-g>', partial(MenuMethods.openGTL, self))
         self.root.bind('<Control-KeyPress-G>', partial(MenuMethods.openGTL, self))
@@ -430,12 +439,12 @@ class CoreUI(object):
         self.snippets = load_file("resources/snippets.json")
         self.autocomplete_window = None
         
-    def open_documentation(self, e):
+    def open_documentation(self, e=None):
         documentation_file = os.path.abspath("DOCUMENTATION.md")  # Get the absolute path
         view = MarkdownViewer("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md", documentation_file)
         pyro.add_window(view)
     
-    def open_last_file(self, e):
+    def open_last_file(self, e=None):
         global last_opened_file
         self.loadfile(last_opened_file)
 
@@ -496,15 +505,11 @@ class CoreUI(object):
     
     def initialize_menubar(self):
         self.menubar = tkinter.Menu(self.root)
-
+        
+        
+        # File
         self.filemenu = tkinter.Menu(self.menubar, tearoff=False)
-        self.editmenu = tkinter.Menu(self.menubar, tearoff=False)
-        self.createmenu = tkinter.Menu(self.menubar, tearoff=False)
-        self.buildmenu = tkinter.Menu(self.menubar, tearoff=False)
-        self.toolsmenu = tkinter.Menu(self.menubar, tearoff=False)
-
         self.menubar.add_cascade(label="File", menu=self.filemenu)
-
         self.filemenu.add_command(label="New Mod", accelerator="Ctrl + Shift + N", command=partial(MenuMethods.new, self))
         self.filemenu.add_command(label="Open Mod", accelerator="Ctrl + O", command=partial(MenuMethods.open, self.settings))
         self.filemenu.add_command(label="Save Mod", accelerator="Ctrl + Shift + S", command=partial(MenuMethods.save, self, self.filepath))
@@ -516,9 +521,9 @@ class CoreUI(object):
         self.filemenu.add_command(label="Close", accelerator="Ctrl + Q", command=self.close)
 
 
-
+        # Edit
+        self.editmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.menubar.add_cascade(label="Edit", menu=self.editmenu)
-
         self.editmenu.add_command(label="Change Mod Name", command=partial(MenuMethods.change_mod_name, self))
         self.editmenu.add_command(label="Change Mod Version",command=partial(MenuMethods.change_mod_version, self))
         self.editmenu.add_command(label="Change Mod Developers",command=partial(MenuMethods.change_mod_authors, self))
@@ -531,27 +536,34 @@ class CoreUI(object):
         self.editmenu.add_command(label="Paste", accelerator="Ctrl + V", command=self.paste)
 
 
+        # Create
+        self.createmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.menubar.add_cascade(label="Create", menu=self.createmenu)
-
         self.createmenu.add_command(label="Create Harmony Patch", command=partial(MenuMethods.create_harmony_patch, self))
         self.createmenu.add_command(label="Create Config Item", command=partial(MenuMethods.create_config_item, self))
         self.createmenu.add_command(label="Create Keybind", command=partial(MenuMethods.create_keybind, self))
         self.createmenu.add_command(label="Create NPC Asset", command=partial(MenuMethods.create_npc_data_asset, self))
 
 
-
+        # Build
+        self.buildmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.menubar.add_cascade(label="Build", menu=self.buildmenu)
-
-        self.buildmenu.add_command(label="Build and Install", accelerator="Ctrl + Shift + B", command=partial(MenuMethods.build_install, self))
+        self.buildmenu.add_command(label="Build and Install", accelerator="Ctrl + B", command=partial(MenuMethods.build_install, self))
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
 
 
+        # Tools
+        self.toolsmenu = tkinter.Menu(self.menubar, tearoff=False)
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
-
         self.toolsmenu.add_command(label="Search", accelerator="Ctrl + Shift + F", command=partial(MenuMethods.openSearch,  self))
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
         self.toolsmenu.add_command(label="Go To Line", accelerator="Ctrl + Shift + G", command=partial(MenuMethods.openGTL, self))
-
+        
+        
+        # View
+        self.viewmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.menubar.add_cascade(label="View", menu=self.viewmenu)
+        self.viewmenu.add_command(label="Open Documentation", accelerator="Ctrl + Shift + D", command=self.open_documentation)
 
         self.root.config(menu=self.menubar)
     
@@ -743,25 +755,6 @@ class CoreUI(object):
 
         self.recolorize(self.text)
         self.text.yview_moveto(self.scroll_data[0])
-
-        # with open(self.filepath, "r") as f:
-        #     file_content = f.read().rstrip()  # Remove trailing whitespace/newlines
-
-        # # Normalize the text for comparison (strip leading/trailing whitespace)
-        # normalized_text = text # Remove excess whitespace
-        # normalized_file_content = file_content  # Remove excess whitespace
-
-        # filename = os.path.basename(self.filepath)
-
-        # # Update the modified flag and tab title accordingly
-        # if normalized_text == normalized_file_content:
-        #     self.modified = False
-        #     self.notebook.tab(self.notebook.select(), text=filename)  # Remove asterisk
-        #     return "break"
-        # else:
-        #     self.modified = True
-        #     self.notebook.tab(self.notebook.select(), text=f"{filename} *")  # Add asterisk
-        #     return "break"
         self.update_title()
 
     def update_title(self):
@@ -1200,7 +1193,7 @@ class CoreUI(object):
                 self.root.bind('<Control-plus>', lambda event: change_font_size(1, event))  # Ctrl + +
                 self.root.bind('<Control-equal>', lambda event: change_font_size(1, event))  # Ctrl + = 
                 self.root.bind('<Control-minus>', lambda event: change_font_size(-1, event))  # Ctrl + -
-                self.root.bind('<Control-underscore>', lambda event: change_font_size(-1, event))  # Ctrl + _
+                self.root.bind('<Control-_>', lambda event: change_font_size(-1, event))  # Ctrl + _
 
                 
                 # Add the new tab to the Notebook with the filename as the tab title

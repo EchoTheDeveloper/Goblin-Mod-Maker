@@ -33,6 +33,10 @@
       - [Search](#search)
       - [Go To Line](#go-to-line)
   - [Shortcuts](#shortcuts)
+    - [File Operations](#file-operations)
+    - [Edit Operations](#edit-operations)
+    - [View and Navigation](#view-and-navigation)
+    - [Documentation and Build](#documentation-and-build)
   - [Fonts](#fonts)
     - [JetBrains Mono:](#jetbrains-mono)
     - [Fira Code:](#fira-code)
@@ -302,19 +306,45 @@
 
 ## Shortcuts
 
-| Shortcut        |        What it does |
-| :-------------- | ------------------: |
-| Ctrl+ Shift + T |   Opens up last tab |
-| Ctrl + Q        |        Close editor |
-| Ctrl + S        |   Save current file |
-| Ctrl + Z        |                Undo |
-| Ctrl + Y        |                Redo |
-| Ctrl + +/=      | Increases font size |
-| Ctrl + -        | Decreases font size |
+### File Operations
+
+| Shortcut         |      What it does |
+| :--------------- | ----------------: |
+| Ctrl + N         |          New file |
+| Ctrl + Shift + N |           New mod |
+| Ctrl + O         |          Open mod |
+| Ctrl + Shift + S |         Saves mod |
+| Ctrl + S         | Save current file |
+| Ctrl + Q         |      Close editor |
+| Ctrl + Shift + T | Opens up last tab |
+
+### Edit Operations
+
+| Shortcut | What it does |
+| :------- | -----------: |
+| Ctrl + Z |         Undo |
+| Ctrl + Y |         Redo |
+| Ctrl + X |          Cut |
+| Ctrl + C |         Copy |
+| Ctrl + V |        Paste |
+
+### View and Navigation
+
+| Shortcut   |        What it does |
+| :--------- | ------------------: |
+| Ctrl + F   |        Opens search |
+| Ctrl + G   |    Opens go to line |
+| Ctrl + +/= | Increases font size |
+| Ctrl + -/_ | Decreases font size |
+
+### Documentation and Build
+
+| Shortcut         |            What it does |
+| :--------------- | ----------------------: |
+| Ctrl + Shift + D |     Opens documentation |
+| Ctrl + B         | Builds and installs mod |
 
 ---
-
-
 
 ## Fonts
 
