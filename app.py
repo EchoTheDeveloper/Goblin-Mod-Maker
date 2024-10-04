@@ -9,7 +9,7 @@ import GraphicalInterface
 url = 'https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/LATEST_VERSION'
 
 # Define the current version
-CURRENT_VERSION = "v1.4.0"
+CURRENT_VERSION = "1.4.0"
 
 def check_version():
     try:
@@ -20,7 +20,7 @@ def check_version():
         latest_version = response.text.strip()
 
         # Check if the current version is the same as the latest version
-        if CURRENT_VERSION != latest_version:
+        if CURRENT_VERSION < latest_version:
             # Create a Tkinter window to prompt for update
             root = tk.Tk()
             root.withdraw()  # Hide the root window
