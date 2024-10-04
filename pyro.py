@@ -978,89 +978,6 @@ class CoreUI(object):
             self.text.see(index)  # Scroll the line into view
             self.text.focus()     # Ensure the text widget has focus
 
-    def cmd(self, cmd, index_insert):
-        """
-            this method parses a line of text from the command line and invokes methods on the text
-            as indicated for each of the implemented commands
-            arguments: the command, and the insert position
-        """
-        index_start = ""
-        index_end = ""
-        regexp = ""
-        linenumber = ""
-        cmdchar = cmd[0:1]  # truncate newline
-        cmd = cmd.strip("\n")
-
-        if len(cmdchar) == 1:
-            regexp = self.lastRegexp
-            linenumber = self.markedLine
-
-        if cmdchar == "*":
-            if len(cmd) > 1:
-                regexp = cmd[1:]
-                index_start, index_end = self.search(regexp, index_insert)
-                self.lastRegexp = regexp
-        elif cmdchar == "#":
-            if len(cmd) > 1:
-                linenumber = cmd[1:]
-            index_start, index_end = self.gotoline(linenumber)
-            self.markedLine = linenumber
-        elif cmdchar == "/":
-            if len(cmd) > 3:  # the '/', delimter chr, 1 chr target, delimiter chr, null for minimum useful s+r
-                snr = cmd[1:]
-                token = snr[0]
-                regexp = snr.split(token)[1]
-                subst = snr.split(token)[2]
-                index_start, index_end = self.replace(regexp, subst, index_insert)
-        return index_start, index_end
-
-    def cmdcleanup(self, index_start, index_end):
-        """
-            this method cleans up post-command and prepares the command line for re-use
-            arguments: index beginning and end. ** this needs an audit, as does the entire
-                                                    index start/end construct **
-        """
-        if index_start != "":
-            self.text.mark_set("insert", index_start)
-            self.text.tag_add("sel", index_start, index_end)
-            # self.text.focus()
-            self.text.see(index_start)
-            self.cli.delete("1.0", tkinter.END)
-
-    def cmdlaunch(self, event):
-        """
-            this method implements the callback for the key binding (Return Key)
-            in the command line widget, wiring it up to the parser/dispatcher method.
-            arguments: the tkinter event object with which the callback is associated
-        """
-        mods = {
-            0: None,
-            0x0001: 'Shift',
-            0x0002: 'Caps Lock',
-            0x0004: 'Control',
-            0x0008: 'Left-hand Alt',
-            0x0010: 'Num Lock',
-            0x0080: 'Right-hand Alt',
-            0x0100: 'Mouse button 1',
-            0x0200: 'Mouse button 2',
-            0x0400: 'Mouse button 3'
-        }
-        if mods[event.state] == "Shift":
-            self.adjust_cli(event)
-            return
-        cmd = self.cli.get("1.0", tkinter.END)
-        self.cli.delete("1.0", tkinter.END)
-        if cmd[0] == "~":
-            try:
-                if cmd.count("\n") > 1:
-                    exec(cmd[1:])
-                else:
-                    print("User Command Executed", "(" + cmd[1:-1] + ")", "Gives:", eval(cmd[1:]))
-                self.root.update()
-            except Exception as e:
-                print(e)
-        self.adjust_cli(event)
-        return "break"
 
     def adjust_cli(self, event=None):
         height = self.cli.cget("height")
@@ -1107,7 +1024,6 @@ class CoreUI(object):
 
                 try:
                     fontPath = "resources/fonts/" + self.settings["Selected Code Font"] + ".ttf"
-                    print(fontPath)
                     font = ImageFont.truetype(fontPath, self.current_font_size)
                     font_family = font.getname()[0] 
                     self.codeFont = Font(file=fontPath, family=font_family, size=self.current_font_size)

@@ -247,7 +247,6 @@ class InterfaceMenu:
         # Instead of doing root.mainloop we do pyro.add_window to avoid thread conflicts, pyro deals with calling
         # root.update() on  everything in the pyro window list, there is also no need to remove closed windows from this
         pyro.add_window(self.root)
-        check_version()
         
 
     def find_settings(self):
@@ -648,62 +647,6 @@ class InterfaceMenu:
         csfilepath = os.path.join(current_directory, "projects", name_no_space, "Files", name_no_space + ".cs")
         pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), filepath=csfilepath, mod=mod, settings=self.settings)
 
-def get_github_version_line(line_number=1):
-    try:
-        response = requests.get("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/ModObject.py")
-        response.raise_for_status()  # Raise an exception for HTTP errors
-        lines = response.text.splitlines()
-        # Fetch the specific line (e.g., line 20 for version)
-        if len(lines) >= line_number:
-            return lines[line_number - 1]  # Line 20 would be index 19
-        else:
-            print(f"File doesn't have {line_number} lines.")
-            return None
-    except requests.RequestException as e:
-        print(f"Error fetching file: {e}")
-        return None
-
-def extract_version(line):
-    if "VERSION" in line:
-        version_part = line.split("=")
-        if len(version_part) > 1:
-            return version_part[1].strip().strip('"')  # Remove extra spaces and quotes
-    return None
-
-def check_version():
-    current_version = ModObject.get_mod_maker_version() 
-    line = get_github_version_line()
-    if line:
-        latest_version = extract_version(line)
-        if latest_version:
-            # Compare versions
-            if current_version == latest_version:
-                print("You are using the latest version.")
-            elif is_newer_version(current_version, latest_version):
-                print("You are on a newer version than the latest.")
-                # return False  # Ignore the update prompt
-            else:
-                question = messagebox.askquestion("Out Of Date GMM Version",
-                                                f"You are on v{current_version}, would you like to update to v{latest_version}?",
-                                                icon="info")
-                if question == "yes":
-                    webbrowser.open("https://echothedeveloper.itch.io/gmm#download")
-                    return True
-                else:
-                    return False
-        else:
-            print("Could not extract version from the specified line.")
-    else:
-        print("Could not retrieve the version line from the file.")
-
-def is_newer_version(current, latest):
-    # Split the version strings into tuples of integers
-    current_parts = list(map(int, current.split(".")))
-    latest_parts = list(map(int, latest.split(".")))
-
-    # Compare version tuples
-    return current_parts > latest_parts
-        
 if __name__ == "__main__":
     # Creates the main menu and then calls the pyro mainloop
     InterfaceMenu()
