@@ -117,7 +117,7 @@ def new_fallback(self, data, window):
 
 def new_file(self):
     create_prompt("New File", 
-                ("File Name (add extension ex: .cs)",), 
+                ("File Name (if no extention added, .cs will be added)",), 
                     partial(new_file_fallback, self), 
                     None, 
                     defaults=None
@@ -126,12 +126,21 @@ def new_file(self):
 def new_file_fallback(self, data):
     filename = data[0]
     
-    name_no_space = self.mod.mod_name_no_space.get_text()
+    # Replace spaces with underscores for the filename
+    name_no_space = ''.join([word.capitalize() for word in filename.split(" ")])
+    
+    mod_name_no_space = self.mod.mod_name_no_space.get_text()
     
     current_directory = os.getcwd()
-    filepath = os.path.join(current_directory, "projects", name_no_space, "Files", filename)
     
-    class_name = os.path.splitext(filename)[0]
+    # Add .cs if no extension is provided
+    if not os.path.splitext(name_no_space)[1]:
+        name_no_space += ".cs"
+    
+    filepath = os.path.join(current_directory, "projects", mod_name_no_space, "Files", name_no_space)
+    
+    # Capitalize letters for the class name (remove spaces and capitalize each word)
+    class_name = ''.join([word.capitalize() for word in os.path.splitext(filename)[0].split()])
     
     file_content = f"""using System;
 using System.Collections.Generic;
@@ -139,7 +148,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace {name_no_space}
+namespace {mod_name_no_space}
 {{
     public class {class_name}
     {{

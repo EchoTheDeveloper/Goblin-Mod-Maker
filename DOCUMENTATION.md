@@ -145,6 +145,7 @@
 
 - **Path:** `File > Save C# File`
 - **File Name:** This is the name that the file will be created as. Stored in `{gmm} > projects > {mod name}>files`
+- If an extention (e.x. `.cs`, `.txt`) is not provided then the default `.cs` will be added to the end (this is so the file compiles when building)
 
 ---
 
@@ -311,23 +312,30 @@
 | Ctrl + +/=      | Increases font size |
 | Ctrl + -        | Decreases font size |
 
+---
+
+
 
 ## Fonts
+
 **There are 3 pre-packaged fonts you can choose to use in the code editor.**
 
 ### JetBrains Mono:
+
 <img src="resources/imgs/fonts/JetBrainsMono.png" alt="JetBrains Mono Font"/>
 
 ### Fira Code:
+
 <img src="resources/imgs/fonts/FiraCode.png" alt="Fira Code Font"/>
 
-
 ### Cascadia Code:
+
 <img src="resources/imgs/fonts/CascadiaCode.png" alt="Cascadia Code Font"/>
 
 ---
 
 ## Themes
+
 **GMM comes pre-packaged with 7 unique themes to choose from. You can always [create your own theme](#creating-your-own-theme).**
 
 ### Isle Goblin:
@@ -360,16 +368,18 @@
 
 ---
 
-
 ## Tutorials
 
 ### Creating your own theme
+
 #### Good To Know
+
 - Themes are loaded via `{gmm} > resources > themes`
 - It loads them by searching for `.json` files
 - You can change the new and open button images and change the click and hover SFX
 
 #### Getting Started
+
 1. Locate the themes folder `{gmm} > resources > themes`
 2. Duplicate the Isle Goblin.json file
 3. Rename this file to the name of your theme (put spaces between words)
@@ -377,14 +387,18 @@
 5. Rename the folder to your mod name (instead of spaces use hyphens/minus sign and keep it lowercase)
 
 #### Custom Assets
+
 - **New and Open Buttom Images:** In your themes assets folder, change the `newbutton.png` and `openbutton.png` to their corresponding custom image.
 - **Click and Hover SFX:** In your themes assets folder, change the `click.wav` and `hover.wav` to their corresponding SFX.
 
 #### Change Themeing
+
 ##### Preperation
+
 - In the `{gmm} > resources > themes` folder locate `{theme name}.json` and open it.
 
 ##### Changing Custom Asset Paths
+
 - From line 2-6 exluding line 4 you have the paths to your custom assets
 - The lines will look should look like this `resources/themes/assets/isle-goblin/{filename}`
 - You want to change these lines to `resources/themes/assets/{theme name}/{filename}`
@@ -392,6 +406,7 @@
 - Change `{theme name}` to the name that we set back in [getting started](#getting-started) when duplicating the isle-goblin folder
 
 ##### Changing Theme Values
+
 <img src="resources/imgs/themes/ThemeValueGuide.png" alt="Theme Value Guide"/>
 
 - Lines 8-26 deal with the actual theming of the app.

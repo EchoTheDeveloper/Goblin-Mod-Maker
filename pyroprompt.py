@@ -1,4 +1,6 @@
 # This module is created completely by hippolippo to have a prompt in the style of pyro
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import threading
 from tkinter import *
 from functools import partial

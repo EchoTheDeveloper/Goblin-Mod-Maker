@@ -19,62 +19,12 @@
       Inspired by acme, sam, vi and ohmwriter.
     A sincere thanks to these good people for making their source code available for myself and others
     to learn from. Cheers!
-
-
-        Pyro currently does a very minimalist job of text editing via tcl/tk ala tkinter.
-
-        What pyro does now:
-
-           colorizes syntax for a variety of text types; to wit:
-
-               Python
-               PlainText
-               Html/Javascript
-               Xml
-               Html/Php
-               Perl6
-               Ruby
-               Ini/Init
-               Apache 'Conf'
-               Bash Scripts
-               Diffs
-               C#
-               MySql
-
-           writes out its buffer
-           converts tabs to 4 spaces
-
-           It does this in an austere text editor framework which is essentially a glue layer
-           bringing together the tk text widget with the Pygment library for styling displayed
-           text. Editor status line is in the window title.
-
-           Pyro comes with one serious warning: it is a user-space editor. It makes no effort
-           to monitor state-change events on files and so should not be used in situations
-           where it is possible that more than one writer will have access to the file.
-
-
-        Pyro's current controls are as follows:
-
-           Ctrl+q quits
-           Ctrl+w writes out the buffer
-           Selection, copy, cut and paste are all per xserver/window manager. Keyboard navigation via
-           arrow/control keys, per system READLINE.
-
-        Pyro's current commands are:
-
-           #(num) move view to line 'num' and highlight it, if possible.
-           *(text) find text in file.
-           /(delim)(text)(delim)(text) search and replace
-
-        Pyro requires Tkinter and Pygment external libraries.
-
 """
 
 RECENT = None
 
 import os
-import io
-import sys
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import ChangeManager
 from GraphicalInterface import *
@@ -84,8 +34,8 @@ import time
 
 import tkinter
 from tkinter import font, ttk, scrolledtext, _tkinter, simpledialog
-import tkinter.font as tkFont
 
+from MarkdownViewer import MarkdownViewer
 
 from ModObject import *
 from pygments.lexers.python import PythonLexer
@@ -108,19 +58,19 @@ from watchdog.events import FileSystemEventHandler
 import queue
 from tkextrafont import Font
 from PIL import ImageFont
+import threading
+
 
 pyros = []
 windows = []
 core_ui = None
 open_files = {}
 last_opened_file = None
-# codeFont = None
-# def load_font(path = "resources\FiraCode-VariableFont_wght.ttf", size=16):
-#     pyglet.font.add_file(path)
-#     # font_path = path
-#     # font_size = size
-#     # global codeFont
-#     # codeFont = ImageFont.truetype(font_path, font_size)
+
+def open_docs():
+    documentation_file = os.path.abspath("DOCUMENTATION.md")  # Get the absolute path
+    view = MarkdownViewer("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md", documentation_file)
+    pyro.add_window(view)
 
 def load_theme(filename):
     with open(filename, 'r') as file:
@@ -159,7 +109,7 @@ def refresh_theme():
     Click = theme_data.get("click", "")
     Hover = theme_data.get("hover", "")
 
-class LineNumbers(Text):  # scrolledtext.ScrolledText
+class LineNumbers(Text):
     def __init__(self, master, text, **kwargs):
         super().__init__(master, **kwargs)
         self.text = text
@@ -168,30 +118,34 @@ class LineNumbers(Text):  # scrolledtext.ScrolledText
         self.insert(1.0, '1')
         self.configure(state='disabled')
 
+        # Use the same font as the main text widget initially
+        self.line_number_font = self.text.cget("font")
+        self.configure(font=self.line_number_font)
+
     def match_up(self, e=None):
         p, q = self.text.index("@0,0").split('.')
         p = int(p)
-        
-        # Get the final index without counting the trailing newline
+
         final_index = str(self.text.index(tkinter.END + "-1c"))
         temp = self.num_of_lines
         self.num_of_lines = final_index.split('.')[0]
         
-        # Generate line numbers string
         line_numbers_string = "\n".join(str(1 + no) for no in range(int(self.num_of_lines)))
         width = len(str(self.num_of_lines)) + 3
 
-        # Update line numbers text
         self.configure(state='normal', width=width)
         if self.num_of_lines != temp:
             self.delete(1.0, tkinter.END)
             self.insert(1.0, line_numbers_string)
         self.configure(state='disabled')
-        
+
         # Sync scrolling
         self.scroll_data = self.text.yview()
         self.yview_moveto(self.scroll_data[0])
 
+    def update_font_size(self, font):
+        """Update the font size of line numbers."""
+        self.configure(font=font)
 
 class FileTreeview:
     def __init__(self, master, core_ui, mod_name_no_space, **uiopts):
@@ -436,6 +390,7 @@ class CoreUI(object):
         self.root.bind('<Control-KeyPress-q>', self.close)
         self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
         self.root.bind('<Control-Shift-T>', self.open_last_file)
+        self.root.bind("<Control-Shift-D>", self.open_documentation)
         # self.root.bind('<Control-KeyPress-f>', MenuMethods.openSearch(self)) DOESNT WORK CURRENTLY
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
@@ -459,6 +414,17 @@ class CoreUI(object):
         # Define snippets
         self.snippets = load_file("resources/snippets.json")
         self.autocomplete_window = None
+        
+        
+    def open_documentation(self, e):
+        # self.open_markdown_viewer()
+        pyro.open_docs()
+        
+    
+    def open_markdown_viewer(self):
+        documentation_file = os.path.abspath("DOCUMENTATION.md")  # Get the absolute path
+        view = MarkdownViewer("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md", documentation_file)
+        pyro.add_window(view)
         
     
     def open_last_file(self, e):
@@ -1274,7 +1240,12 @@ class CoreUI(object):
                         self.current_font_size = new_font_size
                         self.codeFont.configure(size=self.current_font_size)
                         self.text.configure(font=self.codeFont)
-                        self.file_treeview.adjust_column_width() 
+                        self.file_treeview.adjust_column_width()
+
+                        # Update line number font size
+                        self.lineNums.update_font_size(self.codeFont)
+
+                        # Reapply custom font tag
                         self.text.tag_configure("custom_font", font=self.codeFont)
                         self.text.tag_add("custom_font", "1.0", "end")
 
@@ -1282,8 +1253,8 @@ class CoreUI(object):
                         self.root.update_idletasks()
 
 
-                self.root.bind('<Control-plus>', lambda event: change_font_size(2, event))  # Ctrl + +
-                self.root.bind('<Control-equal>', lambda event: change_font_size(2, event))  # Ctrl + = 
+                self.root.bind('<Control-plus>', lambda event: change_font_size(1, event))  # Ctrl + +
+                self.root.bind('<Control-equal>', lambda event: change_font_size(1, event))  # Ctrl + = 
                 self.root.bind('<Control-minus>', lambda event: change_font_size(-1, event))  # Ctrl + -
 
                 
@@ -1341,7 +1312,6 @@ class CoreUI(object):
             arguments: the associated event object
         """
         self.updatetitlebar()
-        # self.recolorize()
 
     def close(self, event=None):
         self.sort_and_save_open_files()
@@ -1431,7 +1401,6 @@ class CoreUI(object):
             start_line = end_line
             start_index = end_index
 
-        # Optionally update once at the end
         text_widget.update_idletasks()
 
 
@@ -1506,6 +1475,9 @@ def mainloop():
             except Exception:
                 pass
         if count == 0:
-            print("Exiting: All Windows Deleted")
+            # print("Exiting: All Windows Deleted")
             return
 
+    
+# if __name__ == "__main__":
+#     open_docs()

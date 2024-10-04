@@ -4,6 +4,7 @@ It contains the code for the main menu which is what you are greeted with when y
 """
 
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 from tkinter import messagebox, filedialog
 from tkinter import *
 from tkinter import ttk
