@@ -243,6 +243,5 @@ class MarkdownViewer(Tk):
             print(selected_item[0])
 
 
-if __name__ == "__main__":
-    markdown_file = "https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md"
-    MarkdownViewer(markdown_file, "DOCUMENTATION.md")
+markdown_file = "https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md"
+MarkdownViewer(markdown_file, "DOCUMENTATION.md")
