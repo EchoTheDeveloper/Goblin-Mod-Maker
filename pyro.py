@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 """
     GMMpyro, modified to work with the Goblin Mod Maker, an extension of UnityModderPyro, Modified to work for Unity Mod Maker By Hippolippo
 
@@ -25,18 +22,14 @@ RECENT = None
 
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-
 import ChangeManager
+import GraphicalInterface
 from GraphicalInterface import *
 import MenuMethods
 from functools import partial
-import time
-
 import tkinter
 from tkinter import font, ttk, scrolledtext, _tkinter, simpledialog
-
 from MarkdownViewer import MarkdownViewer
-
 from ModObject import *
 from pygments.lexers.python import PythonLexer
 from pygments.lexers.special import TextLexer
@@ -51,15 +44,14 @@ from pygments.lexers.shell import BashLexer
 from pygments.lexers.diff import DiffLexer
 from pygments.lexers.dotnet import CSharpLexer
 from pygments.lexers.sql import MySqlLexer
-
 from pygments.styles import get_style_by_name
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import queue
 from tkextrafont import Font
 from PIL import ImageFont
-import threading
-
+import random
+import string
 
 pyros = []
 windows = []
@@ -67,10 +59,6 @@ core_ui = None
 open_files = {}
 last_opened_file = None
 
-def open_docs():
-    documentation_file = os.path.abspath("DOCUMENTATION.md")  # Get the absolute path
-    view = MarkdownViewer("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md", documentation_file)
-    pyro.add_window(view)
 
 def load_theme(filename):
     with open(filename, 'r') as file:
@@ -349,7 +337,7 @@ class CoreUI(object):
         global core_ui
         core_ui = self
         self.settings = settings
-        set_window_count(get_window_count() + 1)
+        GraphicalInterface.set_window_count(GraphicalInterface.get_window_count() + 1)
         self.filename = filename
         if mod is None:
             mod = ModObject("Untitled")
@@ -387,11 +375,38 @@ class CoreUI(object):
         RECENT = self
         
         self.root.bind("<Key>", self.event_key)
+        
+        # Can optimize this later (did this cause they dont work if you are on caps lock)
         self.root.bind('<Control-KeyPress-q>', self.close)
+        self.root.bind('<Control-KeyPress-Q>', self.close)
+        
         self.root.bind("<Control-KeyPress-s>", self.save_file_key_press)
+        self.root.bind("<Control-KeyPress-S>", self.save_file_key_press)
+        
+        self.root.bind("<Control-Shift-s>", partial(MenuMethods.save, self, self.filepath))
+        self.root.bind("<Control-Shift-S>", partial(MenuMethods.save, self, self.filepath))
+        
+        self.root.bind("<Control-Shift-n>", partial(MenuMethods.new, self))
+        self.root.bind("<Control-Shift-N>", partial(MenuMethods.new, self))
+        
+        self.root.bind("<Control-n>", partial(MenuMethods.new_file, self))
+        self.root.bind("<Control-N>", partial(MenuMethods.new_file, self))
+        
+        self.root.bind('<Control-Shift-t>', self.open_last_file)
         self.root.bind('<Control-Shift-T>', self.open_last_file)
+        
+        self.root.bind("<Control-Shift-d>", self.open_documentation)
         self.root.bind("<Control-Shift-D>", self.open_documentation)
-        # self.root.bind('<Control-KeyPress-f>', MenuMethods.openSearch(self)) DOESNT WORK CURRENTLY
+        
+        self.root.bind('<Control-KeyPress-f>', partial(MenuMethods.openSearch, self))
+        self.root.bind('<Control-KeyPress-F>', partial(MenuMethods.openSearch, self))
+        
+        self.root.bind('<Control-KeyPress-g>', partial(MenuMethods.openGTL, self))
+        self.root.bind('<Control-KeyPress-G>', partial(MenuMethods.openGTL, self))
+        
+        self.root.bind('<Control-KeyPress-b>', partial(MenuMethods.build_install, self))
+        self.root.bind('<Control-KeyPress-B>', partial(MenuMethods.build_install, self))
+        
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
         
@@ -415,17 +430,10 @@ class CoreUI(object):
         self.snippets = load_file("resources/snippets.json")
         self.autocomplete_window = None
         
-        
     def open_documentation(self, e):
-        # self.open_markdown_viewer()
-        pyro.open_docs()
-        
-    
-    def open_markdown_viewer(self):
         documentation_file = os.path.abspath("DOCUMENTATION.md")  # Get the absolute path
         view = MarkdownViewer("https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md", documentation_file)
         pyro.add_window(view)
-        
     
     def open_last_file(self, e):
         global last_opened_file
@@ -440,10 +448,11 @@ class CoreUI(object):
             with open(filepath, 'w') as file:
                 file.write(self.text.get('1.0', tkinter.END))
             self.filepath = filepath
-            self.modified = False 
+            self.modified = False  # Mark as not modified after saving
             filename = os.path.basename(self.filepath)
-            self.notebook.tab(self.notebook.select(), text=filename) 
+            self.notebook.tab(self.notebook.select(), text=filename)  # Update tab title
             self.updatetitlebar()
+
             
     def sort_and_save_open_files(self):
         """Sort and save the contents of all open files in the Notebook."""
@@ -468,35 +477,18 @@ class CoreUI(object):
         mod = ChangeManager.undo()
         if mod is not None:
             self.mod = mod
-            self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
-            
-            with open(self.filepath, "r") as f:
-                file_content = f.read()
-            text = self.text.get("1.0", "end-1c") 
-            filename = os.path.basename(self.filepath)
-            if text == file_content:
-                self.modified = False 
-                self.notebook.tab(self.notebook.select(), text=filename) 
-            else:
-                self.modified = True 
-                self.notebook.tab(self.notebook.select(), text=f"{filename} *")
+        self.refresh(updateMod=False)  # Refresh with updateMod=False to prevent overwriting the mod
+        self.recolorize(self.text)
+        self.update_title()
         return "break"
 
     def redo(self, e=None, text_widget=None):
         mod = ChangeManager.redo()
         if mod is not None:
             self.mod = mod
-            self.refresh(updateMod=False)  # refresh with updateMod=False to prevent overwriting the mod
-            with open(self.filepath, "r") as f:
-                file_content = f.read()
-            text = self.text.get("1.0", "end-1c") 
-            filename = os.path.basename(self.filepath)
-            if text == file_content:
-                self.modified = False 
-                self.notebook.tab(self.notebook.select(), text=filename) 
-            else:
-                self.modified = True 
-                self.notebook.tab(self.notebook.select(), text=f"{filename} *")
+        self.refresh(updateMod=False)  # Refresh with updateMod=False to prevent overwriting the mod
+        self.recolorize(self.text)
+        self.update_title()
         return "break"
 
     def save_file_key_press(self, e):
@@ -513,15 +505,15 @@ class CoreUI(object):
 
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
-        self.filemenu.add_command(label="New Mod", command=partial(MenuMethods.new, self))
-        self.filemenu.add_command(label="Open Mod", command=partial(MenuMethods.open, self.settings))
-        self.filemenu.add_command(label="Save Mod", command=partial(MenuMethods.save, self, self.filepath))
+        self.filemenu.add_command(label="New Mod", accelerator="Ctrl + Shift + N", command=partial(MenuMethods.new, self))
+        self.filemenu.add_command(label="Open Mod", accelerator="Ctrl + O", command=partial(MenuMethods.open, self.settings))
+        self.filemenu.add_command(label="Save Mod", accelerator="Ctrl + Shift + S", command=partial(MenuMethods.save, self, self.filepath))
         self.filemenu.add_command(label="Save Mod as Renamed Copy", command=partial(MenuMethods.copy, self))
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="New File", command=partial(MenuMethods.new_file, self))
-        self.filemenu.add_command(label="Save C# File", command=partial(self.save_file, self.filepath)) 
+        self.filemenu.add_command(label="New File", accelerator="Ctrl + N", command=partial(MenuMethods.new_file, self))
+        self.filemenu.add_command(label="Save C# File", accelerator="Ctrl + S", command=partial(self.save_file, self.filepath))
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="Close", command=self.close)
+        self.filemenu.add_command(label="Close", accelerator="Ctrl + Q", command=self.close)
 
 
 
@@ -531,12 +523,12 @@ class CoreUI(object):
         self.editmenu.add_command(label="Change Mod Version",command=partial(MenuMethods.change_mod_version, self))
         self.editmenu.add_command(label="Change Mod Developers",command=partial(MenuMethods.change_mod_authors, self))
         self.editmenu.add_separator()
-        self.editmenu.add_command(label="Undo", command=self.undo)
-        self.editmenu.add_command(label="Redo", command=self.redo)
+        self.editmenu.add_command(label="Undo", accelerator="Ctrl + Z", command=self.undo)
+        self.editmenu.add_command(label="Redo", accelerator="Ctrl + Y", command=self.redo)
         self.editmenu.add_separator()
-        self.editmenu.add_command(label="Cut", command=self.cut)
-        self.editmenu.add_command(label="Copy", command=self.copy)
-        self.editmenu.add_command(label="Paste", command=self.paste)
+        self.editmenu.add_command(label="Cut", accelerator="Ctrl + X", command=self.cut)
+        self.editmenu.add_command(label="Copy", accelerator="Ctrl + C", command=self.copy)
+        self.editmenu.add_command(label="Paste", accelerator="Ctrl + V", command=self.paste)
 
 
         self.menubar.add_cascade(label="Create", menu=self.createmenu)
@@ -550,15 +542,15 @@ class CoreUI(object):
 
         self.menubar.add_cascade(label="Build", menu=self.buildmenu)
 
-        self.buildmenu.add_command(label="Build and Install", command=partial(MenuMethods.build_install, self))
+        self.buildmenu.add_command(label="Build and Install", accelerator="Ctrl + Shift + B", command=partial(MenuMethods.build_install, self))
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
 
 
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
 
-        self.toolsmenu.add_command(label="Search", command=partial(MenuMethods.openSearch, self))
+        self.toolsmenu.add_command(label="Search", accelerator="Ctrl + Shift + F", command=partial(MenuMethods.openSearch,  self))
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
-        self.toolsmenu.add_command(label="Go To Line", command=partial(MenuMethods.openGTL, self))
+        self.toolsmenu.add_command(label="Go To Line", accelerator="Ctrl + Shift + G", command=partial(MenuMethods.openGTL, self))
 
 
         self.root.config(menu=self.menubar)
@@ -620,8 +612,8 @@ class CoreUI(object):
                 self.suggestion_listbox.insert(END, display_text)
 
             # Bind Listbox events
-            self.suggestion_listbox.bind("<Double-1>", lambda e: self.insert_autocomplete())
-            self.suggestion_listbox.bind("<Return>", lambda e: self.insert_autocomplete())
+            self.suggestion_listbox.bind("<Double-1>", self.insert_autocomplete)
+            self.suggestion_listbox.bind("<Return>", self.insert_autocomplete)
             self.suggestion_listbox.bind("<Up>", self.on_arrow_key_in_listbox)
             self.suggestion_listbox.bind("<Down>", self.on_arrow_key_in_listbox)
 
@@ -739,19 +731,51 @@ class CoreUI(object):
     def refresh(self, updateMod=True):
         if updateMod:
             self.scroll_data = self.text.yview()
-            text = self.text.get("1.0", tkinter.END)[:-1]
+            text = self.text.get("1.0", tkinter.END).rstrip()  # Remove trailing newline
             cursor = self.text.index(tkinter.INSERT)
             index = ChangeManager.update(self.mod, text)
             if index == "Locked":
-                self.undo()
                 return
             self.mod.index = index
         else:
             text = None
             index = self.mod.index
-        self.recolorize(self.text) 
-        # self.root.update()
+
+        self.recolorize(self.text)
         self.text.yview_moveto(self.scroll_data[0])
+
+        # with open(self.filepath, "r") as f:
+        #     file_content = f.read().rstrip()  # Remove trailing whitespace/newlines
+
+        # # Normalize the text for comparison (strip leading/trailing whitespace)
+        # normalized_text = text # Remove excess whitespace
+        # normalized_file_content = file_content  # Remove excess whitespace
+
+        # filename = os.path.basename(self.filepath)
+
+        # # Update the modified flag and tab title accordingly
+        # if normalized_text == normalized_file_content:
+        #     self.modified = False
+        #     self.notebook.tab(self.notebook.select(), text=filename)  # Remove asterisk
+        #     return "break"
+        # else:
+        #     self.modified = True
+        #     self.notebook.tab(self.notebook.select(), text=f"{filename} *")  # Add asterisk
+        #     return "break"
+        self.update_title()
+
+    def update_title(self):
+        """Update the title based on the current text state."""
+        current_text = self.text.get("1.0", tkinter.END).rstrip()  # Get current text
+        with open(self.filepath, "r") as f:
+            file_content = f.read().rstrip()  # Get original file content
+
+        filename = os.path.basename(self.filepath)
+
+        if current_text == file_content:
+            self.notebook.tab(self.notebook.select(), text=filename)  # Remove asterisk
+        else:
+            self.notebook.tab(self.notebook.select(), text=f"{filename} *")  # Add asterisk
 
     def uiconfig(self):
         """
@@ -1143,8 +1167,12 @@ class CoreUI(object):
                 text_widget.bind("<space>", self.on_space_press)
                 text_widget.bind("<Up>", self.on_arrow_key)
                 text_widget.bind("<Down>", self.on_arrow_key)
+                
                 self.root.bind('<Control-KeyPress-z>', partial(self.undo, text_widget))
+                self.root.bind('<Control-KeyPress-Z>', partial(self.undo, text_widget))
+                
                 self.root.bind('<Control-KeyPress-y>', partial(self.redo, text_widget))
+                self.root.bind('<Control-KeyPress-Y>', partial(self.redo, text_widget))
                 self.filepath = filename
                 text_widget.edit_modified(False)
                 self.scroll_data = text_widget.yview()
@@ -1172,6 +1200,7 @@ class CoreUI(object):
                 self.root.bind('<Control-plus>', lambda event: change_font_size(1, event))  # Ctrl + +
                 self.root.bind('<Control-equal>', lambda event: change_font_size(1, event))  # Ctrl + = 
                 self.root.bind('<Control-minus>', lambda event: change_font_size(-1, event))  # Ctrl + -
+                self.root.bind('<Control-underscore>', lambda event: change_font_size(-1, event))  # Ctrl + _
 
                 
                 # Add the new tab to the Notebook with the filename as the tab title
@@ -1189,26 +1218,38 @@ class CoreUI(object):
             
     # Inputs
     def event_key(self, event):
-        """
-            this method traps the keyboard events. anything that needs doing when a key is pressed is done here.
-            arguments: the associated event object
-        """
+        """This method traps the keyboard events."""
         keycode = event.keycode
         char = event.char
+
         self.recolorize(self.text)
         self.updatetitlebar()
 
         with open(self.filepath, "r") as f:
             file_content = f.read()
 
-        text = self.text.get("1.0", "end-1c") 
+        text = self.text.get("1.0", "end-1c").rstrip()
         filename = os.path.basename(self.filepath)
-        if text == file_content:
-            self.modified = False 
-            self.notebook.tab(self.notebook.select(), text=filename) 
+
+        with open(self.filepath, "r") as f:
+            file_content = f.read().rstrip()  # Remove trailing whitespace/newlines
+
+        # Normalize the text for comparison (strip leading/trailing whitespace)
+        normalized_text = " ".join(text.split())  # Remove excess whitespace
+        normalized_file_content = " ".join(file_content.split())  # Remove excess whitespace
+
+        filename = os.path.basename(self.filepath)
+
+        # Update the modified flag and tab title accordingly
+        if normalized_text == normalized_file_content:
+            self.modified = False
+            self.notebook.tab(self.notebook.select(), text=filename)  # Remove asterisk
+            return "break"
         else:
-            self.modified = True 
-            self.notebook.tab(self.notebook.select(), text=f"{filename} *")
+            self.modified = True
+            self.notebook.tab(self.notebook.select(), text=f"{filename} *")  # Add asterisk
+            return "break"
+
 
     def event_write(self, event):
         """
@@ -1232,14 +1273,13 @@ class CoreUI(object):
     def close(self, event=None):
         self.sort_and_save_open_files()
         self.mod.autosave(False)
-        import GraphicalInterface
         GraphicalInterface.set_window_count(GraphicalInterface.get_window_count() - 1)
         self.root.destroy()
         global open_files
         open_files = {}
-        if get_window_count() <= 0:
+        if GraphicalInterface.get_window_count() <= 0:
             GraphicalInterface.set_window_count(0)
-            InterfaceMenu()
+            GraphicalInterface.InterfaceMenu()
     
     def starting(self):
         """
@@ -1394,6 +1434,16 @@ def mainloop():
             # print("Exiting: All Windows Deleted")
             return
 
+
+if __name__ == "__main__":
     
-# if __name__ == "__main__":
-#     open_docs()
+    random_name = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+    mod = ModObject(mod_name=random_name, description="Test description", authors="Test Author", game="Test Game", folder_name="TestFolder", steampath="TestSteamPath")
+
+    current_directory = os.getcwd()
+    csfilepath = os.path.join(current_directory, "projects", random_name, "Files", random_name + ".cs")
+
+    # Runs a random file name
+    pyro.CoreUI(lexer=CSharpLexer(), filename=random_name, filepath=csfilepath, mod=mod, settings=pyro.load_settings())
+    pyro.mainloop()

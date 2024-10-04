@@ -95,11 +95,9 @@ class MarkdownViewer(Tk):
         """Handle link clicks. If the link is internal, scroll to the appropriate section."""
         if "#" in url:  # Check if the URL contains an internal anchor
             element_id = url.split("#")[-1]  # Extract the part after the '#'
-            print(element_id)
             element_id = self.create_safe_id(element_id)
             if element_id:  # Ensure the element ID is not empty
                 self.html_frame.yview_toelement(f'#{element_id}')  # Scroll to the element with the given id
-                print(element_id)
             else:
                 print(f"Ignoring invalid anchor in URL: {url}")
         elif url.startswith("http"):  # External links
@@ -242,6 +240,6 @@ class MarkdownViewer(Tk):
             self.html_frame.yview_toelement(f'#{selected_item[0]}')
             print(selected_item[0])
 
-
-markdown_file = "https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md"
-MarkdownViewer(markdown_file, "DOCUMENTATION.md")
+# Commented this because everytime i open the app this pops up
+# markdown_file = "https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md"
+# MarkdownViewer(markdown_file, "DOCUMENTATION.md")

@@ -88,9 +88,11 @@ def create_prompt(title, questions, fallback, cancel_fallback, defaults=None, wa
 
     # Bind Ctrl+Z for undo in the root window
     root.bind_all("<Control-z>", lambda event: undo_entry(active_entry[0], undo_stacks[answers.index(active_entry[0])] if active_entry[0] in answers else None, redo_stacks[answers.index(active_entry[0])]))
+    root.bind_all("<Control-Z>", lambda event: undo_entry(active_entry[0], undo_stacks[answers.index(active_entry[0])] if active_entry[0] in answers else None, redo_stacks[answers.index(active_entry[0])]))
 
     # Bind Ctrl+Y for redo in the root window
     root.bind_all("<Control-y>", lambda event: redo_entry(active_entry[0], redo_stacks[answers.index(active_entry[0])] if active_entry[0] in answers else None, undo_stacks[answers.index(active_entry[0])]))
+    root.bind_all("<Control-Y>", lambda event: redo_entry(active_entry[0], redo_stacks[answers.index(active_entry[0])] if active_entry[0] in answers else None, undo_stacks[answers.index(active_entry[0])]))
 
     buttons = Frame(root, background=PyroPrompt_Background)
     buttons.pack()
@@ -169,9 +171,11 @@ def create_int_prompt(title, question, fallback, cancel_fallback, default=None, 
 
     # Bind Ctrl+Z for undo in the root window
     root.bind_all("<Control-z>", lambda event: undo_spinbox(answer, undo_stack, redo_stack, last_action, last_value))
+    root.bind_all("<Control-Z>", lambda event: undo_spinbox(answer, undo_stack, redo_stack, last_action, last_value))
 
     # Bind Ctrl+Y for redo in the root window
     root.bind_all("<Control-y>", lambda event: redo_spinbox(answer, redo_stack, undo_stack))
+    root.bind_all("<Control-Y>", lambda event: redo_spinbox(answer, redo_stack, undo_stack))
 
 def save_spinbox(spinbox, undo_stack, redo_stack, last_action, last_value):
     current_value = spinbox.get()

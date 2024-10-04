@@ -72,7 +72,7 @@ def create_loading_screen(message="Please Wait..."):
 
 # This gets called when the "new" button is pressed so it creates a prompt asking for the name of the new mod and
 # calls self.new_fallback when they press "done", None means that if they press "cancel" nothing specific is done
-def new(self):
+def new(self, e=None):
     create_prompt("New Mod", 
                    ("Mod Name",
                     "Desciption"), 
@@ -115,7 +115,7 @@ def new_fallback(self, data, window):
     # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
     pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
 
-def new_file(self):
+def new_file(self, e=None):
     create_prompt("New File", 
                 ("File Name (if no extention added, .cs will be added)",), 
                     partial(new_file_fallback, self), 
@@ -181,14 +181,13 @@ def _open_fallback(name):
     global SETTINGS
     pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=SETTINGS)
 
-def open(settings):
+def open(settings, e=None):
     global SETTINGS
     SETTINGS = settings
     create_prompt("Load Mod", ("Mod Name",), _open_fallback, None, warning="Never Open Mods From Untrusted Sources")
 
-
 # This gets called when they press the save button on the menubar (and later when they do ctrl+s)
-def save(window, filename):
+def save(window, filename, e=None):
     # directory this program is running in
     current_directory = os.getcwd()
     
@@ -216,8 +215,6 @@ def save(window, filename):
     # calls the save method on the mod object now that we made sure all the correct folders existed
     ModObject.save(window.mod, location=os.path.join(folder_path, filename + ".gmm"))
 
-
-
 def _copy_fallback(window, name):
     name = name[0]
     return ModObject.copy(window.mod, name)
@@ -226,21 +223,21 @@ def copy(window):
     create_prompt("Copy Mod", ("New Mod Name",), partial(_copy_fallback, window), None)
 
 
-def openSearch(window):
+def openSearch(window, e=None):
     create_prompt("Search", ("Search For",), partial(searchFallback, window), None)
 
 def searchFallback(window, text):
     window.search(regexp=text[0])
 
 
-def openGTL(window):
+def openGTL(window, e=None):
     create_int_prompt("Go To Line", ("Enter Line Number"), partial(gTLFallback, window), None, min_value=1)
 
 def gTLFallback(window, num):
     window.gotoline(line_number=num)
 
 
-def build_install(window):
+def build_install(window, e=None):
     root, text = create_loading_screen()
 
     def set_text(x):
