@@ -75,8 +75,9 @@ def create_loading_screen(message="Please Wait..."):
 def new(self, e=None):
     create_prompt("New Mod", 
                    ("Mod Name",
-                    "Desciption"), 
-                    partial(new_fallback, self), 
+                    "Description",
+                    "Developers (Separate names by commas)"), 
+                    partial(new_fallback, self),
                     None, 
                     defaults=None
                  )
@@ -86,34 +87,44 @@ def new(self, e=None):
     except:
         pass
 
+#KEEP GETTING PROBLEMS WITH STYLING WHEN CREATING OR OPENING A MOD
 # See the new function, this is the function that gets called when the prompt from the new function has "done"
 # clicked
-def new_fallback(self, data, window):
-    # first item in the list is the name of the mod
-    name = data[0]
-    if not name or name.strip() == "":
+def new_fallback(self, data):
+    # First item in the list is the name of the mod
+    name = data[0].strip()
+
+    if len(name) > 50:
+        return "Mod name is too long"
+
+    if not name:
         return "Mod name cannot be empty or null"
-    # check if there is a directory that corresponds to a mod with this name
-    # (spaces aren't included in the file names)
-    if exists(os.getcwd() + "/projects/" + name.replace(" ", "")):
-        # When the fallback to a prompt returns something, the prompt will show that as an error message and
-        # keep itself open effectively asking them again
+
+    # Check if a directory already exists for this mod
+    mod_directory = os.path.join(os.getcwd(), "projects", name.replace(" ", ""))
+    if exists(mod_directory):
         return "Project Already Exists"
-    # make sure the game is set up in a way to support modding
+    
+    # Ensure the game is set up to support modding
     gameName = self.settings.get("Default Game", "")
     folderName = self.settings.get("Default Game Folder", "")
     steamPath = self.settings.get("Default Steam Directory", "")
-    support = ModObject.verify_game(gameName, gameName if folderName == "" else folderName, steamPath, window)
-    if type(support) is str:
+    support = ModObject.verify_game(gameName, gameName if folderName == "" else folderName, steamPath, self)
+    if isinstance(support, str):
         return support
     if not support:
         return ""
-    # creates a new mod with this name and information from the prompt
-    mod = ModObject.ModObject(mod_name=name, description=data[1], game=gameName, folder_name=folderName,
-                    steampath=steamPath)
-    # close the menu window because we don't need it anymore
-    # creates a pyro window which will have syntax highlighting for CSharp and will be editing our mod object
-    pyro.CoreUI(lexer=CSharpLexer(), filename=name.replace(" ", ""), mod=mod, settings=self.settings)
+
+    # Create a new mod object
+    mod = ModObject.ModObject(mod_name=name, description=data[1], authors=data[2], game=gameName, folder_name=folderName, steampath=steamPath)
+    
+    # Prepare the C# file path
+    name_no_space = mod.mod_name_no_space.get_text()
+    csfilepath = os.path.join(mod_directory, "Files", f"{name_no_space}.cs")
+
+    # Create a new Pyro window with syntax highlighting
+    new_editor = pyro.CoreUI(lexer=CSharpLexer(), filename=name, filepath=csfilepath, mod=mod, settings=self.settings)
+    new_editor.uiconfig()  # Ensure the UI configuration is applied
 
 def new_file(self, e=None):
     create_prompt("New File", 

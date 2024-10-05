@@ -52,6 +52,7 @@ from tkextrafont import Font
 from PIL import ImageFont
 import random
 import string
+import pywinstyles
 
 pyros = []
 windows = []
@@ -356,6 +357,8 @@ class CoreUI(object):
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.bootstrap = []
         self.modified = False
+        self.theme = settings.get("Selected Theme", "Isle Goblin")
+        pywinstyles.apply_style(self.root, "dark" if self.theme in ["Dark", "Midnight"] else "native" if self.theme in ["Forest"] else "normal")
         # load_font()
         # Call uiconfig to set up the UI
         if filepath:
@@ -382,11 +385,11 @@ class CoreUI(object):
         self.root.bind("<Control-n>", partial(MenuMethods.new_file, self))
         self.root.bind("<Control-N>", partial(MenuMethods.new_file, self))
         
-        self.root.bind("<Control-Shift-n>", partial(MenuMethods.new, self))
-        self.root.bind("<Control-Shift-N>", partial(MenuMethods.new, self))
+        # self.root.bind("<Control-Shift-n>", partial(MenuMethods.new, self))
+        # self.root.bind("<Control-Shift-N>", partial(MenuMethods.new, self))
         
-        self.root.bind("<Control-o>", partial(MenuMethods.open, self.settings))
-        self.root.bind("<Control-O>", partial(MenuMethods.open, self.settings))
+        # self.root.bind("<Control-o>", partial(MenuMethods.open, self.settings))
+        # self.root.bind("<Control-O>", partial(MenuMethods.open, self.settings))
         
         self.root.bind("<Control-Shift-s>", partial(MenuMethods.save, self, self.filepath))
         self.root.bind("<Control-Shift-S>", partial(MenuMethods.save, self, self.filepath))
@@ -404,14 +407,12 @@ class CoreUI(object):
         self.root.bind('<Control-KeyPress-f>', partial(MenuMethods.openSearch, self))
         self.root.bind('<Control-KeyPress-F>', partial(MenuMethods.openSearch, self))
         
-        
-        self.root.bind("<Control-Shift-d>", self.open_documentation)
-        self.root.bind("<Control-Shift-D>", self.open_documentation)
-        
-        
-        
         self.root.bind('<Control-KeyPress-g>', partial(MenuMethods.openGTL, self))
         self.root.bind('<Control-KeyPress-G>', partial(MenuMethods.openGTL, self))
+        
+        # Documentation & Build
+        self.root.bind("<Control-Shift-d>", self.open_documentation)
+        self.root.bind("<Control-Shift-D>", self.open_documentation)
         
         self.root.bind('<Control-KeyPress-b>', partial(MenuMethods.build_install, self))
         self.root.bind('<Control-KeyPress-B>', partial(MenuMethods.build_install, self))
@@ -508,10 +509,10 @@ class CoreUI(object):
         
         
         # File
-        self.filemenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.filemenu = tkinter.Menu(self.menubar, tearoff=True, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
-        self.filemenu.add_command(label="New Mod", accelerator="Ctrl + Shift + N", command=partial(MenuMethods.new, self))
-        self.filemenu.add_command(label="Open Mod", accelerator="Ctrl + O", command=partial(MenuMethods.open, self.settings))
+        # self.filemenu.add_command(label="New Mod", accelerator="Ctrl + Shift + N", command=partial(MenuMethods.new, self))
+        # self.filemenu.add_command(label="Open Mod", accelerator="Ctrl + O", command=partial(MenuMethods.open, self.settings))
         self.filemenu.add_command(label="Save Mod", accelerator="Ctrl + Shift + S", command=partial(MenuMethods.save, self, self.filepath))
         self.filemenu.add_command(label="Save Mod as Renamed Copy", command=partial(MenuMethods.copy, self))
         self.filemenu.add_separator()
@@ -522,7 +523,7 @@ class CoreUI(object):
 
 
         # Edit
-        self.editmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.editmenu = tkinter.Menu(self.menubar, tearoff=False, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="Edit", menu=self.editmenu)
         self.editmenu.add_command(label="Change Mod Name", command=partial(MenuMethods.change_mod_name, self))
         self.editmenu.add_command(label="Change Mod Version",command=partial(MenuMethods.change_mod_version, self))
@@ -537,7 +538,7 @@ class CoreUI(object):
 
 
         # Create
-        self.createmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.createmenu = tkinter.Menu(self.menubar, tearoff=False, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="Create", menu=self.createmenu)
         self.createmenu.add_command(label="Create Harmony Patch", command=partial(MenuMethods.create_harmony_patch, self))
         self.createmenu.add_command(label="Create Config Item", command=partial(MenuMethods.create_config_item, self))
@@ -546,14 +547,14 @@ class CoreUI(object):
 
 
         # Build
-        self.buildmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.buildmenu = tkinter.Menu(self.menubar, tearoff=False, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="Build", menu=self.buildmenu)
         self.buildmenu.add_command(label="Build and Install", accelerator="Ctrl + B", command=partial(MenuMethods.build_install, self))
         self.buildmenu.add_command(label="Generate Dotnet Files", command=partial(MenuMethods.export_dotnet, self))
 
 
         # Tools
-        self.toolsmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.toolsmenu = tkinter.Menu(self.menubar, tearoff=False, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="Tools", menu=self.toolsmenu)
         self.toolsmenu.add_command(label="Search", accelerator="Ctrl + Shift + F", command=partial(MenuMethods.openSearch,  self))
         # self.toolsmenu.add_command(label="Search and Replace", command=self.replace)
@@ -561,7 +562,7 @@ class CoreUI(object):
         
         
         # View
-        self.viewmenu = tkinter.Menu(self.menubar, tearoff=False)
+        self.viewmenu = tkinter.Menu(self.menubar, tearoff=False, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="View", menu=self.viewmenu)
         self.viewmenu.add_command(label="Open Documentation", accelerator="Ctrl + Shift + D", command=self.open_documentation)
 
@@ -802,18 +803,19 @@ class CoreUI(object):
         self.file_treeview.tree.column("#0", width=50)  # Adjust width as needed
         # Add Treeview to the grid
         
-        closedir = os.path.join("resources", "imgs", "close")
-        self.i1 = PhotoImage(file=os.path.join(closedir, "close.gif"))
-        self.i2 = PhotoImage(file=os.path.join(closedir, "close_active.gif"))
-        self.i3 = PhotoImage(file=os.path.join(closedir, "close_pressed.gif"))
         style = ttk.Style()
         style.configure("ButtonNotebook.TNotebook", background="#0d1117", borderwidth=0)
         style.map("ButtonNotebook.TNotebook", background=[("selected", "#1c1e22")])  # Change background when selected
-        style.element_create("close", "image", self.i1,
-            ("active", "pressed", "!disabled", self.i3),
-            ("!active", "!disabled", self.i1),  
-            ("hover", "!disabled", self.i2),  
-            border=8, sticky='')
+        if "close" not in style.element_names():
+            closedir = os.path.join("resources", "imgs", "close")
+            self.i1 = PhotoImage(file=os.path.join(closedir, "close.gif"))
+            self.i2 = PhotoImage(file=os.path.join(closedir, "close_active.gif"))
+            self.i3 = PhotoImage(file=os.path.join(closedir, "close_pressed.gif"))
+            style.element_create("close", "image", self.i1,
+                ("active", "pressed", "!disabled", self.i3),
+                ("!active", "!disabled", self.i1),  
+                ("hover", "!disabled", self.i2),  
+                border=8, sticky='')
         style.layout("ButtonNotebook.Tab", [
             ("ButtonNotebook.tab", {"sticky": "nswe", "children":
                 [("ButtonNotebook.padding", {"side": "top", "sticky": "nswe",
@@ -1039,13 +1041,14 @@ class CoreUI(object):
                 # Create a new frame for the tab
                 new_tab = ttk.Frame(self.notebook)
 
+                fontPath = "resources/fonts/" + self.settings["Selected Code Font"] + ".ttf"
+                font = ImageFont.truetype(fontPath, self.current_font_size)
+                font_family = font.getname()[0] 
                 try:
-                    fontPath = "resources/fonts/" + self.settings["Selected Code Font"] + ".ttf"
-                    font = ImageFont.truetype(fontPath, self.current_font_size)
-                    font_family = font.getname()[0] 
                     self.codeFont = Font(file=fontPath, family=font_family, size=self.current_font_size)
                 except:
-                    pass
+                    self.codeFont = Font(family=font_family, size=self.current_font_size)
+                    
                 text_widget = Text(new_tab, wrap="none", **self.uiopts, font=self.codeFont)
                 self.text = text_widget
 
