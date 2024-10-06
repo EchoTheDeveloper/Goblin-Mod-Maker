@@ -9,7 +9,7 @@ import GraphicalInterface
 url = 'https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/LATEST_VERSION'
 
 # Define the current version
-CURRENT_VERSION = "1.4.0"
+CURRENT_VERSION = "v1.4.0"
 
 def check_version():
     try:
