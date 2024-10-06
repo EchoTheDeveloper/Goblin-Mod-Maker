@@ -39,7 +39,7 @@ settings = load_settings()
 
 class ModObject(LimitedModObject):
     def __init__(self, mod_name="mod", version="0.0.1", description="", authors="", game="Isle Goblin", folder_name="Isle Goblin Playtest",
-                 steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
+                steampath="C:\\Program Files (x86)\\Steam\\steamapps\\common\\"):
         self.saved = False
         self.index = 0
         self.mod_maker_version = VERSION
@@ -90,7 +90,7 @@ class ModObject(LimitedModObject):
         self.class_wrap.contents.insert_block_after(self.general_declarations)
 
         self.class_constructor = CodeBlockWrapper(
-            prefix=CodeBlock([CodeLine("public "), self.mod_name_no_space, CodeLine("(){")], delimiter=""),
+            prefix=CodeBlock([CodeLine("public "), self.mod_name_no_space, CodeLine("()\n        {")], delimiter=""),
             contents=LargeCodeBlockWrapper(),
             postfix=end_block()
         )
@@ -104,38 +104,65 @@ class ModObject(LimitedModObject):
 
         # Add configuration entry
         self.add_config("mEnabled", "bool", "false", "Enable/Disable Mod",
-                        "Controls if the mod should be enabled or disabled", should_indent=False)
+                        "Controls if the mod should be enabled or disabled", native=True,should_indent=False)
 
         self.main_contents = self.class_wrap.contents
         self.indent()
         self.code.insert_block_after(CodeLine("\n"))
+        # no_space = self.mod_name_no_space.get_text()
+        # code_path = os.path.join(os.getcwd(), "projects", no_space, "CodeManagerFiles (DO NOT DELETE)")
+        # os.makedirs(code_path, exist_ok=True)
+        # with open(code_path + "\\" + no_space + ".clmf", "xb") as f:
+        #     pickle.dump(self.code, f)
+        # print(self.code)
+        # self.current_code = self.code
         
         self.save_files_as_cs()
 
-    def add_config(self, name, data_type, default, definition, description="", should_indent=True):
-        if should_indent:
-            self.config_entry_declarations.insert_block_after(
-                CodeLine("public static ConfigEntry<" + data_type + "> " + name + ";").indent().indent())
-            self.config_definitions.insert_block_after(CodeLine(
-                "public ConfigDefinition " + name + "Def = new ConfigDefinition(pluginVersion, \"" + definition
-                + "\");").indent().indent())
-            self.class_constructor.contents.insert_block_after(CodeLine(
-                name + " = " +
-                "Config.Bind(" + name + "Def, " + default + ", new ConfigDescription(\"" + description +
-                "\", null, new ConfigurationManagerAttributes {Order = " + str(self.config_number) + "}));"
-            ).indent().indent().indent())
+    def add_config(self, name, data_type, default, definition, description="", should_indent=True, native=False):
+        # This is used during mod init so i need a native version of adding it
+        if native:
+            if should_indent:
+                self.config_entry_declarations.insert_block_after(
+                    CodeLine("public static ConfigEntry<" + data_type + "> " + name + ";").indent().indent())
+                self.config_definitions.insert_block_after(CodeLine(
+                    "public ConfigDefinition " + name + "Def = new ConfigDefinition(pluginVersion, \"" + definition
+                    + "\");").indent().indent())
+                self.class_constructor.contents.insert_block_after(CodeLine(
+                    name + " = " +
+                    "Config.Bind(" + name + "Def, " + default + ", new ConfigDescription(\"" + description +
+                    "\", null, new ConfigurationManagerAttributes {Order = " + str(self.config_number) + "}));"
+                ).indent().indent().indent())
+            else:
+                self.config_entry_declarations.insert_block_after(
+                    CodeLine("public static ConfigEntry<" + data_type + "> " + name + ";"))
+                self.config_definitions.insert_block_after(CodeLine(
+                    "public ConfigDefinition " + name + "Def = new ConfigDefinition(pluginVersion, \"" + definition
+                    + "\");"))
+                self.class_constructor.contents.insert_block_after(CodeLine(
+                    name + " = " +
+                    "Config.Bind(" + name + "Def, " + default + ", new ConfigDescription(\"" + description +
+                    "\", null, new ConfigurationManagerAttributes {Order = " + str(self.config_number) + "}));"
+                ))
+            self.config_number -= 1
         else:
-            self.config_entry_declarations.insert_block_after(
-                CodeLine("public static ConfigEntry<" + data_type + "> " + name + ";"))
-            self.config_definitions.insert_block_after(CodeLine(
-                "public ConfigDefinition " + name + "Def = new ConfigDefinition(pluginVersion, \"" + definition
-                + "\");"))
-            self.class_constructor.contents.insert_block_after(CodeLine(
-                name + " = " +
-                "Config.Bind(" + name + "Def, " + default + ", new ConfigDescription(\"" + description +
-                "\", null, new ConfigurationManagerAttributes {Order = " + str(self.config_number) + "}));"
-            ))
-        self.config_number -= 1
+            # Prepare the config entry declaration
+            config_entry_declaration = f"public static ConfigEntry<{data_type}> {name};"
+            config_definition = f"public ConfigDefinition {name}Def = new ConfigDefinition(pluginVersion, \"{definition}\");"
+            
+            # Prepare the class constructor content
+            constructor_content = (
+                f"{name} = Config.Bind({name}Def, {default}, "
+                f"new ConfigDescription(\"{description}\", null, new ConfigurationManagerAttributes {{Order = {self.config_number}}}));"
+            )
+
+            # Indent if required
+            indentation = "        " if should_indent else ""
+            config_entry_declaration = indentation + config_entry_declaration
+            config_definition = indentation + config_definition
+            constructor_content = indentation + "    " + constructor_content
+
+            return config_entry_declaration, config_definition, constructor_content
 
     def declare_variable(self, data_type, name, default=None):
         if default is not None:
@@ -162,42 +189,34 @@ class ModObject(LimitedModObject):
         if have_instance:
             parameters.insert(0, "ref " + in_class + " __instance")
 
-        patch = LargeCodeBlockWrapper()
-        self.main_contents.insert_block_after(patch)
-        patch.insert_block_after(CodeLine(
-            "[HarmonyPatch(typeof(" + in_class + "), \"" + method + "\")]"
-        ))
-        patch.insert_block_after(CodeLine(
-            "[HarmonyPrefix]" if prefix else "[HarmonyPostfix]"
-        ))
-        patch.insert_block_after(CodeBlockWrapper(
-            prefix=CodeLine(
-                "private " + ("static " if not have_instance else "") + ("bool" if prefix else "void") + " " +
-                in_class.replace("_", "") + method +
-                ("Prefix" if prefix else "Postfix") +
-                "Patch(" +
-                ", ".join(parameters) + "){"
-            ),
-            contents=LargeCodeBlockWrapper(),
-            postfix=end_block()
-        ))
-        return_false = CodeLine("return false; // Cancels Original Function" if prefix else "")
-        return_true = CodeLine("return true;" if prefix else "")
-        patch.block_list[-1].contents.insert_block_after(LargeCodeBlockWrapper([
-            CodeBlockWrapper(
-                prefix=CodeLine("if(mEnabled.Value){"),
-                contents=CodeBlock([CodeLine("// Write code for patch here"),
-                                    CodeLine("//__result = null;"), return_false]
-                                   if result is not None else [CodeLine("// Write code for patch here"),
-                                                               return_false]).indent(),
-                postfix=end_block()
-            ),
-            return_true
-        ]))
-        patch.block_list[-1].contents.indent()
-        patch.indent()
-        patch.indent()
-        return patch.block_list[-1].contents.block_list[-1].block_list[0].contents
+        patch_lines = []
+        indent = "    " # Had problems with \t so i resorted to this 
+        
+        # Add HarmonyPatch and Prefix/Postfix
+        patch_lines.append(f'\n[HarmonyPatch(typeof({in_class}), "{method}")]')
+        patch_lines.append(f'[{"HarmonyPrefix" if prefix else "HarmonyPostfix"}]')
+
+        # Define method signature
+        signature = f'private {"static " if not have_instance else ""}{"bool" if prefix else "void"} {in_class.replace("_", "")}{method}{"Prefix" if prefix else "Postfix"}Patch({", ".join(parameters)})'
+        patch_lines.append(f'{signature} \n{{')
+
+        # Add inner patch logic
+        patch_lines.append(f'{indent}if (mEnabled.Value) \n{indent}{{')
+        patch_lines.append(f'{indent*2}// Write code for patch here')
+        if result is not None:
+            patch_lines.append(f'{indent*2}//__result = null;')
+        if prefix:
+            patch_lines.append(f'{indent*2}return false; // Cancels Original Function')
+        patch_lines.append(f'{indent}}}')
+        if prefix:
+            patch_lines.append(f'{indent}return true;')
+
+        # Close method
+        patch_lines.append('}')
+
+        # Join all lines into a single string with new lines
+        patch_code = "\n".join(patch_lines)
+        return patch_code
 
     def autosave(self, changeSaved=True):
         current_directory = os.getcwd()
@@ -232,7 +251,7 @@ class ModObject(LimitedModObject):
     def get_list(self):
         return self.code.get_list()
     
-    def get_mod_maker_version():
+    def get_mod_maker_version(self):
         return VERSION
     
     def indent(self):

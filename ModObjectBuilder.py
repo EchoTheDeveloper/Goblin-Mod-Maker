@@ -1,8 +1,8 @@
 from CodeManager import *
 
 
-def end_block():
-    return CodeLine("}")
+def end_block(newline=True):
+    return CodeLine("}\n        ") if newline else CodeLine("}")
 
 
 def create_headers():
@@ -14,7 +14,7 @@ def create_headers():
         CodeLine("using HarmonyLib;"),
         CodeLine("using BepInEx.Configuration;"),
         CodeLine("using UnityEngine;"),
-        CodeLine("using System.Reflection;")
+        CodeLine("using System.Reflection;\n "),
     ]
     return CodeBlock(code_lines=code)
 
@@ -23,16 +23,16 @@ def create_namespace(mod_name, mod_name_no_space):
     namespace_top = CodeBlock([
         CodeLine("namespace"),
         mod_name_no_space,
-        CodeLine("{")
+        CodeLine("\n{")
     ],
         delimiter=" "
     )
     namespace = CodeBlockWrapper(
         prefix=namespace_top,
-        postfix=end_block()
+        postfix=end_block(False)
     )
     return namespace
-
+    
 
 def create_namespace_contents(game):
     namespace_contents = LargeCodeBlockWrapper()
@@ -54,10 +54,10 @@ def create_class(mod_name, mod_name_no_space):
         prefix=CodeBlock(code_lines=[
             CodeLine("public class"),
             mod_name_no_space,
-            CodeLine("{")
+            CodeLine("\n    {")
         ], delimiter=" "),
         contents=LargeCodeBlockWrapper(),
-        postfix=end_block()
+        postfix=end_block(False)
     )
     output.prefix.add_line(CodeLine(": BaseUnityPlugin"), location=2)
     return output
@@ -75,6 +75,7 @@ def create_constants(mod_name, mod_name_no_space, version):
     plugin_version = LargeCodeBlockWrapper([CodeLine("public const string pluginVersion =")], delimiter=" ")
     output.insert_block_after(plugin_version)
     plugin_version.insert_block_after(CodeBlock([CodeLine("\""), version, CodeLine("\";")], delimiter=""))
+    print(output.get_text())
     return output
 
 
@@ -83,7 +84,7 @@ def create_function(head, contents=None):
         new_contents = LargeCodeBlockWrapper()
     else:
         new_contents = contents
-    head = CodeLine(head + "{")
+    head = CodeLine(head + "\n        {")
     function = CodeBlockWrapper(
         prefix=head,
         contents=new_contents,

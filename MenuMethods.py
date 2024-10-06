@@ -326,12 +326,58 @@ def change_mod_authors(window):
 
 
 def _harmony_patch_fallback(window, values):
-    # def create_harmony_patch(self, in_class, method, prefix=True, parameters=list(), have_instance=True, result=None):
+    # Save scroll position
     scroll_data = window.text.yview()
+
+    # Log action for undo/redo purposes
     ChangeManager.log_action(window.mod, True)
-    window.mod.create_harmony_patch(values[1], values[0], prefix=values[3] == "Prefix", parameters=values[2].split(","),
-                                    have_instance=values[5] != "False",
-                                    result=values[4] if values[4] != "None" else None)
+
+    # Generate the Harmony patch code
+    patch_code = window.mod.create_harmony_patch(
+        values[1], values[0],
+        prefix=values[3] == "Prefix",
+        parameters=values[2].split(","),
+        have_instance=values[5] != "False",
+        result=values[4] if values[4] != "None" else None
+    )
+
+    # Get current text content
+    current_text = window.text.get("1.0", "end-1c")
+
+    # Find the position of the last closing brace `}` of the class (excluding any at the very end of the file)
+    class_end_position = current_text.rfind("}", 0, current_text.rfind("}") - 1)
+
+    # Find the class indentation level
+    class_start_position = current_text.rfind("class ", 0, class_end_position)
+    class_lines = current_text[class_start_position:class_end_position].splitlines()
+    
+    class_indentation = ''
+    for line in class_lines:
+        stripped_line = line.strip()
+        if stripped_line.startswith("class "):
+            class_indentation = line[:line.index("class ")]
+            break
+
+    # Format the patch code with correct indentation
+    patch_lines = patch_code.splitlines()
+    indented_patch_code = [class_indentation + patch_lines[0]]  # First line with class indentation
+    indented_patch_code += [class_indentation + "        " + line for line in patch_lines[1:]]  # Indent the rest
+
+    # Convert to a single string
+    indented_patch_code_str = "\n".join(indented_patch_code)
+
+    # Insert the patch code right before the closing brace of the class
+    if class_end_position != -1:
+        updated_text = (
+            current_text[:class_end_position].rstrip() + 
+            "\n" + indented_patch_code_str + 
+            "\n    " + current_text[class_end_position:]  # Retain the original closing brace
+        )
+
+        window.text.delete("1.0", "end")
+        window.text.insert("1.0", updated_text)
+
+    # Refresh and restore scroll position
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
 
@@ -342,12 +388,47 @@ def create_harmony_patch(window):
 
 
 def _config_item_fallback(window, values):
+    # Save scroll position
     scroll_data = window.text.yview()
+
+    # Log action for undo/redo purposes
     ChangeManager.log_action(window.mod, True)
-    window.mod.add_config(values[0], values[1], values[2], values[3], values[4])
+
+    # Get the config strings (without native mode)
+    config_entry_declaration, config_definition, constructor_content = window.mod.add_config(
+        values[0], values[1], values[2], values[3], values[4], native=False
+    )
+
+    # Find the first occurrence of "ConfigEntry" and add the config entry declaration below it
+    config_entry_index = window.text.search("ConfigEntry", "1.0", stopindex="end")
+    if config_entry_index:
+        # Insert config entry declaration after the found line
+        window.text.insert(f"{config_entry_index} lineend +1c", config_entry_declaration + "\n")
+
+    # Find the first occurrence of "ConfigDescription" and add the config definition below it
+    config_definition_index = window.text.search("ConfigDefinition", "1.0", stopindex="end")
+    if config_definition_index:
+        # Insert config definition after the found line
+        window.text.insert(f"{config_definition_index} lineend +1c", config_definition + "\n")
+
+    # Find the first occurrence of "public {mod_name_no_space}" (constructor) and insert constructor content after its opening curly bracket
+    method_name = f"public {window.mod.mod_name_no_space.get_text()}"
+    method_index = window.text.search(method_name, "1.0", stopindex="end")
+    if method_index:
+        # Search for the opening curly bracket '{' after the method declaration
+        method_body_index = window.text.search("{", method_index, stopindex="end")
+        if method_body_index:
+            # Insert constructor content after the opening curly bracket
+            window.text.insert(f"{method_body_index} +1c", "\n" + constructor_content)
+
+    # Refresh and restore scroll position
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
 
+
+
+
+    
 def create_config_item(window):
     create_prompt("Create Config Item", ("Variable Name", "Data Type (e.g. int)", "Default Value (C# formatting)",
                                          "Definition (Name in List)", "Description (Info When Hovered Over)"),

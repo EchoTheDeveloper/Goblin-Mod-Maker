@@ -60,7 +60,6 @@ core_ui = None
 open_files = {}
 last_opened_file = None
 
-
 def load_theme(filename):
     with open(filename, 'r') as file:
         data = json.load(file)
@@ -420,7 +419,7 @@ class CoreUI(object):
         self.root.bind('<Button>', self.event_mouse)
         self.root.bind('<Configure>', self.event_mouse)
         
-        self.root.geometry("1200x700+10+10")
+        self.root.geometry("1300x900+10+10")
         self.initialize_menubar()
         self.updatetitlebar()
         self.starting()
@@ -665,32 +664,34 @@ class CoreUI(object):
         self.hide_autocomplete()
 
     def accept_autocomplete_or_snippet(self, event):
-        cursor_position = self.text.index(INSERT)
-        line_start = f"{cursor_position} linestart"
-        line_text = self.text.get(line_start, cursor_position)
+        try:
+            cursor_position = self.text.index(INSERT)
+            line_start = f"{cursor_position} linestart"
+            line_text = self.text.get(line_start, cursor_position)
 
-        current_word = line_text.split()[-1] if line_text.split() else ""
+            current_word = line_text.split()[-1] if line_text.split() else ""
 
-        selected_indices = self.suggestion_listbox.curselection()
+            selected_indices = self.suggestion_listbox.curselection()
 
-        if selected_indices:
-            selected_index = selected_indices[0]
-            selected_suggestion = self.suggestion_listbox.get(selected_index)
+            if selected_indices:
+                selected_index = selected_indices[0]
+                selected_suggestion = self.suggestion_listbox.get(selected_index)
 
-            # If the selected suggestion contains a colon, treat it as a snippet
-            if ':' in selected_suggestion:
-                keyword = selected_suggestion.split(':')[0].strip()
-                text_to_insert = self.snippets.get(keyword, selected_suggestion)  # Default to the suggestion if not found
-            else:
-                text_to_insert = selected_suggestion
+                # If the selected suggestion contains a colon, treat it as a snippet
+                if ':' in selected_suggestion:
+                    keyword = selected_suggestion.split(':')[0].strip()
+                    text_to_insert = self.snippets.get(keyword, selected_suggestion)  # Default to the suggestion if not found
+                else:
+                    text_to_insert = selected_suggestion
 
-            # Replace the current word with the selected text to insert
-            self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
-            self.text.insert(INSERT, text_to_insert)
+                # Replace the current word with the selected text to insert
+                self.text.delete(f"{cursor_position} - {len(current_word)}c", cursor_position)
+                self.text.insert(INSERT, text_to_insert)
 
-            self.hide_autocomplete()
-            return "break"  # Prevent default behavior
-
+                self.hide_autocomplete()
+                return "break"  # Prevent default behavior
+        except:
+            pass
     def on_arrow_key(self, event):
         if self.autocomplete_window:
             if event.keysym in ("Up", "Down"):
@@ -744,16 +745,18 @@ class CoreUI(object):
     def refresh(self, updateMod=True):
         if updateMod:
             self.scroll_data = self.text.yview()
-            text = self.text.get("1.0", tkinter.END).rstrip()  # Remove trailing newline
+            text = self.text.get("1.0", tkinter.END)[:-1]
             cursor = self.text.index(tkinter.INSERT)
             index = ChangeManager.update(self.mod, text)
             if index == "Locked":
+                # self.undo()
+                # self.text.delete("1.0", tkinter.END)
+                # self.text.insert("1.0", self.mod.current_code.get_text())
                 return
             self.mod.index = index
         else:
             text = None
             index = self.mod.index
-
         self.recolorize(self.text)
         self.text.yview_moveto(self.scroll_data[0])
         self.update_title()
@@ -1022,11 +1025,6 @@ class CoreUI(object):
         return "break"
 
     def tab2spaces4(self, event):
-        """
-            this method implements the callback for the indentation key (Tab Key) in the
-            editor widget.
-            arguments: the tkinter event object with which the callback is associated
-        """
         self.text.insert(self.text.index("insert"), "    ")
         return "break"
 
@@ -1043,12 +1041,12 @@ class CoreUI(object):
 
                 fontPath = "resources/fonts/" + self.settings["Selected Code Font"] + ".ttf"
                 font = ImageFont.truetype(fontPath, self.current_font_size)
+                
                 font_family = font.getname()[0] 
                 try:
                     self.codeFont = Font(file=fontPath, family=font_family, size=self.current_font_size)
                 except:
                     self.codeFont = Font(family=font_family, size=self.current_font_size)
-                    
                 text_widget = Text(new_tab, wrap="none", **self.uiopts, font=self.codeFont)
                 self.text = text_widget
 
@@ -1156,7 +1154,7 @@ class CoreUI(object):
 
                 # Bindings for the text widget
                 text_widget.bind('<Return>', self.autoindent)
-                text_widget.bind('<Tab>', self.tab2spaces4)
+                text_widget.bind_class("Text", "<Tab>", self.tab2spaces4)
                 text_widget.bind("<KeyRelease>", self.on_key_release)
                 text_widget.bind("<Button-1>", self.hide_autocomplete)
                 text_widget.bind("<Tab>", self.accept_autocomplete_or_snippet)
