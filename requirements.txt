@@ -11,6 +11,7 @@ Pygments==2.10.0
 pyinstaller==6.10.0
 pyinstaller-hooks-contrib==2024.8
 pywin32-ctypes==0.2.3
+pywinstyles==1.8
 requests==2.32.3
 setuptools==74.1.2
 tkextrafont==0.6.3
