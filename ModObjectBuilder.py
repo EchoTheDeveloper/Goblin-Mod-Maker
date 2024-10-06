@@ -75,7 +75,6 @@ def create_constants(mod_name, mod_name_no_space, version):
     plugin_version = LargeCodeBlockWrapper([CodeLine("public const string pluginVersion =")], delimiter=" ")
     output.insert_block_after(plugin_version)
     plugin_version.insert_block_after(CodeBlock([CodeLine("\""), version, CodeLine("\";")], delimiter=""))
-    print(output.get_text())
     return output
 
 
