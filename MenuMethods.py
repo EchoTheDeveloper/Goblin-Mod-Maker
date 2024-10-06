@@ -412,8 +412,7 @@ def _config_item_fallback(window, values):
         window.text.insert(f"{config_definition_index} lineend +1c", config_definition + "\n")
 
     # Find the first occurrence of "public {mod_name_no_space}" (constructor) and insert constructor content after its opening curly bracket
-    method_name = f"public {window.mod.mod_name_no_space.get_text()}"
-    method_index = window.text.search(method_name, "1.0", stopindex="end")
+    method_index = window.text.search("ConfigDescription", "1.0", stopindex="end")
     if method_index:
         # Search for the opening curly bracket '{' after the method declaration
         method_body_index = window.text.search("{", method_index, stopindex="end")
@@ -425,10 +424,6 @@ def _config_item_fallback(window, values):
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
 
-
-
-
-    
 def create_config_item(window):
     create_prompt("Create Config Item", ("Variable Name", "Data Type (e.g. int)", "Default Value (C# formatting)",
                                          "Definition (Name in List)", "Description (Info When Hovered Over)"),
@@ -438,28 +433,50 @@ def create_config_item(window):
 def _keybind_fallback(window, values):
     scroll_data = window.text.yview()
     ChangeManager.log_action(window.mod, True)
-    window.mod.add_config(values[0], "BepInEx.Configuration.KeyboardShortcut",
-                          "new BepInEx.Configuration.KeyboardShortcut(UnityEngine.KeyCode." + values[1] + ")",
-                          values[2], values[3])
-    window.mod.declare_variable("bool", values[0] + "JustPressed", "false")
-    window.mod.declare_variable("bool", values[0] + "Down", "false")
-    window.mod.update.contents.insert_block_after(CodeBlock([
-        CodeLine(values[0] + "JustPressed = " + values[0] + ".Value.IsDown();"),
-        CodeLine("if (" + values[0] + ".Value.IsDown()){"),
-        CodeLine(values[0] + "Down = true;").indent(),
-        CodeLine("if(mEnabled.Value){").indent(),
-        CodeLine("// Code For When Key is Pressed").indent().indent(),
-        ModObject.end_block().indent(),
-        ModObject.end_block(),
-        CodeLine("if (" + values[0] + ".Value.IsUp()){"),
-        CodeLine(values[0] + "Down = false;").indent(),
-        CodeLine("if(mEnabled.Value){").indent(),
-        CodeLine("// Code For When Key is Released").indent().indent(),
-        ModObject.end_block().indent(),
-        ModObject.end_block()
-    ]).indent().indent().indent())
+
+    # Add configuration for the keybind
+    _config_item_fallback(window, [
+        values[0],  # Config key
+        "BepInEx.Configuration.KeyboardShortcut",  # Config type
+        f"new BepInEx.Configuration.KeyboardShortcut(UnityEngine.KeyCode.{values[1]})",  # Config value
+        values[2],  # Config description
+        values[3]   # Default value
+    ])
+
+    # Declare variables for key states
+    window.mod.declare_variable("bool", f"{values[0]}JustPressed", "false")
+    window.mod.declare_variable("bool", f"{values[0]}Down", "false")
+
+    # Find the update method with Allman style and insert keybind logic
+    update_method_index = window.text.search("void Update()", "1.0", stopindex="end")
+    if update_method_index:
+        method_body_index = window.text.search("{", update_method_index, stopindex="end")
+        if method_body_index:
+            keybind_logic = f"""
+            // Keybind logic for {values[0]}
+            {values[0]}JustPressed = {values[0]}.Value.IsDown();
+            if ({values[0]}.Value.IsDown())
+            {{
+                {values[0]}Down = true;
+                if (mEnabled.Value)
+                {{
+                    // Code For When Key is Pressed
+                }}
+            }}
+            if ({values[0]}.Value.IsUp())
+            {{
+                {values[0]}Down = false;
+                if (mEnabled.Value)
+                {{
+                    // Code For When Key is Released
+                }}
+            }}"""
+            # Insert the keybind logic inside the Update method
+            window.text.insert(f"{method_body_index} +1c", keybind_logic)
+
     window.refresh(False)
     window.text.yview_moveto(scroll_data[0])
+
 
 def keycode_link(e):
     try:

@@ -165,22 +165,11 @@ class ModObject(LimitedModObject):
             return config_entry_declaration, config_definition, constructor_content
 
     def declare_variable(self, data_type, name, default=None):
+        indent = "        "
         if default is not None:
-            self.general_declarations.insert_block_after(CodeBlock([
-                CodeLine("public"),
-                CodeLine("static"),
-                CodeLine(data_type),
-                CodeLine(name),
-                CodeLine("="),
-                CodeLine(default + ";")
-            ], delimiter=" ").indent().indent())
+            return f"{indent}public static {data_type} {name} = {default};"
         else:
-            self.general_declarations.insert_block_after(CodeBlock([
-                CodeLine("public"),
-                CodeLine("static"),
-                CodeLine(data_type),
-                CodeLine(name + ";")
-            ], delimiter=" ").indent().indent())
+            return f"{indent}public static {data_type} {name};"
 
     def create_harmony_patch(self, in_class, method, prefix=True, parameters=list(), have_instance=True, result=None):
         parameters = [i for i in parameters if i != '']
