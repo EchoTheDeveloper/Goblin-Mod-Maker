@@ -892,9 +892,15 @@ class CoreUI(object):
                 text_widget.bind("<space>", self.on_space_press)
                 text_widget.bind("<Up>", self.on_arrow_key)
                 text_widget.bind("<Down>", self.on_arrow_key)
+                
                 text_widget.bind("<Shift-BackSpace>", self.shift_backspace)
                 text_widget.bind("<Control-BackSpace>", self.control_backspace)
                 text_widget.bind("<BackSpace>", self.handle_backspace)
+                
+                text_widget.bind("<Shift-Delete>", self.shift_backspace)
+                text_widget.bind("<Control-Delete>", self.control_backspace)
+                text_widget.bind("<Delete>", self.handle_backspace)
+
                 
                 self.root.bind('<Control-KeyPress-z>', partial(self.undo, text_widget))
                 self.root.bind('<Control-KeyPress-Z>', partial(self.undo, text_widget))
