@@ -245,7 +245,7 @@ def openGTL(window, e=None):
     create_int_prompt("Go To Line", ("Enter Line Number"), partial(gTLFallback, window), None, min_value=1)
 
 def gTLFallback(window, num):
-    window.gotoline(line_number=num)
+    window.go_to_line(line_number=num)
 
 
 def build_install(window, e=None):

@@ -7,7 +7,6 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 from tkinter import messagebox, filedialog
 from tkinter import *
-from tkinter import ttk
 from PIL import ImageTk, Image
 from functools import partial
 from pygame import mixer
@@ -25,9 +24,7 @@ create_prompt = pyroprompt.create_prompt
 from os.path import exists
 from ModObject import *
 import pyro
-import requests
-import webbrowser
-
+import shutil
 # keep track of the number of windows so you only open the main menu when the last one is closed
 window_count = 0
 # keep track of whether it should even open the main menu depending on if there is one already open (avoid more than one
@@ -151,18 +148,6 @@ class InterfaceMenu:
         self.new_button.bind("<Button-1>", self.new)
         self.open_button.bind("<Button-1>", self.load)
         
-
-        def mouse_enter(e):
-            e.widget.config(borderwidth=5, fg=InterfaceMenu_MouseEnter)
-            try:
-                mixer.music.load(Hover)
-                mixer.music.play(loops=0)
-            except:
-                pass
-
-        def mouse_exit(e):
-            e.widget.config(borderwidth=0, fg=InterfaceMenu_MouseExit)
-
         def new_button_hover_enter(e):
             self.new_button.config(borderwidth=10, highlightbackground=InterfaceMenu_MouseEnter)
             try:
@@ -200,10 +185,19 @@ class InterfaceMenu:
         self.settings_button.bind("<Button-1>", self.open_settings_window)
         self.extra_buttons.append(self.settings_button)
 
+        # self.convert_mod = Label(self.root, text="Convert .igmm/.umm to .gmm")
+        # self.convert_mod.place(x=20, y=210)
+        # self.convert_mod.bind("<Button-1>", self.convert_prompt)
+        # self.extra_buttons.append(self.convert_mod)
+        self.more_options = Label(self.root, text="More Options")
+        self.more_options.place(x=20, y=210)
+        self.more_options.bind("<Button-1>", self.more_options_prompt)
+        self.extra_buttons.append(self.more_options)
+        
         for button in self.extra_buttons:
             button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
-            button.bind("<Enter>", mouse_enter)
-            button.bind("<Leave>", mouse_exit)
+            button.bind("<Enter>", self.mouse_enter)
+            button.bind("<Leave>", self.mouse_exit)
 
         self.new_button.bind("<Enter>", new_button_hover_enter)
         self.new_button.bind("<Leave>", new_button_hover_exit)
@@ -247,7 +241,121 @@ class InterfaceMenu:
         # Instead of doing root.mainloop we do pyro.add_window to avoid thread conflicts, pyro deals with calling
         # root.update() on  everything in the pyro window list, there is also no need to remove closed windows from this
         pyro.add_window(self.root)
+
+    
+    def more_options_prompt(self, e=None):
+        try:
+            mixer.music.load(Click)
+            mixer.music.play(loops=0)
+        except:
+            pass
+        title = "More Options"
+        window = Toplevel(self.root)
+        window.title(title)
         
+        Frame(window, width=500, background=PyroPrompt_Background).pack()
+        frame = Frame(window, width=500, background=PyroPrompt_Background)
+        frame.pack(fill="x")
+        
+        heading = Label(frame, text=title, font=("Calibri", 18), background=PyroPrompt_Background, fg=PyroPrompt_Foreground)
+        heading.pack(fill="x", pady=10)
+        
+        window.configure(background=PyroPrompt_Background)
+        window.resizable(0, 0)
+        window.iconbitmap("resources/goblin-mod-maker.ico")
+        
+        labels = []
+
+        # Methods
+        def close_window():
+            window.destroy()
+
+        # Options
+        button_frame = Frame(window, background=PyroPrompt_Background, padx=10, pady=10)
+        button_frame.pack(expand=True)  # Center the button frame
+        
+        self.convert_mod = Label(button_frame, text="Convert .igmm/.umm to .gmm")
+        self.convert_mod.bind("<Button-1>", self.convert_prompt)
+        labels.append(self.convert_mod)
+
+        self.import_projects_label = Label(button_frame, text="Import Packages")
+        self.import_projects_label.bind("<Button-1>", self.import_projects)
+        labels.append(self.import_projects_label)
+
+        # Style Buttons
+        for button in labels:
+            button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
+            button.pack(pady=(10, 10))  # Add padding for spacing
+            button.bind("<Enter>", self.mouse_enter)
+            button.bind("<Leave>", self.mouse_exit)
+
+        # Close button
+        buttons = Frame(window, background=PyroPrompt_Background)
+        buttons.pack(pady=(10, 10))  # Add padding for spacing
+        Button(buttons, text="Close", bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, command=close_window).pack(pady=(5, 5))  # Center the close button
+
+    def import_projects(self, e):
+        folder = filedialog.askdirectory(title="Select Old Goblin Mod Maker Folder", initialdir=os.getcwd())
+        if folder is None: 
+            return
+        project_folder_path = os.path.join(folder, "projects")
+        print(project_folder_path)
+        if not os.path.exists(project_folder_path):
+            messagebox.showerror("Projects folder not found", "The directory provided has no \"projects\" folder")
+            return
+        
+        current_projects_path = os.path.join(os.getcwd(), "projects")
+        os.makedirs(current_projects_path, exist_ok=True)
+        
+        try:
+            for item in os.listdir(project_folder_path):
+                source_path = os.path.join(project_folder_path, item)
+                destination_path = os.path.join(current_projects_path, item)
+                if not os.path.exists(destination_path):
+                    if os.path.isdir(source_path):
+                        shutil.copytree(source_path, destination_path)
+                    else:
+                        shutil.copy2(source_path, destination_path)
+
+            messagebox.showinfo("Import Successful", "Projects imported successfully.")
+        except Exception as error:
+            messagebox.showerror("Error", f"An error occurred while importing projects: {error}")
+    
+    def convert_prompt(self, e):
+        file = filedialog.askopenfile(title="Select the mod to open", initialdir=os.getcwd(), filetypes=[("Isle Goblin Mod Maker File", "*.igmm"), ("Unity Mod Maker File", "*.umm")])
+        if file is None: return # If file is Null then cancel
+        isInProjects = messagebox.askyesno("Add to Projects Folder", "Would you like to add this mod to the projects folder? \n Keep in mind that most of these files won't be compatible")
+        
+        old_file_path = file.name
+        file_name = os.path.basename(old_file_path).rsplit(".", 1)[0]
+        if file_name.endswith("-auto"): # They may have opened an autosave file so this is a 
+            file_name = file_name[:-5]  # way to get rid of that -auto that would get put on at the end
+            
+        file.close()
+        if isInProjects:
+            projects_folder = os.path.join(os.getcwd(), "projects")
+            os.makedirs(projects_folder, exist_ok=True)
+
+            project_folder = os.path.join(projects_folder, file_name)
+            os.makedirs(project_folder, exist_ok=True)
+
+            new_file_path = os.path.join(project_folder, file_name + ".gmm")
+        else:
+            new_file_path = old_file_path.rsplit(".", 1)[0] + ".gmm"
+        os.rename(old_file_path, new_file_path)
+        messagebox.showinfo("Successful", "Mod successfully converted.")
+
+
+    def mouse_enter(self, e):
+        e.widget.config(borderwidth=5, fg=InterfaceMenu_MouseEnter)
+        try:
+            mixer.music.load(Hover)
+            mixer.music.play(loops=0)
+        except:
+            pass
+    def mouse_exit(self, e):
+        e.widget.config(borderwidth=0, fg=InterfaceMenu_MouseExit)
+
 
     def find_settings(self):
         settings = None
@@ -264,7 +372,7 @@ class InterfaceMenu:
                 json.dump(DEFAULT_SETTINGS, json_file, indent=4)
                 settings = DEFAULT_SETTINGS
         return settings
-    
+
     def open_settings_window(self, event=None):
         try:
             mixer.music.load(Click)
@@ -469,7 +577,6 @@ class InterfaceMenu:
             return steam_path
         return None
 
-        
     def find_steam_directory(self, folder_name):
         # First, attempt to get the Steam directory from the registry
         steam_path = get_steam_directory()
@@ -511,7 +618,6 @@ class InterfaceMenu:
                 # If registry lookup fails, return None
                 return None
 
-
     def _copy_fallback(self, mod, name):
         name = name[0]
         self.new_name = name
@@ -523,14 +629,18 @@ class InterfaceMenu:
         except:
             pass
         messagebox.showwarning("Never Open Mods From Untrusted Sources", "Reminder: Never Open Mods From Untrusted Sources!!")
-        file = filedialog.askopenfile(filetypes=[("Goblin Mod Maker Files", "*.gmm")])
+        current_directory = os.getcwd()
+        file = filedialog.askopenfile(title="Select the mod to open", initialdir=current_directory, filetypes=[("Goblin Mod Maker Files", "*.gmm")])
+        
         if file is None: return
+        
         name = file.name
         file.close()
+        
         mod = load(name)
         close(self, False)
+        
         name_no_space = mod.mod_name_no_space.get_text()
-        current_directory = os.getcwd()
         csfilepath = os.path.join(current_directory, "projects", name_no_space, "Files", name_no_space + ".cs")
         pyro.CoreUI(lexer=CSharpLexer(), filename=mod.mod_name_no_space.get_text(), filepath=csfilepath, mod=mod, settings=self.settings)
 

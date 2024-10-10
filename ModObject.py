@@ -658,7 +658,6 @@ def verify_game(name, folder_name, steam_path, prompt):
             os.remove(dest)
             doorstop_dest = os.path.join(steam_path, folder_name, ".doorstop_version")
             os.remove(doorstop_dest)
-            print(doorstop_dest)
             messagebox.showinfo("BepInEx Installed", "BepInEx has been installed, please run the game once and then "
                                                      "exit in order to generate the proper files, then click \"OK\"",
                                 parent=prompt)

@@ -5,12 +5,11 @@ import pyro
 import webbrowser
 
 from GraphicalInterface import *  # Ensure this module is present and correctly implemented.
-from tkinter import Tk, ttk
+import tkinter
+from tkinter import Tk, ttk, simpledialog, Toplevel
 from tkinterweb import HtmlFrame
 import markdown
 import requests
-
-
 
 def load_theme(filename):
     with open(filename, 'r') as file:
@@ -57,7 +56,14 @@ class MarkdownViewer(Tk):
         super().__init__()
         self.title("GMM Documentation")
         self.geometry("1000x600")
+        self.iconbitmap("resources/goblin-mod-maker.ico")
         self.configure(bg=InterfaceMenu_Background)
+
+        # Search variables
+        self.search_term = None
+        self.total_matches = 0
+        self.current_match = 0
+        self.search_popup = None  # Popup for search results
 
         # Configure grid layout
         self.columnconfigure(0, weight=1)  # Treeview
@@ -69,10 +75,14 @@ class MarkdownViewer(Tk):
         self.tree.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self.tree.heading("#0", text="Table of Contents", anchor="w")
         self.tree.bind("<<TreeviewSelect>>", self.on_toc_select)
-
         
-        # Setup Treeview style
-        self.setup_treeview_style()
+        # Initialize Menubar
+        self.menubar = tkinter.Menu(self)
+        self.menubar.add_command(label="Search", accelerator="Ctrl + F", command=self.search)
+        self.config(menu=self.menubar)
+
+        self.bind("<Control-KeyPress-f>", self.search)
+        self.bind("<Control-KeyPress-F>", self.search)
 
         # Create a frame for the HtmlFrame
         html_frame_container = ttk.Frame(self)
@@ -83,13 +93,81 @@ class MarkdownViewer(Tk):
         self.html_frame.on_link_click(self.handle_link_click)
         self.html_frame.pack(fill="both", expand=True)
 
+        # Setup Treeview style
+        self.setup_treeview_style()
+
         self.header_count = {}
-        self.file = backup_file # Sets the backup file incase of emergency
+        self.file = backup_file  # Sets the backup file in case of emergency
         self.url = markdown_url
-        # self.load_markdown()
-        self._load_markdown()
-        # pyro.add_window(self)
+
+        self.load_markdown()
         mainloop()
+    
+    def search(self, event=None):
+        """Search for a term and initialize match navigation."""
+        self.search_term = simpledialog.askstring("Search", "Enter search term:")
+        if self.search_term:
+            self.total_matches = self.html_frame.find_text(self.search_term, highlight_all=True)
+            self.current_match = 0  # Start from the first match
+            if self.total_matches > 0:
+                self.show_search_popup()
+                self.jump_to_search_result(0)  # Jump to the first result
+            else:
+                print(f"No matches found for '{self.search_term}'")
+
+    def show_search_popup(self):
+        """Create and show the search results popup."""
+        if self.search_popup is not None:
+            self.search_popup.destroy()
+
+        self.search_popup = Toplevel(self)
+        self.search_popup.iconbitmap("resources/goblin-mod-maker.ico")
+        self.search_popup.title("Search Results")
+        self.search_popup.geometry("300x150")
+        self.search_popup.configure(background=PyroPrompt_Background)
+        default_font = self.option_get('Font', 'default')
+        # This won't center imma crashout
+        self.match_label = Label(self.search_popup, text=f"{self.current_match + 1}/{self.total_matches}", justify=CENTER, font=(default_font, 16), background=PyroPrompt_Background)
+        self.match_label.pack(pady=10, padx=5, side=TOP, fill=X)
+
+        # Previous button
+        prev_button = Button(self.search_popup, text="Previous", command=self.previous_match, relief=RAISED, background=InterfaceMenu_MouseEnter)
+        prev_button.pack(side=LEFT, padx=5, pady=10)
+
+        # Next button
+        next_button = Button(self.search_popup, text="Next", command=self.next_match, relief=RAISED, background=InterfaceMenu_MouseEnter)
+        next_button.pack(side=RIGHT, padx=5, pady=10)
+
+        # Close button
+        close_button = Button(self.search_popup, text="Close", command=self.close_search_popup, relief=RAISED, background=InterfaceMenu_MouseEnter)
+        close_button.pack(side=BOTTOM, pady=10)
+
+    def close_search_popup(self):
+        """Close the search results popup."""
+        if self.search_popup is not None:
+            self.search_popup.destroy()
+            self.search_popup = None
+
+    def jump_to_search_result(self, index):
+        """Jump to the search result at the given index."""
+        if self.total_matches > 0:
+            self.html_frame.find_text(self.search_term, select=index + 1, highlight_all=True)
+            self.current_match = index
+            if self.search_popup:
+                self.match_label.config(text=f"{self.current_match + 1}/{self.total_matches}")
+
+    def next_match(self):
+        """Go to the next search result."""
+        if self.total_matches > 0:
+            self.current_match = (self.current_match + 1) % self.total_matches
+            self.jump_to_search_result(self.current_match)
+
+    def previous_match(self):
+        """Go to the previous search result."""
+        if self.total_matches > 0:
+            self.current_match = (self.current_match - 1 + self.total_matches) % self.total_matches
+            self.jump_to_search_result(self.current_match)
+
 
     def handle_link_click(self, url):
         """Handle link clicks. If the link is internal, scroll to the appropriate section."""
@@ -142,14 +220,11 @@ class MarkdownViewer(Tk):
                         relief="flat")
 
     def load_markdown(self):
-        # self.after(0, self._load_markdown)
-        self._load_markdown()
-
-    def _load_markdown(self):
         markdown_content = self.read_markdown_file(url=self.url, file=self.file)
         html_content = self.convert_markdown_to_html(markdown_content)
         self.html_frame.load_html(html_content)
         self.generate_toc(markdown_content)
+
 
     def read_markdown_file(self, url=None, file=None):
         if url:
@@ -241,5 +316,6 @@ class MarkdownViewer(Tk):
             print(selected_item[0])
 
 # Commented this because everytime i open the app this pops up
-# markdown_file = "https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md"
-# MarkdownViewer(markdown_file, "DOCUMENTATION.md")
+if __name__ == "__main__":
+    markdown_file = "https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/DOCUMENTATION.md"
+    MarkdownViewer(markdown_file, "DOCUMENTATION.md")

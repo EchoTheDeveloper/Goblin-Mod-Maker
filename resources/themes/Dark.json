@@ -7,7 +7,7 @@
 
   "interfacemenu": {
     "background": "#353738",
-    "geometry": "470x220",
+    "geometry": "470x250",
     "newbuttonbackground": "#353738",
     "openbuttonbackground": "#353738",
     "mouseenter": "#7a7c7d",
