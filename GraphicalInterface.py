@@ -11,6 +11,7 @@ from PIL import ImageTk, Image
 from functools import partial
 from pygame import mixer
 import json
+import webbrowser
 try:
     import winreg
 except:
@@ -51,7 +52,6 @@ def set_window_count(x):
 def get_window_count():
     global window_count
     return window_count
-
 
 # This is a function that gets called when the main window gets closed, it sets can_make_menu to True because now a new
 # menu can be made without having duplicates
@@ -194,6 +194,14 @@ class InterfaceMenu:
         self.more_options.bind("<Button-1>", self.more_options_prompt)
         self.extra_buttons.append(self.more_options)
         
+        from VERSION import CURRENT_VERSION, LATEST_VERSION
+        if (CURRENT_VERSION < LATEST_VERSION):
+            self.update_btn = Label(self.root, text="Update GMM")
+            self.update_btn.place(x=350, y=210)
+            self.update_btn.bind("<Button-1>", self.open_update_link)
+            self.extra_buttons.append(self.update_btn)
+        
+        
         for button in self.extra_buttons:
             button.config(font=("Calibri", 15), fg=InterfaceMenu_ButtonConfigFG, background=InterfaceMenu_Background)
             button.bind("<Enter>", self.mouse_enter)
@@ -242,7 +250,9 @@ class InterfaceMenu:
         # root.update() on  everything in the pyro window list, there is also no need to remove closed windows from this
         pyro.add_window(self.root)
 
-    
+    def open_update_link(self, e=None):
+        webbrowser.open("https://echothedeveloper.itch.io/gmm")
+        
     def more_options_prompt(self, e=None):
         try:
             mixer.music.load(Click)
@@ -278,7 +288,7 @@ class InterfaceMenu:
         self.convert_mod.bind("<Button-1>", self.convert_prompt)
         labels.append(self.convert_mod)
 
-        self.import_projects_label = Label(button_frame, text="Import Packages")
+        self.import_projects_label = Label(button_frame, text="Import Projects")
         self.import_projects_label.bind("<Button-1>", self.import_projects)
         labels.append(self.import_projects_label)
 
@@ -307,20 +317,22 @@ class InterfaceMenu:
         current_projects_path = os.path.join(os.getcwd(), "projects")
         os.makedirs(current_projects_path, exist_ok=True)
         
-        try:
-            for item in os.listdir(project_folder_path):
-                source_path = os.path.join(project_folder_path, item)
-                destination_path = os.path.join(current_projects_path, item)
-                if not os.path.exists(destination_path):
-                    if os.path.isdir(source_path):
-                        shutil.copytree(source_path, destination_path)
-                    else:
-                        shutil.copy2(source_path, destination_path)
+        if (folder):
+            try:
+                
+                for item in os.listdir(project_folder_path):
+                    source_path = os.path.join(project_folder_path, item)
+                    destination_path = os.path.join(current_projects_path, item)
+                    if not os.path.exists(destination_path):
+                        if os.path.isdir(source_path):
+                            shutil.copytree(source_path, destination_path)
+                        else:
+                            shutil.copy2(source_path, destination_path)
 
-            messagebox.showinfo("Import Successful", "Projects imported successfully.")
-        except Exception as error:
-            messagebox.showerror("Error", f"An error occurred while importing projects: {error}")
-    
+                messagebox.showinfo("Import Successful", "Projects imported successfully.")
+            except Exception as error:
+                messagebox.showerror("Error", f"An error occurred while importing projects: {error}")
+        
     def convert_prompt(self, e):
         file = filedialog.askopenfile(title="Select the mod to open", initialdir=os.getcwd(), filetypes=[("Isle Goblin Mod Maker File", "*.igmm"), ("Unity Mod Maker File", "*.umm")])
         if file is None: return # If file is Null then cancel

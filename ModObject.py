@@ -1,4 +1,5 @@
-VERSION = "1.4.0"
+import VERSION
+VERSION = VERSION.CURRENT_VERSION
 import shutil
 from tkinter import messagebox, filedialog
 

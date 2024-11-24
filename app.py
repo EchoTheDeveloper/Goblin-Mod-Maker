@@ -4,12 +4,10 @@ from tkinter import messagebox
 import webbrowser
 import pyro
 import GraphicalInterface
-
+import VERSION
+import importlib
 # URL to fetch the latest version
 url = 'https://raw.githubusercontent.com/EchoTheDeveloper/Goblin-Mod-Maker/refs/heads/main/LATEST_VERSION'
-
-# Define the current version
-CURRENT_VERSION = "v1.4.0"
 
 def check_version():
     try:
@@ -19,8 +17,19 @@ def check_version():
 
         latest_version = response.text.strip()
 
-        # Check if the current version is the same as the latest version
-        if CURRENT_VERSION < latest_version:
+        # Update LATEST_VERSION in the VERSION.py file
+        with open("VERSION.py", "r") as version_file:
+            lines = version_file.readlines()
+
+        with open("VERSION.py", "w") as version_file:
+            for line in lines:
+                if line.startswith("LATEST_VERSION ="):
+                    version_file.write(f'LATEST_VERSION = "{latest_version}"\n')
+                else:
+                    version_file.write(line)
+        importlib.reload(VERSION)
+        
+        if VERSION.CURRENT_VERSION < latest_version:
             # Create a Tkinter window to prompt for update
             root = tk.Tk()
             root.withdraw()  # Hide the root window
@@ -28,7 +37,7 @@ def check_version():
             # Show message box to ask the user whether they want to update
             answer = messagebox.askyesno(
                 "Update Available",
-                f"An update is available.\nCurrent Version: {CURRENT_VERSION}, Latest Version: {latest_version}\nDo you want to update?"
+                f"An update is available.\nCurrent Version: {VERSION.CURRENT_VERSION}, Latest Version: {latest_version}\nDo you want to update?"
             )
 
             if answer:
@@ -36,13 +45,11 @@ def check_version():
                 webbrowser.open("https://echothedeveloper.itch.io/gmm")
             else:
                 root.destroy()
-                interface()
-        else:
-            interface()
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching the latest version: {e}")
-        interface()
+
+    interface()
 
 def interface():
     # Start the graphical interface if no update is required

@@ -498,6 +498,8 @@ class CoreUI(object):
         self.viewmenu = tkinter.Menu(self.menubar, tearoff=False, bg=PyroPrompt_Background, fg=PyroPrompt_Foreground, relief=GROOVE)
         self.menubar.add_cascade(label="View", menu=self.viewmenu)
         self.viewmenu.add_command(label="Open Documentation", accelerator="Ctrl + Shift + D", command=self.open_documentation)
+        self.viewmenu.add_command(label="Toggle Explorer", command=self.toggle_explorer)
+        self.viewmenu.add_command(label="Toggle Line Numbers", command=self.toggle_line_numbers)
 
         self.root.config(menu=self.menubar)
 
@@ -712,7 +714,12 @@ class CoreUI(object):
     def update_info(self):
         cursor = self.text.index(tkinter.INSERT)
         self.info['text'] = "Cursor Position: row {}, column {}".format(cursor.split(".")[0],cursor.split(".")[1])
-        
+    
+    def toggle_explorer(self):
+        return
+
+    def toggle_line_numbers(self):
+        return
 
     #<< File Operations >>#
     def open_documentation(self, e=None):
