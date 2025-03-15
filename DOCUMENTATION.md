@@ -54,7 +54,7 @@
       - [Good To Know](#good-to-know)
       - [Getting Started](#getting-started)
       - [Custom Assets](#custom-assets)
-      - [Change Themeing](#change-themeing)
+      - [Change Theming](#change-theming)
         - [Preperation](#preperation)
         - [Changing Custom Asset Paths](#changing-custom-asset-paths)
         - [Changing Theme Values](#changing-theme-values)
@@ -421,7 +421,7 @@
 - **New and Open Buttom Images:** In your themes assets folder, change the `newbutton.png` and `openbutton.png` to their corresponding custom image.
 - **Click and Hover SFX:** In your themes assets folder, change the `click.wav` and `hover.wav` to their corresponding SFX.
 
-#### Change Themeing
+#### Change Theming
 
 ##### Preperation
 
